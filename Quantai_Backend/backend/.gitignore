@@ -1,0 +1,113 @@
+# Django
+*.log
+*.pot
+*.pyc
+__pycache__/
+local_settings.py
+
+
+# Python
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environment
+venv/
+env/
+ENV/
+.venv
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Django stuff
+*.log
+local_settings.py
+
+/media
+/static
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Pytest
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Migrations (uncomment if you want to ignore migrations)
+# */migrations/*
+# !*/migrations/__init__.py
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# Backup files
+*.bak
+*.orig
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Redis
+dump.rdb
+
+# Node (if using for frontend)
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# OAuth2 keys (security)
+*.key
+*.pem
+
+# Temporary files
+*.tmp
+*.temp
+tmp/
+temp/
+
+# Test files and reports
+*_test.py
+*_test_*.py
+test_*.py
+*_api_test.py
+API_TEST_REPORT.md
+api_test_report.md
+final_api_test_report.md
+*test_report.md
+
+
+# Debug and utility scripts
+debug_*.py
+check_*.py
+update_*.py

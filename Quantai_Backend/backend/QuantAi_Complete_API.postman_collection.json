@@ -1,0 +1,2132 @@
+{
+	"collection": {
+		"info": {
+			"_postman_id": "26bcfe13-c48c-4701-a3ee-12a55e7f0ebb",
+			"name": "[Latest]QuantAi Complete API",
+			"description": "Complete API collection for QuantAi - Users, Projects, Survey, and Wallets",
+			"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+			"updatedAt": "2025-12-01T14:08:39.000Z",
+			"createdAt": "2025-11-22T10:12:56.000Z",
+			"lastUpdatedBy": "47134224",
+			"uid": "47134224-26bcfe13-c48c-4701-a3ee-12a55e7f0ebb"
+		},
+		"item": [
+			{
+				"name": "Users API",
+				"item": [
+					{
+						"name": "Authentication",
+						"item": [
+							{
+								"name": "Signup",
+								"id": "a16ea939-e7f2-4cab-a2a9-6e644e9ff5b6",
+								"protocolProfileBehavior": {
+									"disableBodyPruning": true
+								},
+								"request": {
+									"method": "POST",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"body": {
+										"mode": "raw",
+										"raw": "{\n  \"email\": \"user123@example.com\",\n  \"password\": \"password123\",\n  \"confirm_password\": \"password123\",\n  \"first_name\": \"John\",\n  \"last_name\": \"Doe\"\n}"
+									},
+									"url": {
+										"raw": "{{base_url}}/api/users/signup/",
+										"host": [
+											"{{base_url}}"
+										],
+										"path": [
+											"api",
+											"users",
+											"signup",
+											""
+										]
+									}
+								},
+								"response": [],
+								"uid": "47134224-a16ea939-e7f2-4cab-a2a9-6e644e9ff5b6"
+							},
+							{
+								"name": "Login (Email/Password)",
+								"id": "ee3678aa-f6c3-4582-9899-2c229e07381f",
+								"protocolProfileBehavior": {
+									"disableBodyPruning": true
+								},
+								"request": {
+									"method": "POST",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"body": {
+										"mode": "raw",
+										"raw": "{\n  \"email\": \"devtest@gmail.com\",\n  \"password\": \"devtest123\"\n}"
+									},
+									"url": {
+										"raw": "{{base_url}}/api/users/login/",
+										"host": [
+											"{{base_url}}"
+										],
+										"path": [
+											"api",
+											"users",
+											"login",
+											""
+										]
+									}
+								},
+								"response": [],
+								"uid": "47134224-ee3678aa-f6c3-4582-9899-2c229e07381f"
+							},
+							{
+								"name": "Request OTP Login",
+								"id": "b840a106-662f-42f3-b65f-69bc6479581b",
+								"protocolProfileBehavior": {
+									"disableBodyPruning": true
+								},
+								"request": {
+									"method": "POST",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"body": {
+										"mode": "raw",
+										"raw": "{\n  \"email\": \"{{test_email}}\"\n}"
+									},
+									"url": {
+										"raw": "{{base_url}}/api/users/request-otp-login/",
+										"host": [
+											"{{base_url}}"
+										],
+										"path": [
+											"api",
+											"users",
+											"request-otp-login",
+											""
+										]
+									}
+								},
+								"response": [],
+								"uid": "47134224-b840a106-662f-42f3-b65f-69bc6479581b"
+							},
+							{
+								"name": "Login with OTP",
+								"id": "5fb74c0f-c046-4871-a1b9-bafdafcf7919",
+								"protocolProfileBehavior": {
+									"disableBodyPruning": true
+								},
+								"request": {
+									"method": "POST",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"body": {
+										"mode": "raw",
+										"raw": "{\n  \"email\": \"{{test_email}}\",\n  \"code\": \"649118\",\n  \"purpose\": \"login\"\n}"
+									},
+									"url": {
+										"raw": "{{base_url}}/api/users/login-with-otp/",
+										"host": [
+											"{{base_url}}"
+										],
+										"path": [
+											"api",
+											"users",
+											"login-with-otp",
+											""
+										]
+									}
+								},
+								"response": [],
+								"uid": "47134224-5fb74c0f-c046-4871-a1b9-bafdafcf7919"
+							},
+							{
+								"name": "Verify OTP (signup/login/reset)",
+								"id": "30a85472-b215-40a1-a4e1-7f310cb0bbc7",
+								"protocolProfileBehavior": {
+									"disableBodyPruning": true
+								},
+								"request": {
+									"method": "POST",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"body": {
+										"mode": "raw",
+										"raw": "{\n  \"email\": \"{{test_email}}\",\n  \"code\": \"174155\",\n  \"purpose\": \"signup\"\n}"
+									},
+									"url": {
+										"raw": "{{base_url}}/api/users/verify-otp/",
+										"host": [
+											"{{base_url}}"
+										],
+										"path": [
+											"api",
+											"users",
+											"verify-otp",
+											""
+										]
+									}
+								},
+								"response": [],
+								"uid": "47134224-30a85472-b215-40a1-a4e1-7f310cb0bbc7"
+							}
+						],
+						"id": "0bf4a01c-2e10-4b0b-9063-9818096192c1",
+						"uid": "47134224-0bf4a01c-2e10-4b0b-9063-9818096192c1"
+					},
+					{
+						"name": "Password Reset",
+						"item": [
+							{
+								"name": "Password Reset Request",
+								"id": "d667242e-e417-4d57-a9af-9b586a066dd1",
+								"protocolProfileBehavior": {
+									"disableBodyPruning": true
+								},
+								"request": {
+									"method": "POST",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"body": {
+										"mode": "raw",
+										"raw": "{\n  \"email\": \"{{test_email}}\"\n}"
+									},
+									"url": {
+										"raw": "{{base_url}}/api/users/password-reset/request/",
+										"host": [
+											"{{base_url}}"
+										],
+										"path": [
+											"api",
+											"users",
+											"password-reset",
+											"request",
+											""
+										]
+									}
+								},
+								"response": [],
+								"uid": "47134224-d667242e-e417-4d57-a9af-9b586a066dd1"
+							},
+							{
+								"name": "Password Reset Confirm",
+								"id": "4e45b2d2-c5d6-4daa-9d4e-276109cbc99c",
+								"protocolProfileBehavior": {
+									"disableBodyPruning": true
+								},
+								"request": {
+									"method": "POST",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"body": {
+										"mode": "raw",
+										"raw": "{\n  \"email\": \"{{test_email}}\",\n  \"code\": \"{{otp_reset}}\",\n  \"new_password\": \"NewSecur3P@ss!\"\n}"
+									},
+									"url": {
+										"raw": "{{base_url}}/api/users/password-reset/confirm/",
+										"host": [
+											"{{base_url}}"
+										],
+										"path": [
+											"api",
+											"users",
+											"password-reset",
+											"confirm",
+											""
+										]
+									}
+								},
+								"response": [],
+								"uid": "47134224-4e45b2d2-c5d6-4daa-9d4e-276109cbc99c"
+							}
+						],
+						"id": "275b72b4-0219-4e04-bd7a-65d1eb77083b",
+						"uid": "47134224-275b72b4-0219-4e04-bd7a-65d1eb77083b"
+					},
+					{
+						"name": "Social Authentication",
+						"item": [
+							{
+								"name": "Social Auth - Google",
+								"id": "29517448-1d0f-4c14-902a-6917f8220ba1",
+								"protocolProfileBehavior": {
+									"disableBodyPruning": true
+								},
+								"request": {
+									"method": "POST",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"body": {
+										"mode": "raw",
+										"raw": "{\n  \"provider_token\": \"\u003Cgoogle_id_token_here\u003E\",\n  \"email\": \"{{test_email}}\",\n  \"client_id\": \"{{client_id}}\",\n  \"client_secret\": \"{{client_secret}}\"\n}"
+									},
+									"url": {
+										"raw": "{{base_url}}/api/users/social/google/",
+										"host": [
+											"{{base_url}}"
+										],
+										"path": [
+											"api",
+											"users",
+											"social",
+											"google",
+											""
+										]
+									}
+								},
+								"response": [],
+								"uid": "47134224-29517448-1d0f-4c14-902a-6917f8220ba1"
+							},
+							{
+								"name": "Social Auth - Facebook",
+								"id": "41e13e49-d7de-42f4-922d-b4139f56c7db",
+								"protocolProfileBehavior": {
+									"disableBodyPruning": true
+								},
+								"request": {
+									"method": "POST",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"body": {
+										"mode": "raw",
+										"raw": "{\n  \"provider_token\": \"\u003Cfacebook_access_token_here\u003E\",\n  \"email\": \"{{test_email}}\",\n  \"client_id\": \"{{client_id}}\",\n  \"client_secret\": \"{{client_secret}}\"\n}"
+									},
+									"url": {
+										"raw": "{{base_url}}/api/users/social/facebook/",
+										"host": [
+											"{{base_url}}"
+										],
+										"path": [
+											"api",
+											"users",
+											"social",
+											"facebook",
+											""
+										]
+									}
+								},
+								"response": [],
+								"uid": "47134224-41e13e49-d7de-42f4-922d-b4139f56c7db"
+							},
+							{
+								"name": "Social Auth - Twitter (X)",
+								"id": "a5e4f35a-eadd-4d23-8805-59174464db7f",
+								"protocolProfileBehavior": {
+									"disableBodyPruning": true
+								},
+								"request": {
+									"method": "POST",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"body": {
+										"mode": "raw",
+										"raw": "{\n  \"provider_token\": \"\u003Ctwitter_bearer_token_here\u003E\",\n  \"email\": \"{{test_email}}\",\n  \"client_id\": \"{{client_id}}\",\n  \"client_secret\": \"{{client_secret}}\"\n}"
+									},
+									"url": {
+										"raw": "{{base_url}}/api/users/social/twitter/",
+										"host": [
+											"{{base_url}}"
+										],
+										"path": [
+											"api",
+											"users",
+											"social",
+											"twitter",
+											""
+										]
+									}
+								},
+								"response": [],
+								"uid": "47134224-a5e4f35a-eadd-4d23-8805-59174464db7f"
+							},
+							{
+								"name": "Social Auth - Apple",
+								"id": "4124b998-976d-4a82-a7f2-fe068bef55b1",
+								"protocolProfileBehavior": {
+									"disableBodyPruning": true
+								},
+								"request": {
+									"method": "POST",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"body": {
+										"mode": "raw",
+										"raw": "{\n  \"provider_token\": \"\u003Capple_id_token_here\u003E\",\n  \"email\": \"{{test_email}}\",\n  \"client_id\": \"{{client_id}}\",\n  \"client_secret\": \"{{client_secret}}\"\n}"
+									},
+									"url": {
+										"raw": "{{base_url}}/api/users/social/apple/",
+										"host": [
+											"{{base_url}}"
+										],
+										"path": [
+											"api",
+											"users",
+											"social",
+											"apple",
+											""
+										]
+									}
+								},
+								"response": [],
+								"uid": "47134224-4124b998-976d-4a82-a7f2-fe068bef55b1"
+							}
+						],
+						"id": "a461c52e-8ef7-42c7-b5e9-27ac33ed4f7b",
+						"uid": "47134224-a461c52e-8ef7-42c7-b5e9-27ac33ed4f7b"
+					},
+					{
+						"name": "OAuth2",
+						"item": [
+							{
+								"name": "OAuth2 - Token (refresh)",
+								"id": "f2d5c176-63a2-49c7-aef0-3c132eec54d0",
+								"protocolProfileBehavior": {
+									"disableBodyPruning": true
+								},
+								"request": {
+									"method": "POST",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/x-www-form-urlencoded"
+										}
+									],
+									"body": {
+										"mode": "urlencoded",
+										"urlencoded": [
+											{
+												"key": "grant_type",
+												"value": "refresh_token"
+											},
+											{
+												"key": "refresh_token",
+												"value": "4c34ccbb307346208c832a1b870831c0"
+											},
+											{
+												"key": "client_id",
+												"value": "Rkzsy8StAaD4ChLpxJvYQozOawmMkzG8bRwhD7aU"
+											}
+										]
+									},
+									"url": {
+										"raw": "{{base_url}}/o/token/",
+										"host": [
+											"{{base_url}}"
+										],
+										"path": [
+											"o",
+											"token",
+											""
+										]
+									}
+								},
+								"response": [],
+								"uid": "47134224-f2d5c176-63a2-49c7-aef0-3c132eec54d0"
+							}
+						],
+						"id": "0b552697-8153-4c26-88f9-335b61b54437",
+						"uid": "47134224-0b552697-8153-4c26-88f9-335b61b54437"
+					},
+					{
+						"name": "User Management",
+						"item": [
+							{
+								"name": "List Users",
+								"id": "b0d888fc-4334-4326-88bb-7c4b153c099a",
+								"protocolProfileBehavior": {
+									"disableBodyPruning": true
+								},
+								"request": {
+									"method": "GET",
+									"header": [
+										{
+											"key": "Authorization",
+											"value": "Bearer {{access_token}}"
+										}
+									],
+									"url": {
+										"raw": "{{base_url}}/api/users/users/?profile_type=AU&is_verified=true",
+										"host": [
+											"{{base_url}}"
+										],
+										"path": [
+											"api",
+											"users",
+											"users",
+											""
+										],
+										"query": [
+											{
+												"key": "profile_type",
+												"value": "AU",
+												"description": "Filter by profile type: AU (Audience), AD (Admin), CL (Client)"
+											},
+											{
+												"key": "is_verified",
+												"value": "true",
+												"description": "Filter by verification status: true or false"
+											}
+										]
+									}
+								},
+								"response": [],
+								"uid": "47134224-b0d888fc-4334-4326-88bb-7c4b153c099a"
+							},
+							{
+								"name": "Get My Profile",
+								"id": "bee7d17c-4b80-4d0e-90f4-7ddc16a95586",
+								"protocolProfileBehavior": {
+									"disableBodyPruning": true
+								},
+								"request": {
+									"method": "GET",
+									"header": [
+										{
+											"key": "Authorization",
+											"value": "Bearer {{access_token}}"
+										}
+									],
+									"url": {
+										"raw": "{{base_url}}/api/users/users/me/",
+										"host": [
+											"{{base_url}}"
+										],
+										"path": [
+											"api",
+											"users",
+											"users",
+											"me",
+											""
+										]
+									}
+								},
+								"response": [],
+								"uid": "47134224-bee7d17c-4b80-4d0e-90f4-7ddc16a95586"
+							},
+							{
+								"name": "Update My Profile (PATCH)",
+								"id": "11f9494e-64b2-41e3-8882-fdd6c7e374fb",
+								"protocolProfileBehavior": {
+									"disableBodyPruning": true
+								},
+								"request": {
+									"method": "PATCH",
+									"header": [
+										{
+											"key": "Authorization",
+											"value": "Bearer {{access_token}}"
+										},
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"body": {
+										"mode": "raw",
+										"raw": "{\n  \"first_name\": \"Updated Name\",\n  \"phone\": \"+1234567890\"\n}"
+									},
+									"url": {
+										"raw": "{{base_url}}/api/users/users/me/",
+										"host": [
+											"{{base_url}}"
+										],
+										"path": [
+											"api",
+											"users",
+											"users",
+											"me",
+											""
+										]
+									}
+								},
+								"response": [],
+								"uid": "47134224-11f9494e-64b2-41e3-8882-fdd6c7e374fb"
+							},
+							{
+								"name": "Get User",
+								"id": "acce4f99-4919-43b9-816b-48dab8f22bb7",
+								"protocolProfileBehavior": {
+									"disableBodyPruning": true
+								},
+								"request": {
+									"method": "GET",
+									"header": [
+										{
+											"key": "Authorization",
+											"value": "Bearer {{access_token}}"
+										}
+									],
+									"url": {
+										"raw": "{{base_url}}/api/users/users/1/",
+										"host": [
+											"{{base_url}}"
+										],
+										"path": [
+											"api",
+											"users",
+											"users",
+											"1",
+											""
+										]
+									}
+								},
+								"response": [],
+								"uid": "47134224-acce4f99-4919-43b9-816b-48dab8f22bb7"
+							},
+							{
+								"name": "Update User (PATCH)",
+								"id": "e97ff08d-9818-4688-9fc9-f0d686157e46",
+								"protocolProfileBehavior": {
+									"disableBodyPruning": true
+								},
+								"request": {
+									"method": "PATCH",
+									"header": [
+										{
+											"key": "Authorization",
+											"value": "Bearer {{access_token}}"
+										},
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"body": {
+										"mode": "raw",
+										"raw": "{\n  \"first_name\": \"Updated First Name\",\n  \"last_name\": \"Updated Last Name\",\n  \"phone\": \"+1234567890\",\n  \"is_terms_accepted\": true\n}"
+									},
+									"url": {
+										"raw": "{{base_url}}/api/users/users/1/",
+										"host": [
+											"{{base_url}}"
+										],
+										"path": [
+											"api",
+											"users",
+											"users",
+											"1",
+											""
+										]
+									}
+								},
+								"response": [],
+								"uid": "47134224-e97ff08d-9818-4688-9fc9-f0d686157e46"
+							}
+						],
+						"id": "13408aec-e574-483a-983b-970a5907d887",
+						"uid": "47134224-13408aec-e574-483a-983b-970a5907d887"
+					}
+				],
+				"id": "26ee8b5f-af58-4a36-bbbb-c049f61e525c",
+				"uid": "47134224-26ee8b5f-af58-4a36-bbbb-c049f61e525c"
+			},
+			{
+				"name": "Projects API",
+				"item": [
+					{
+						"name": "Languages",
+						"item": [
+							{
+								"name": "List Languages",
+								"id": "a1456a16-8400-49b5-b218-707d5ee3c559",
+								"protocolProfileBehavior": {
+									"disableBodyPruning": true
+								},
+								"request": {
+									"method": "GET",
+									"header": [
+										{
+											"key": "Authorization",
+											"value": "Bearer {{access_token}}"
+										}
+									],
+									"url": {
+										"raw": "{{base_url}}/api/languages/",
+										"host": [
+											"{{base_url}}"
+										],
+										"path": [
+											"api",
+											"languages",
+											""
+										]
+									}
+								},
+								"response": [],
+								"uid": "47134224-a1456a16-8400-49b5-b218-707d5ee3c559"
+							},
+							{
+								"name": "Create Language",
+								"id": "6a7f908f-fd36-4467-b09c-e0de210af7c4",
+								"protocolProfileBehavior": {
+									"disableBodyPruning": true
+								},
+								"request": {
+									"method": "POST",
+									"header": [
+										{
+											"key": "Authorization",
+											"value": "Bearer {{access_token}}"
+										},
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"body": {
+										"mode": "raw",
+										"raw": "{\n  \"code\": \"en\",\n  \"name\": \"English\",\n  \"is_active\": true\n}"
+									},
+									"url": {
+										"raw": "{{base_url}}/api/languages/",
+										"host": [
+											"{{base_url}}"
+										],
+										"path": [
+											"api",
+											"languages",
+											""
+										]
+									}
+								},
+								"response": [],
+								"uid": "47134224-6a7f908f-fd36-4467-b09c-e0de210af7c4"
+							},
+							{
+								"name": "Get Language",
+								"id": "cee3d19a-ca69-4dd6-97d5-5f5e46cca247",
+								"protocolProfileBehavior": {
+									"disableBodyPruning": true
+								},
+								"request": {
+									"method": "GET",
+									"header": [
+										{
+											"key": "Authorization",
+											"value": "Bearer {{access_token}}"
+										}
+									],
+									"url": {
+										"raw": "{{base_url}}/api/languages/{{language_id}}/",
+										"host": [
+											"{{base_url}}"
+										],
+										"path": [
+											"api",
+											"languages",
+											"{{language_id}}",
+											""
+										]
+									}
+								},
+								"response": [],
+								"uid": "47134224-cee3d19a-ca69-4dd6-97d5-5f5e46cca247"
+							},
+							{
+								"name": "Update Language",
+								"id": "3b9dad26-7bcd-479d-947c-013784975467",
+								"protocolProfileBehavior": {
+									"disableBodyPruning": true
+								},
+								"request": {
+									"method": "PUT",
+									"header": [
+										{
+											"key": "Authorization",
+											"value": "Bearer {{access_token}}"
+										},
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"body": {
+										"mode": "raw",
+										"raw": "{\n  \"code\": \"en\",\n  \"name\": \"English - Updated\",\n  \"is_active\": true\n}"
+									},
+									"url": {
+										"raw": "{{base_url}}/api/languages/{{language_id}}/",
+										"host": [
+											"{{base_url}}"
+										],
+										"path": [
+											"api",
+											"languages",
+											"{{language_id}}",
+											""
+										]
+									}
+								},
+								"response": [],
+								"uid": "47134224-3b9dad26-7bcd-479d-947c-013784975467"
+							},
+							{
+								"name": "Delete Language",
+								"id": "c21ff4e3-2a6a-4255-be59-0a150eacb42f",
+								"protocolProfileBehavior": {
+									"disableBodyPruning": true
+								},
+								"request": {
+									"method": "DELETE",
+									"header": [
+										{
+											"key": "Authorization",
+											"value": "Bearer {{access_token}}"
+										}
+									],
+									"url": {
+										"raw": "{{base_url}}/api/languages/{{language_id}}/",
+										"host": [
+											"{{base_url}}"
+										],
+										"path": [
+											"api",
+											"languages",
+											"{{language_id}}",
+											""
+										]
+									}
+								},
+								"response": [],
+								"uid": "47134224-c21ff4e3-2a6a-4255-be59-0a150eacb42f"
+							}
+						],
+						"id": "c8d5ec61-373c-433b-86d8-c8cca4634382",
+						"uid": "47134224-c8d5ec61-373c-433b-86d8-c8cca4634382"
+					},
+					{
+						"name": "Projects",
+						"item": [
+							{
+								"name": "List Projects",
+								"id": "3279897f-a567-4020-938c-8ed71f0c2ac8",
+								"protocolProfileBehavior": {
+									"disableBodyPruning": true
+								},
+								"request": {
+									"method": "GET",
+									"header": [
+										{
+											"key": "Authorization",
+											"value": "Bearer {{access_token}}"
+										}
+									],
+									"url": {
+										"raw": "{{base_url}}/api/projects/?project_type=SU&active=true",
+										"host": [
+											"{{base_url}}"
+										],
+										"path": [
+											"api",
+											"projects",
+											""
+										],
+										"query": [
+											{
+												"key": "project_type",
+												"value": "SU"
+											},
+											{
+												"key": "active",
+												"value": "true"
+											}
+										]
+									}
+								},
+								"response": [],
+								"uid": "47134224-3279897f-a567-4020-938c-8ed71f0c2ac8"
+							},
+							{
+								"name": "Create Project",
+								"id": "6f2c9bf7-3c85-4b7f-a303-25e67c1c3c6c",
+								"protocolProfileBehavior": {
+									"disableBodyPruning": true
+								},
+								"request": {
+									"method": "POST",
+									"header": [
+										{
+											"key": "Authorization",
+											"value": "Bearer {{access_token}}"
+										}
+									],
+									"body": {
+										"mode": "formdata",
+										"formdata": [
+											{
+												"key": "title",
+												"value": "Customer Satisfaction Survey",
+												"type": "text"
+											},
+											{
+												"key": "description",
+												"value": "Annual customer satisfaction survey",
+												"type": "text"
+											},
+											{
+												"key": "language_ids",
+												"value": "1",
+												"type": "text"
+											},
+											{
+												"key": "active",
+												"value": "true",
+												"type": "text"
+											},
+											{
+												"key": "start_time",
+												"value": "2025-01-01T00:00:00Z",
+												"type": "text"
+											},
+											{
+												"key": "end_time",
+												"value": "2025-12-31T23:59:59Z",
+												"type": "text"
+											},
+											{
+												"key": "reward_points",
+												"value": "100.0",
+												"type": "text"
+											},
+											{
+												"key": "code",
+												"value": "CSAT-2025-01",
+												"type": "text"
+											},
+											{
+												"key": "project_type",
+												"value": "SU",
+												"type": "text"
+											},
+											{
+												"key": "mode",
+												"value": "PR",
+												"type": "text"
+											},
+											{
+												"key": "logo",
+												"type": "file",
+												"src": []
+											},
+											{
+												"key": "logo_width",
+												"value": "200",
+												"type": "text"
+											},
+											{
+												"key": "logo_height",
+												"value": "100",
+												"type": "text"
+											},
+											{
+												"key": "logo_location",
+												"value": "center",
+												"type": "text"
+											},
+											{
+												"key": "fit_logo",
+												"value": "true",
+												"type": "text"
+											},
+											{
+												"key": "display_welcome_message",
+												"value": "true",
+												"type": "text"
+											},
+											{
+												"key": "welcome_message",
+												"value": "Welcome to our survey!",
+												"type": "text"
+											},
+											{
+												"key": "display_thankyou_message",
+												"value": "true",
+												"type": "text"
+											},
+											{
+												"key": "thankyou_message",
+												"value": "Thank you for participating!",
+												"type": "text"
+											},
+											{
+												"key": "quotafull_message",
+												"value": "This survey has reached its quota.",
+												"type": "text"
+											},
+											{
+												"key": "terminate_message",
+												"value": "This survey has been closed.",
+												"type": "text"
+											},
+											{
+												"key": "navigation_message",
+												"value": "Click Next to continue.",
+												"type": "text"
+											},
+											{
+												"key": "participant_limit",
+												"value": "10000",
+												"type": "text"
+											},
+											{
+												"key": "start_btn_text",
+												"value": "Start Survey",
+												"type": "text"
+											},
+											{
+												"key": "complete_btn_text",
+												"value": "Submit",
+												"type": "text"
+											},
+											{
+												"key": "previous_btn_text",
+												"value": "Back",
+												"type": "text"
+											},
+											{
+												"key": "next_btn_text",
+												"value": "Next",
+												"type": "text"
+											},
+											{
+												"key": "show_progress_bar",
+												"value": "true",
+												"type": "text"
+											},
+											{
+												"key": "answer_preview",
+												"value": "true",
+												"type": "text"
+											}
+										]
+									},
+									"url": {
+										"raw": "{{base_url}}/api/projects/",
+										"host": [
+											"{{base_url}}"
+										],
+										"path": [
+											"api",
+											"projects",
+											""
+										]
+									}
+								},
+								"response": [],
+								"uid": "47134224-6f2c9bf7-3c85-4b7f-a303-25e67c1c3c6c"
+							},
+							{
+								"name": "Get Project",
+								"id": "9cf7bc21-8d38-4ca5-b10e-9fa84dee7966",
+								"protocolProfileBehavior": {
+									"disableBodyPruning": true
+								},
+								"request": {
+									"method": "GET",
+									"header": [
+										{
+											"key": "Authorization",
+											"value": "Bearer {{access_token}}"
+										}
+									],
+									"url": {
+										"raw": "{{base_url}}/api/projects/{{project_id}}/",
+										"host": [
+											"{{base_url}}"
+										],
+										"path": [
+											"api",
+											"projects",
+											"{{project_id}}",
+											""
+										]
+									}
+								},
+								"response": [],
+								"uid": "47134224-9cf7bc21-8d38-4ca5-b10e-9fa84dee7966"
+							},
+							{
+								"name": "Update Project",
+								"id": "22f36d7b-6ed7-46b0-a18c-b827e449cdd2",
+								"protocolProfileBehavior": {
+									"disableBodyPruning": true
+								},
+								"request": {
+									"method": "PUT",
+									"header": [
+										{
+											"key": "Authorization",
+											"value": "Bearer {{access_token}}"
+										},
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"body": {
+										"mode": "raw",
+										"raw": "{\n  \"title\": \"Customer Satisfaction Survey - Updated\",\n  \"description\": \"Updated description\",\n  \"language_ids\": [1],\n  \"active\": true,\n  \"start_time\": \"2025-01-01T00:00:00Z\",\n  \"end_time\": \"2025-12-31T23:59:59Z\",\n  \"reward_points\": 150.0,\n  \"code\": \"CSAT-2025-01\",\n  \"project_type\": \"SU\",\n  \"mode\": \"PR\",\n  \"participant_limit\": 50000,\n  \"quotafull_message\": \"Survey is full! We've hit our 50K limit.\",\n  \"terminate_message\": \"Survey closed early due to sufficient responses.\"\n}"
+									},
+									"url": {
+										"raw": "{{base_url}}/api/projects/{{project_id}}/",
+										"host": [
+											"{{base_url}}"
+										],
+										"path": [
+											"api",
+											"projects",
+											"{{project_id}}",
+											""
+										]
+									}
+								},
+								"response": [],
+								"uid": "47134224-22f36d7b-6ed7-46b0-a18c-b827e449cdd2"
+							},
+							{
+								"name": "Partial Update Project",
+								"id": "ba9ebb45-04f4-4b65-9fa5-053c12dcd276",
+								"protocolProfileBehavior": {
+									"disableBodyPruning": true
+								},
+								"request": {
+									"method": "PATCH",
+									"header": [
+										{
+											"key": "Authorization",
+											"value": "Bearer {{access_token}}"
+										},
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"body": {
+										"mode": "raw",
+										"raw": "{\n  \"active\": false\n}"
+									},
+									"url": {
+										"raw": "{{base_url}}/api/projects/{{project_id}}/",
+										"host": [
+											"{{base_url}}"
+										],
+										"path": [
+											"api",
+											"projects",
+											"{{project_id}}",
+											""
+										]
+									}
+								},
+								"response": [],
+								"uid": "47134224-ba9ebb45-04f4-4b65-9fa5-053c12dcd276"
+							},
+							{
+								"name": "Activate Project",
+								"id": "ab3ba501-4637-4922-9399-06cd10a33359",
+								"protocolProfileBehavior": {
+									"disableBodyPruning": true
+								},
+								"request": {
+									"method": "POST",
+									"header": [
+										{
+											"key": "Authorization",
+											"value": "Bearer {{access_token}}"
+										}
+									],
+									"url": {
+										"raw": "{{base_url}}/api/projects/{{project_id}}/activate/",
+										"host": [
+											"{{base_url}}"
+										],
+										"path": [
+											"api",
+											"projects",
+											"{{project_id}}",
+											"activate",
+											""
+										]
+									}
+								},
+								"response": [],
+								"uid": "47134224-ab3ba501-4637-4922-9399-06cd10a33359"
+							},
+							{
+								"name": "Deactivate Project",
+								"id": "39c4db68-578e-46fe-97b8-5f1246f4d872",
+								"protocolProfileBehavior": {
+									"disableBodyPruning": true
+								},
+								"request": {
+									"method": "POST",
+									"header": [
+										{
+											"key": "Authorization",
+											"value": "Bearer {{access_token}}"
+										}
+									],
+									"url": {
+										"raw": "{{base_url}}/api/projects/{{project_id}}/deactivate/",
+										"host": [
+											"{{base_url}}"
+										],
+										"path": [
+											"api",
+											"projects",
+											"{{project_id}}",
+											"deactivate",
+											""
+										]
+									}
+								},
+								"response": [],
+								"uid": "47134224-39c4db68-578e-46fe-97b8-5f1246f4d872"
+							},
+							{
+								"name": "Get Project Questions",
+								"id": "4baefc7f-bf6b-42b7-b3da-054d8c3872fe",
+								"protocolProfileBehavior": {
+									"disableBodyPruning": true
+								},
+								"request": {
+									"method": "GET",
+									"header": [
+										{
+											"key": "Authorization",
+											"value": "Bearer {{access_token}}"
+										}
+									],
+									"url": {
+										"raw": "{{base_url}}/api/projects/{{project_id}}/questions/",
+										"host": [
+											"{{base_url}}"
+										],
+										"path": [
+											"api",
+											"projects",
+											"{{project_id}}",
+											"questions",
+											""
+										]
+									}
+								},
+								"response": [],
+								"uid": "47134224-4baefc7f-bf6b-42b7-b3da-054d8c3872fe"
+							},
+							{
+								"name": "Delete Project",
+								"id": "d9d9cef6-109d-45ee-b147-e6411e0ac284",
+								"protocolProfileBehavior": {
+									"disableBodyPruning": true
+								},
+								"request": {
+									"method": "DELETE",
+									"header": [
+										{
+											"key": "Authorization",
+											"value": "Bearer {{access_token}}"
+										}
+									],
+									"url": {
+										"raw": "{{base_url}}/api/projects/{{project_id}}/",
+										"host": [
+											"{{base_url}}"
+										],
+										"path": [
+											"api",
+											"projects",
+											"{{project_id}}",
+											""
+										]
+									}
+								},
+								"response": [],
+								"uid": "47134224-d9d9cef6-109d-45ee-b147-e6411e0ac284"
+							}
+						],
+						"id": "044567e9-b937-4ef9-b143-7a9c6e18be8d",
+						"uid": "47134224-044567e9-b937-4ef9-b143-7a9c6e18be8d"
+					}
+				],
+				"id": "a80f87ca-58ea-469e-a513-45d76e0afae5",
+				"uid": "47134224-a80f87ca-58ea-469e-a513-45d76e0afae5"
+			},
+			{
+				"name": "Survey API",
+				"item": [
+					{
+						"name": "Questions",
+						"item": [
+							{
+								"name": "List Questions",
+								"id": "ad912a49-7dbe-4d70-8759-88ceb949f123",
+								"protocolProfileBehavior": {
+									"disableBodyPruning": true
+								},
+								"request": {
+									"method": "GET",
+									"header": [
+										{
+											"key": "Authorization",
+											"value": "Bearer {{access_token}}"
+										}
+									],
+									"url": {
+										"raw": "{{base_url}}/api/questions/?project={{project_id}}",
+										"host": [
+											"{{base_url}}"
+										],
+										"path": [
+											"api",
+											"questions",
+											""
+										],
+										"query": [
+											{
+												"key": "project",
+												"value": "{{project_id}}"
+											}
+										]
+									}
+								},
+								"response": [],
+								"uid": "47134224-ad912a49-7dbe-4d70-8759-88ceb949f123"
+							},
+							{
+								"name": "Create Question",
+								"id": "e42c2424-8d84-4a63-ba99-1ff73dfe7af6",
+								"protocolProfileBehavior": {
+									"disableBodyPruning": true
+								},
+								"request": {
+									"method": "POST",
+									"header": [
+										{
+											"key": "Authorization",
+											"value": "Bearer {{access_token}}"
+										},
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"body": {
+										"mode": "raw",
+										"raw": "{\n  \"project\": {{project_id}},\n  \"variable_name\": \"satisfaction_rating\",\n  \"title\": \"How satisfied are you with our service?\",\n  \"description\": \"Please rate your overall satisfaction\",\n  \"is_required\": true,\n  \"is_initial_question\": true,\n  \"display_index\": 1,\n  \"question_type\": \"rating\",\n  \"widget\": \"star_rating\"\n}"
+									},
+									"url": {
+										"raw": "{{base_url}}/api/questions/",
+										"host": [
+											"{{base_url}}"
+										],
+										"path": [
+											"api",
+											"questions",
+											""
+										]
+									}
+								},
+								"response": [],
+								"uid": "47134224-e42c2424-8d84-4a63-ba99-1ff73dfe7af6"
+							},
+							{
+								"name": "Get Question",
+								"id": "e5d52966-db09-4389-a91c-b1304c0e44bc",
+								"protocolProfileBehavior": {
+									"disableBodyPruning": true
+								},
+								"request": {
+									"method": "GET",
+									"header": [
+										{
+											"key": "Authorization",
+											"value": "Bearer {{access_token}}"
+										}
+									],
+									"url": {
+										"raw": "{{base_url}}/api/questions/{{question_id}}/",
+										"host": [
+											"{{base_url}}"
+										],
+										"path": [
+											"api",
+											"questions",
+											"{{question_id}}",
+											""
+										]
+									}
+								},
+								"response": [],
+								"uid": "47134224-e5d52966-db09-4389-a91c-b1304c0e44bc"
+							},
+							{
+								"name": "Update Question",
+								"id": "f357ea0d-25f1-4007-bd82-3346543a7c95",
+								"protocolProfileBehavior": {
+									"disableBodyPruning": true
+								},
+								"request": {
+									"method": "PUT",
+									"header": [
+										{
+											"key": "Authorization",
+											"value": "Bearer {{access_token}}"
+										},
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"body": {
+										"mode": "raw",
+										"raw": "{\n  \"project\": {{project_id}},\n  \"variable_name\": \"satisfaction_rating\",\n  \"title\": \"How satisfied are you with our service? (Updated)\",\n  \"description\": \"Please rate your overall satisfaction\",\n  \"is_required\": true,\n  \"is_initial_question\": true,\n  \"display_index\": 1,\n  \"question_type\": \"rating\",\n  \"widget\": \"star_rating\"\n}"
+									},
+									"url": {
+										"raw": "{{base_url}}/api/questions/{{question_id}}/",
+										"host": [
+											"{{base_url}}"
+										],
+										"path": [
+											"api",
+											"questions",
+											"{{question_id}}",
+											""
+										]
+									}
+								},
+								"response": [],
+								"uid": "47134224-f357ea0d-25f1-4007-bd82-3346543a7c95"
+							},
+							{
+								"name": "Get Question Choices",
+								"id": "05c45694-1976-4e82-8519-1a58a72e25ff",
+								"protocolProfileBehavior": {
+									"disableBodyPruning": true
+								},
+								"request": {
+									"method": "GET",
+									"header": [
+										{
+											"key": "Authorization",
+											"value": "Bearer {{access_token}}"
+										}
+									],
+									"url": {
+										"raw": "{{base_url}}/api/questions/{{question_id}}/choices/",
+										"host": [
+											"{{base_url}}"
+										],
+										"path": [
+											"api",
+											"questions",
+											"{{question_id}}",
+											"choices",
+											""
+										]
+									}
+								},
+								"response": [],
+								"uid": "47134224-05c45694-1976-4e82-8519-1a58a72e25ff"
+							},
+							{
+								"name": "Delete Question",
+								"id": "69ba90b9-e16a-4340-b5ac-5068870de383",
+								"protocolProfileBehavior": {
+									"disableBodyPruning": true
+								},
+								"request": {
+									"method": "DELETE",
+									"header": [
+										{
+											"key": "Authorization",
+											"value": "Bearer {{access_token}}"
+										}
+									],
+									"url": {
+										"raw": "{{base_url}}/api/questions/{{question_id}}/",
+										"host": [
+											"{{base_url}}"
+										],
+										"path": [
+											"api",
+											"questions",
+											"{{question_id}}",
+											""
+										]
+									}
+								},
+								"response": [],
+								"uid": "47134224-69ba90b9-e16a-4340-b5ac-5068870de383"
+							}
+						],
+						"id": "42bfd37b-8062-4fdc-a40c-e4aa06a3fbe3",
+						"uid": "47134224-42bfd37b-8062-4fdc-a40c-e4aa06a3fbe3"
+					},
+					{
+						"name": "Question Groups",
+						"item": [
+							{
+								"name": "List Question Groups",
+								"id": "fc7faf93-80fe-4230-bb88-4b62c3e9a542",
+								"protocolProfileBehavior": {
+									"disableBodyPruning": true
+								},
+								"request": {
+									"method": "GET",
+									"header": [
+										{
+											"key": "Authorization",
+											"value": "Bearer {{access_token}}"
+										}
+									],
+									"url": {
+										"raw": "{{base_url}}/api/question-groups/?project={{project_id}}",
+										"host": [
+											"{{base_url}}"
+										],
+										"path": [
+											"api",
+											"question-groups",
+											""
+										],
+										"query": [
+											{
+												"key": "project",
+												"value": "{{project_id}}"
+											}
+										]
+									}
+								},
+								"response": [],
+								"uid": "47134224-fc7faf93-80fe-4230-bb88-4b62c3e9a542"
+							},
+							{
+								"name": "Create Question Group",
+								"id": "c8019f67-2200-4b45-b172-d8a822f08937",
+								"protocolProfileBehavior": {
+									"disableBodyPruning": true
+								},
+								"request": {
+									"method": "POST",
+									"header": [
+										{
+											"key": "Authorization",
+											"value": "Bearer {{access_token}}"
+										},
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"body": {
+										"mode": "raw",
+										"raw": "{\n  \"project\": {{project_id}},\n  \"title\": \"Demographics Section\",\n  \"title_align\": \"center\",\n  \"description\": \"Please provide your demographic information\",\n  \"description_align\": \"left\",\n  \"question_ids\": [1, 2, 3]\n}"
+									},
+									"url": {
+										"raw": "{{base_url}}/api/question-groups/",
+										"host": [
+											"{{base_url}}"
+										],
+										"path": [
+											"api",
+											"question-groups",
+											""
+										]
+									}
+								},
+								"response": [],
+								"uid": "47134224-c8019f67-2200-4b45-b172-d8a822f08937"
+							}
+						],
+						"id": "6a5b03a8-d48a-47e2-987f-ad4cb1d892bf",
+						"uid": "47134224-6a5b03a8-d48a-47e2-987f-ad4cb1d892bf"
+					},
+					{
+						"name": "Question Choices",
+						"item": [
+							{
+								"name": "List Question Choices",
+								"id": "74b525ec-a40a-4150-8d9d-a913d7c9db8a",
+								"protocolProfileBehavior": {
+									"disableBodyPruning": true
+								},
+								"request": {
+									"method": "GET",
+									"header": [
+										{
+											"key": "Authorization",
+											"value": "Bearer {{access_token}}"
+										}
+									],
+									"url": {
+										"raw": "{{base_url}}/api/question-choices/",
+										"host": [
+											"{{base_url}}"
+										],
+										"path": [
+											"api",
+											"question-choices",
+											""
+										]
+									}
+								},
+								"response": [],
+								"uid": "47134224-74b525ec-a40a-4150-8d9d-a913d7c9db8a"
+							},
+							{
+								"name": "Create Question Choice",
+								"id": "c4333b1b-7616-486a-b89a-45dfe1b084b9",
+								"protocolProfileBehavior": {
+									"disableBodyPruning": true
+								},
+								"request": {
+									"method": "POST",
+									"header": [
+										{
+											"key": "Authorization",
+											"value": "Bearer {{access_token}}"
+										},
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"body": {
+										"mode": "raw",
+										"raw": "{\n  \"text\": \"Excellent\",\n  \"value\": \"5\",\n  \"order\": 1\n}"
+									},
+									"url": {
+										"raw": "{{base_url}}/api/question-choices/",
+										"host": [
+											"{{base_url}}"
+										],
+										"path": [
+											"api",
+											"question-choices",
+											""
+										]
+									}
+								},
+								"response": [],
+								"uid": "47134224-c4333b1b-7616-486a-b89a-45dfe1b084b9"
+							}
+						],
+						"id": "76d4e66c-7f32-45b4-bfbb-baee414d9891",
+						"uid": "47134224-76d4e66c-7f32-45b4-bfbb-baee414d9891"
+					}
+				],
+				"id": "2d55a271-08ee-4f3b-be5e-30f778a82778",
+				"uid": "47134224-2d55a271-08ee-4f3b-be5e-30f778a82778"
+			},
+			{
+				"name": "Question Logic & New Features",
+				"item": [
+					{
+						"name": "Logic Nodes",
+						"item": [
+							{
+								"name": "List Logic Nodes",
+								"id": "dec69f0c-0e16-4305-87dd-5b35c679c159",
+								"protocolProfileBehavior": {
+									"disableBodyPruning": true
+								},
+								"request": {
+									"method": "GET",
+									"header": [
+										{
+											"key": "Authorization",
+											"value": "Bearer {{access_token}}"
+										}
+									],
+									"url": {
+										"raw": "{{base_url}}/api/logic-nodes/",
+										"host": [
+											"{{base_url}}"
+										],
+										"path": [
+											"api",
+											"logic-nodes",
+											""
+										]
+									}
+								},
+								"response": [],
+								"uid": "47134224-dec69f0c-0e16-4305-87dd-5b35c679c159"
+							},
+							{
+								"name": "Create Logic Node",
+								"id": "abaf0252-92f7-4af3-b531-b0b02fe14c04",
+								"protocolProfileBehavior": {
+									"disableBodyPruning": true
+								},
+								"request": {
+									"method": "POST",
+									"header": [
+										{
+											"key": "Authorization",
+											"value": "Bearer {{access_token}}"
+										},
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"body": {
+										"mode": "raw",
+										"raw": "{\n  \"question\": 1,\n  \"action_type\": \"SKIP_TO\",\n  \"target_question\": 2,\n  \"priority\": 1\n}"
+									},
+									"url": {
+										"raw": "{{base_url}}/api/logic-nodes/",
+										"host": [
+											"{{base_url}}"
+										],
+										"path": [
+											"api",
+											"logic-nodes",
+											""
+										]
+									}
+								},
+								"response": [],
+								"uid": "47134224-abaf0252-92f7-4af3-b531-b0b02fe14c04"
+							}
+						],
+						"id": "ce243827-43ff-47c4-84de-52d76da83d9b",
+						"uid": "47134224-ce243827-43ff-47c4-84de-52d76da83d9b"
+					},
+					{
+						"name": "Conditions",
+						"item": [
+							{
+								"name": "List Conditions",
+								"id": "fe040769-7850-43dd-baab-2244802cf9fd",
+								"protocolProfileBehavior": {
+									"disableBodyPruning": true
+								},
+								"request": {
+									"method": "GET",
+									"header": [
+										{
+											"key": "Authorization",
+											"value": "Bearer {{access_token}}"
+										}
+									],
+									"url": {
+										"raw": "{{base_url}}/api/conditions/",
+										"host": [
+											"{{base_url}}"
+										],
+										"path": [
+											"api",
+											"conditions",
+											""
+										]
+									}
+								},
+								"response": [],
+								"uid": "47134224-fe040769-7850-43dd-baab-2244802cf9fd"
+							},
+							{
+								"name": "Create Condition",
+								"id": "51dde448-a40f-4ffe-96db-668738e6020d",
+								"protocolProfileBehavior": {
+									"disableBodyPruning": true
+								},
+								"request": {
+									"method": "POST",
+									"header": [
+										{
+											"key": "Authorization",
+											"value": "Bearer {{access_token}}"
+										},
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"body": {
+										"mode": "raw",
+										"raw": "{\n  \"logic_node\": 1,\n  \"source_question\": 1,\n  \"operator\": \"EQ\",\n  \"value\": \"Yes\",\n  \"comparison_type\": \"CONSTANT\"\n}"
+									},
+									"url": {
+										"raw": "{{base_url}}/api/conditions/",
+										"host": [
+											"{{base_url}}"
+										],
+										"path": [
+											"api",
+											"conditions",
+											""
+										]
+									}
+								},
+								"response": [],
+								"uid": "47134224-51dde448-a40f-4ffe-96db-668738e6020d"
+							}
+						],
+						"id": "bb5e5a25-08bb-43da-ae07-5a4ce2f1dd6c",
+						"uid": "47134224-bb5e5a25-08bb-43da-ae07-5a4ce2f1dd6c"
+					},
+					{
+						"name": "Variables",
+						"item": [
+							{
+								"name": "List Variables",
+								"id": "80b0e8e9-920b-451a-9829-b91c02cdca05",
+								"protocolProfileBehavior": {
+									"disableBodyPruning": true
+								},
+								"request": {
+									"method": "GET",
+									"header": [
+										{
+											"key": "Authorization",
+											"value": "Bearer {{access_token}}"
+										}
+									],
+									"url": {
+										"raw": "{{base_url}}/api/variables/",
+										"host": [
+											"{{base_url}}"
+										],
+										"path": [
+											"api",
+											"variables",
+											""
+										]
+									}
+								},
+								"response": [],
+								"uid": "47134224-80b0e8e9-920b-451a-9829-b91c02cdca05"
+							}
+						],
+						"id": "802e2c23-2981-4320-8285-b75fe68c9f4f",
+						"uid": "47134224-802e2c23-2981-4320-8285-b75fe68c9f4f"
+					},
+					{
+						"name": "Survey Answers",
+						"item": [
+							{
+								"name": "List Answers",
+								"id": "f334f09f-207f-47ff-a7e5-a4c4d17e90fb",
+								"protocolProfileBehavior": {
+									"disableBodyPruning": true
+								},
+								"request": {
+									"method": "GET",
+									"header": [
+										{
+											"key": "Authorization",
+											"value": "Bearer {{access_token}}"
+										}
+									],
+									"url": {
+										"raw": "{{base_url}}/api/answers/",
+										"host": [
+											"{{base_url}}"
+										],
+										"path": [
+											"api",
+											"answers",
+											""
+										]
+									}
+								},
+								"response": [],
+								"uid": "47134224-f334f09f-207f-47ff-a7e5-a4c4d17e90fb"
+							},
+							{
+								"name": "Submit Answer",
+								"id": "44dc9a8d-b919-487d-ad49-c57a9fba32ce",
+								"protocolProfileBehavior": {
+									"disableBodyPruning": true
+								},
+								"request": {
+									"method": "POST",
+									"header": [
+										{
+											"key": "Authorization",
+											"value": "Bearer {{access_token}}"
+										},
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"body": {
+										"mode": "raw",
+										"raw": "{\n  \"question\": 1,\n  \"project\": 1,\n  \"profile\": 1,\n  \"input\": {\"value\": \"Test Answer\"}\n}"
+									},
+									"url": {
+										"raw": "{{base_url}}/api/answers/",
+										"host": [
+											"{{base_url}}"
+										],
+										"path": [
+											"api",
+											"answers",
+											""
+										]
+									}
+								},
+								"response": [],
+								"uid": "47134224-44dc9a8d-b919-487d-ad49-c57a9fba32ce"
+							}
+						],
+						"id": "425dd4ec-644c-4eb5-9800-74ce11ee0a10",
+						"uid": "47134224-425dd4ec-644c-4eb5-9800-74ce11ee0a10"
+					},
+					{
+						"name": "Project Filters & Audience",
+						"item": [
+							{
+								"name": "List Filters",
+								"id": "3eb19864-de87-4b05-bcca-1b1c6811acde",
+								"protocolProfileBehavior": {
+									"disableBodyPruning": true
+								},
+								"request": {
+									"method": "GET",
+									"header": [
+										{
+											"key": "Authorization",
+											"value": "Bearer {{access_token}}"
+										}
+									],
+									"url": {
+										"raw": "{{base_url}}/api/filters/",
+										"host": [
+											"{{base_url}}"
+										],
+										"path": [
+											"api",
+											"filters",
+											""
+										]
+									}
+								},
+								"response": [],
+								"uid": "47134224-3eb19864-de87-4b05-bcca-1b1c6811acde"
+							},
+							{
+								"name": "List Audience Details",
+								"id": "a9427cd5-1b16-481c-8967-afd55c3c7b16",
+								"protocolProfileBehavior": {
+									"disableBodyPruning": true
+								},
+								"request": {
+									"method": "GET",
+									"header": [
+										{
+											"key": "Authorization",
+											"value": "Bearer {{access_token}}"
+										}
+									],
+									"url": {
+										"raw": "{{base_url}}/api/audience-details/",
+										"host": [
+											"{{base_url}}"
+										],
+										"path": [
+											"api",
+											"audience-details",
+											""
+										]
+									}
+								},
+								"response": [],
+								"uid": "47134224-a9427cd5-1b16-481c-8967-afd55c3c7b16"
+							}
+						],
+						"id": "c8cd113c-ab3f-4749-935f-d09d378adfe3",
+						"uid": "47134224-c8cd113c-ab3f-4749-935f-d09d378adfe3"
+					},
+					{
+						"name": "Survey Logic Engine",
+						"item": [
+							{
+								"name": "Calculate Next Question",
+								"id": "7e450bf3-4e0d-491a-8d7a-53782999cbfa",
+								"protocolProfileBehavior": {
+									"disableBodyPruning": true
+								},
+								"request": {
+									"method": "POST",
+									"header": [
+										{
+											"key": "Authorization",
+											"value": "Bearer {{access_token}}"
+										},
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"body": {
+										"mode": "raw",
+										"raw": "{\n  \"question_id\": 1,\n  \"answer_data\": {\"value\": \"Yes\"}\n}"
+									},
+									"url": {
+										"raw": "{{base_url}}/api/next-question/",
+										"host": [
+											"{{base_url}}"
+										],
+										"path": [
+											"api",
+											"next-question",
+											""
+										]
+									}
+								},
+								"response": [],
+								"uid": "47134224-7e450bf3-4e0d-491a-8d7a-53782999cbfa"
+							}
+						],
+						"id": "81688553-577f-4a73-9063-4294f1122e91",
+						"uid": "47134224-81688553-577f-4a73-9063-4294f1122e91"
+					}
+				],
+				"id": "c0f3639f-5d5a-4201-a261-8f56c39dbc79",
+				"uid": "47134224-c0f3639f-5d5a-4201-a261-8f56c39dbc79"
+			}
+		],
+		"event": [
+			{
+				"listen": "prerequest",
+				"script": {
+					"id": "ab9913fd-7011-4def-8551-e9af90f4b2d7",
+					"type": "text/javascript",
+					"packages": {},
+					"exec": [
+						""
+					]
+				}
+			},
+			{
+				"listen": "test",
+				"script": {
+					"id": "81a2be1d-a8cf-4899-8a01-19d70a3afa97",
+					"type": "text/javascript",
+					"packages": {},
+					"exec": [
+						""
+					]
+				}
+			}
+		],
+		"variable": [
+			{
+				"key": "base_url",
+				"value": "http://localhost:8000",
+				"type": "string"
+			},
+			{
+				"key": "access_token",
+				"value": "",
+				"type": "string"
+			},
+			{
+				"key": "refresh_token",
+				"value": "",
+				"type": "string"
+			},
+			{
+				"key": "test_email",
+				"value": "user@example.com",
+				"type": "string"
+			},
+			{
+				"key": "test_password",
+				"value": "password@123",
+				"type": "string"
+			},
+			{
+				"key": "client_id",
+				"value": "Rkzsy8StAaD4ChLpxJvYQozOawmMkzG8bRwhD7aU",
+				"type": "string"
+			},
+			{
+				"key": "client_secret",
+				"value": "pbkdf2_sha256$1000000$emxMpZpOf4XRLxhSH7HsxW$rl9Mwm2/5929cAPg3bmUieYEQYaEdiSmgDMVBSlHh60=",
+				"type": "string"
+			},
+			{
+				"key": "otp",
+				"value": "",
+				"type": "string"
+			},
+			{
+				"key": "otp_reset",
+				"value": "",
+				"type": "string"
+			},
+			{
+				"key": "project_id",
+				"value": "1",
+				"type": "string"
+			},
+			{
+				"key": "language_id",
+				"value": "1",
+				"type": "string"
+			},
+			{
+				"key": "question_id",
+				"value": "1",
+				"type": "string"
+			},
+			{
+				"key": "group_id",
+				"value": "1",
+				"type": "string"
+			},
+			{
+				"key": "choice_id",
+				"value": "1",
+				"type": "string"
+			}
+		]
+	}
+}

@@ -1,0 +1,10 @@
+*.pyc
+.DS_Store
+
+venv
+
+code/media
+code/db
+code/apps/**/migrations/*
+code/settings/.env
+.vscode

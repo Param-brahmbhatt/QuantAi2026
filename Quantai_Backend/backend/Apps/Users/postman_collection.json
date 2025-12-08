@@ -1,0 +1,437 @@
+{
+  "info": {
+    "name": "QuantAi Users API",
+    "_postman_id": "d9b5f8b3-0000-4a2b-8f2a-xxxxxxxxxxxx",
+    "description": "Collection for signup/login/OTP/password-reset/social auth and OAuth2 token examples.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Signup",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{test_email}}\",\n  \"password\": \"{{test_password}}\",\n  \"confirm_password\": \"{{test_password}}\",\n  \"first_name\": \"Alice\",\n  \"last_name\": \"Example\",\n  \"country\": \"United States\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/users/signup/",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "users",
+            "signup",
+            ""
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Login (Email/Password)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{test_email}}\",\n  \"password\": \"{{test_password}}\",\n  \"client_id\": \"{{client_id}}\",\n  \"client_secret\": \"{{client_secret}}\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/users/login/",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "users",
+            "login",
+            ""
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Verify OTP (signup/login/reset)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{test_email}}\",\n  \"code\": \"{{otp}}\",\n  \"purpose\": \"signup\",\n  \"client_id\": \"{{client_id}}\",\n  \"client_secret\": \"{{client_secret}}\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/users/verify-otp/",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "users",
+            "verify-otp",
+            ""
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Request OTP Login",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{test_email}}\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/users/request-otp-login/",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "users",
+            "request-otp-login",
+            ""
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Login with OTP",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{test_email}}\",\n  \"code\": \"{{otp}}\",\n  \"purpose\": \"login\",\n  \"client_id\": \"{{client_id}}\",\n  \"client_secret\": \"{{client_secret}}\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/users/login-with-otp/",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "users",
+            "login-with-otp",
+            ""
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Password Reset Request",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{test_email}}\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/users/password-reset/request/",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "users",
+            "password-reset",
+            "request",
+            ""
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Password Reset Confirm",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{test_email}}\",\n  \"code\": \"{{otp_reset}}\",\n  \"new_password\": \"NewSecur3P@ss!\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/users/password-reset/confirm/",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "users",
+            "password-reset",
+            "confirm",
+            ""
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Social Auth - Google",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"provider_token\": \"<google_id_token_here>\",\n  \"email\": \"{{test_email}}\",\n  \"client_id\": \"{{client_id}}\",\n  \"client_secret\": \"{{client_secret}}\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/users/social/google/",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "users",
+            "social",
+            "google",
+            ""
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Social Auth - Facebook",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"provider_token\": \"<facebook_access_token_here>\",\n  \"email\": \"{{test_email}}\",\n  \"client_id\": \"{{client_id}}\",\n  \"client_secret\": \"{{client_secret}}\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/users/social/facebook/",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "users",
+            "social",
+            "facebook",
+            ""
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Social Auth - Twitter (X)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"provider_token\": \"<twitter_bearer_token_here>\",\n  \"email\": \"{{test_email}}\",\n  \"client_id\": \"{{client_id}}\",\n  \"client_secret\": \"{{client_secret}}\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/users/social/twitter/",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "users",
+            "social",
+            "twitter",
+            ""
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Social Auth - Apple",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"provider_token\": \"<apple_id_token_here>\",\n  \"email\": \"{{test_email}}\",\n  \"client_id\": \"{{client_id}}\",\n  \"client_secret\": \"{{client_secret}}\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/users/social/apple/",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "users",
+            "social",
+            "apple",
+            ""
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "OAuth2 - Token (password grant)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/x-www-form-urlencoded"
+          }
+        ],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            { "key": "grant_type", "value": "password" },
+            { "key": "username", "value": "{{test_email}}" },
+            { "key": "password", "value": "{{test_password}}" },
+            { "key": "client_id", "value": "{{client_id}}" },
+            { "key": "client_secret", "value": "{{client_secret}}" }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/o/token/",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "o",
+            "token",
+            ""
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "OAuth2 - Token (refresh)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/x-www-form-urlencoded"
+          }
+        ],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            { "key": "grant_type", "value": "refresh_token" },
+            { "key": "refresh_token", "value": "{{refresh_token}}" },
+            { "key": "client_id", "value": "{{client_id}}" },
+            { "key": "client_secret", "value": "{{client_secret}}" }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/o/token/",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "o",
+            "token",
+            ""
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "List Users",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/users/users/",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "users",
+            "users",
+            ""
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "exec": [
+          "// You can add pre-request scripts here if needed"
+        ]
+      }
+    }
+  ]
+}

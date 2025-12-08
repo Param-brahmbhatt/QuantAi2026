@@ -1,0 +1,30 @@
+{
+  "files": {
+    "main.css": "/static/css/main.d2123f6d.css",
+    "main.js": "/static/js/main.fafeaa82.js",
+    "static/js/787.cc889f82.chunk.js": "/static/js/787.cc889f82.chunk.js",
+    "static/media/rocket-white.png": "/static/media/rocket-white.de5786399f850a27a362.png",
+    "static/media/chat.png": "/static/media/chat.3259bb6fd08a875331ed.png",
+    "static/media/IllustrationLayout.svg": "/static/media/IllustrationLayout.2d1face82aa419345564c373f3335676.svg",
+    "static/media/winner_blue.png": "/static/media/winner_blue.b7d109b34efd3ddb6162.png",
+    "static/media/white-curved.jpeg": "/static/media/white-curved.a5b7db662b0b14ab5534.jpeg",
+    "static/media/QuantAI.png": "/static/media/QuantAI.82dec0926c362f97e737.png",
+    "static/media/profile-img.png": "/static/media/profile-img.5faf09a7795d28bf5a2b.png",
+    "static/media/team-2.jpg": "/static/media/team-2.e725aef8c892cb21f262.jpg",
+    "static/media/QuantAIOnly.png": "/static/media/QuantAIOnly.e4dd2a8e05949b5417b6.png",
+    "static/media/instagram.png": "/static/media/instagram.2f59fac3ed91b7013dbb.png",
+    "static/media/google.svg": "/static/media/google.c4282538849557bb060e1ecad47a6100.svg",
+    "static/media/logo-slack.svg": "/static/media/logo-slack.7c47c5aa474b5c4fb39fcf05ffb8e4e7.svg",
+    "static/media/logo-spotify.svg": "/static/media/logo-spotify.e83cf56c9d99a1fdf59e8deb58bbe470.svg",
+    "index.html": "/index.html",
+    "static/media/twitter.svg": "/static/media/twitter.9898d4158dff2beae76532aab3841873.svg",
+    "static/media/apple.svg": "/static/media/apple.35f02531833ee163139308d9b03b21bc.svg",
+    "main.d2123f6d.css.map": "/static/css/main.d2123f6d.css.map",
+    "main.fafeaa82.js.map": "/static/js/main.fafeaa82.js.map",
+    "787.cc889f82.chunk.js.map": "/static/js/787.cc889f82.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.d2123f6d.css",
+    "static/js/main.fafeaa82.js"
+  ]
+}
