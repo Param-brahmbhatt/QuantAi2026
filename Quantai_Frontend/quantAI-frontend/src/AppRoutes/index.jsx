@@ -6,6 +6,7 @@ import EmailVerificationPage from "../Authentication/pages/VerifyEmail";
 import ResetPassword from "../Authentication/pages/ResetPassword";
 import SignupUI from "../Authentication/pages/RegisterPage";
 import WelcomePage from "../Authentication/pages/WelcomePage";
+import UserDetailsForm from "../Authentication/pages/WelcomForm";
 import Dashboard from "../Pages/Dashboard/Dashboard";
 import RewardsPage from "../Pages/Earnings/Rewards/RewardsPage";
 import ProfilePage from "../Pages/Profile/ProfilePage";
@@ -28,7 +29,7 @@ export const AppRoutes = () => {
                         <Route path="/verify-email" element={<EmailVerificationPage />} />
                         <Route path="/register" element={<SignupUI />} />
                         <Route path="/welcome" element={<WelcomePage />} />
-
+                        <Route path="/welcome-details" element={<UserDetailsForm />} />
                         {/* //////////// Dashboard ////////////// */}
                         <Route path="/" element={<Dashboard />} />
 

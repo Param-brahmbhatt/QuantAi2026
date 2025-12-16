@@ -16,7 +16,9 @@ function Layout() {
     location.pathname === '/register' ||
     location.pathname === '/verify-email' ||
     location.pathname === '/reset-password' ||
-    location.pathname === '/forgot-password';
+    location.pathname === '/forgot-password' ||
+    location.pathname === '/welcome' ||
+    location.pathname === '/welcome-details'
 
   if (hideLayout) {
     return (

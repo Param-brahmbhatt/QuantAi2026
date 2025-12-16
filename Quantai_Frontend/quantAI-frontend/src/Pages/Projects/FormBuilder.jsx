@@ -333,7 +333,7 @@ const InlineEditable = ({ value, onChange, placeholder, questionNumber, isDescri
         }}
         dangerouslySetInnerHTML={!isEditing ? { __html: displayText || "" } : undefined}
       >
-    
+       
       </Box>
     </Box>
   );
@@ -415,19 +415,21 @@ const WelcomeScreen = ({ question, onUpdate }) => {
         alignItems: "center",
       }}
     >
-      <Box
-        sx={{
-          width: "100%",
-          textAlign: "center",
-          mb: 4,
-        }}
-        dangerouslySetInnerHTML={{
-          __html: question?.questionText || "Hello, Thanks for joining QuantAi. Please take 10 - 15 minutes to complete the survey which could reward you 1000 points. The survey is based on your personal preferences and choices",
-        }}
-      />
-      <Typography variant="body2" sx={{ color: "#9ca3af", mb: 3 }}>
-        Description (optional)
-      </Typography>
+      <Box sx={{ width: "100%", textAlign: "center", mb: 2 }}>
+        <InlineEditable
+          value={question?.questionText}
+          onChange={(text) => onUpdate({ ...question, questionText: text })}
+          placeholder="Hello, Thanks for joining QuantAi. Please take 10 - 15 minutes to complete the survey which could reward you 1000 points. The survey is based on your personal preferences and choices"
+        />
+      </Box>
+      <Box sx={{ width: "100%", textAlign: "center", mb: 3 }}>
+        <InlineEditable
+          value={question?.description}
+          onChange={(text) => onUpdate({ ...question, description: text })}
+          placeholder="Description (optional)"
+          isDescription
+        />
+      </Box>
       <Button
         variant="contained"
         sx={{
@@ -1237,6 +1239,7 @@ const FormBuilder = ({ formName = "My new form" }) => {
       type: "welcome",
       label: "Welcome Screen",
       questionText: "Hello, Thanks for joining QuantAi. Please take 10 - 15 minutes to complete the survey which could reward you 1000 points. The survey is based on your personal preferences and choices",
+      description: "",
       buttonText: "lets go",
       timeToComplete: false,
       numberOfSubmissions: false,

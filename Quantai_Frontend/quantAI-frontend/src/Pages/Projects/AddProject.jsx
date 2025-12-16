@@ -134,10 +134,8 @@ const CreateProjectPage = () => {
           ? new Date(formData.end_time).toISOString()
           : null,
       };
-
       toast.loading("Creating project...");
       await CreateProject(payload);
-
       toast.dismiss();
       toast.success("Project created successfully!");
       navigate("/projects");

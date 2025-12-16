@@ -157,9 +157,17 @@ export default function SignupUI() {
 
             const res = await VerifyOTP(payload);
 
-            // Store token if received
-            if (res?.token) {
-                localStorage.setItem("access_token", res.token);
+            // Store token if received; normalize to plain access token string
+            if (res?.token || res?.access_token) {
+                const tokenObj = typeof res?.token === "object" ? res?.token : null;
+                const tokenValue =
+                    tokenObj?.access_token ||
+                    tokenObj?.token ||
+                    res?.access_token ||
+                    res?.token;
+                if (tokenValue) {
+                    localStorage.setItem("access_token", tokenValue);
+                }
             }
 
             setSnackbar({
@@ -168,6 +176,9 @@ export default function SignupUI() {
                 severity: "success",
             });
 
+            // Force showing welcome page after signup
+            localStorage.removeItem("hasSeenWelcomePage");
+
             setOtpOpen(false);
             setActiveStep(0);
             formik.resetForm();
@@ -175,14 +186,9 @@ export default function SignupUI() {
             // Redirect to welcome page after successful OTP verification
             setTimeout(() => {
                 navigate("/welcome");
-            }, 1000);
+            }, 500);
             setOtpValues(["", "", "", "", "", ""]);
             setUserEmail("");
-
-            // Redirect to login or dashboard after a short delay
-            setTimeout(() => {
-                window.location.href = "/login";
-            }, 1500);
         } catch (err) {
             const errorMsg =
                 err?.response?.data?.detail || err?.response?.data?.message || "Invalid OTP. Please try again.";

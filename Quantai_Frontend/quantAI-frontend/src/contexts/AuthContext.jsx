@@ -11,6 +11,19 @@ export const useAuth = () => {
   return context;
 };
 
+const extractToken = (rawToken) => {
+  if (!rawToken) return null;
+  // If token is stored as JSON stringified object, extract access_token
+  try {
+    const parsed = typeof rawToken === 'string' ? JSON.parse(rawToken) : rawToken;
+    if (parsed?.access_token) return parsed.access_token;
+    if (parsed?.token) return parsed.token;
+  } catch (e) {
+    // not JSON, fall back
+  }
+  return rawToken;
+};
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState({
     id: null,
@@ -23,7 +36,12 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const checkAuth = async () => {
-      const token = localStorage.getItem("access_token");
+      const rawToken = localStorage.getItem("access_token");
+      const token = extractToken(rawToken);
+      // normalize storage to the extracted string token
+      if (token && token !== rawToken) {
+        localStorage.setItem("access_token", token);
+      }
       
       if (token) {
         try {
@@ -65,8 +83,9 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (userData, token) => {
-    if (token) {
-      localStorage.setItem("access_token", token);
+    const normalizedToken = extractToken(token);
+    if (normalizedToken) {
+      localStorage.setItem("access_token", normalizedToken);
     }
     
     await new Promise(resolve => setTimeout(resolve, 100));

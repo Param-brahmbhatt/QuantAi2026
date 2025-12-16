@@ -12,7 +12,6 @@ import {
 import {
   Dashboard as DashboardIcon,
   BarChart as BarChartIcon,
-  Assignment as AssignmentIcon,
   AttachMoney as AttachMoneyIcon,
   Person as PersonIcon,
   ExitToApp as ExitToAppIcon,
@@ -22,9 +21,8 @@ import {
   ExpandLess,
   ExpandMore
 } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';   
+import { useNavigate } from 'react-router-dom';
 import Logo from "/assets/QuantAI.png";
-import BackupTableIcon from '@mui/icons-material/BackupTable';
 
 const Sidebar = () => {
   const [openMenus, setOpenMenus] = useState({});
@@ -53,7 +51,15 @@ const Sidebar = () => {
 
   const handleNavigation = (path, hasChildren) => {
     if (hasChildren) return;
-    if (path) navigate(path); 
+
+    // 🔥 LOGOUT FUNCTIONALITY
+    if (path === '/logout') {
+      localStorage.removeItem('access_token'); // remove correct token name
+      navigate('/login'); // redirect to login page
+      return;
+    }
+
+    if (path) navigate(path);
   };
 
   return (
@@ -61,8 +67,8 @@ const Sidebar = () => {
       elevation={0}
       sx={{
         width: 240,
-        height: '100vh',          
-        overflow: 'hidden',   
+        height: '100vh',
+        overflow: 'hidden',
         backgroundColor: '#faf8f8',
         display: 'flex',
         flexDirection: 'column',
@@ -125,7 +131,11 @@ const Sidebar = () => {
 
                   <ListItemText
                     primary={item.text}
-                    primaryTypographyProps={{ fontSize: '14px', fontWeight: 500, color: 'rgb(103, 116, 142)' }}
+                    primaryTypographyProps={{
+                      fontSize: '14px',
+                      fontWeight: 500,
+                      color: 'rgb(103, 116, 142)'
+                    }}
                   />
 
                   {item.children.length > 0 &&
