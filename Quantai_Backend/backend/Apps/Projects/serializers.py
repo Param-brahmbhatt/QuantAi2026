@@ -31,7 +31,7 @@ class ProjectSerializer(serializers.ModelSerializer):
             'active', 'start_time', 'end_time', 'reward_points', 'code',
             'project_type', 'mode',
             # Logo configuration
-            'logo', 'logo_url', 'logo_width', 'logo_height', 'logo_location', 'fit_logo',
+            'logo_url', 'logo_width', 'logo_height', 'logo_location', 'fit_logo',
             # Messages
             'display_welcome_message', 'welcome_message',
             'display_thankyou_message', 'thankyou_message',
@@ -44,10 +44,7 @@ class ProjectSerializer(serializers.ModelSerializer):
             'show_progress_bar', 'answer_preview',
             'is_active_now', 'created_at', 'updated_at'
         ]
-        read_only_fields = ['id', 'uuid', 'logo_url', 'created_at', 'updated_at']
-        extra_kwargs = {
-            'logo': {'write_only': True, 'required': False}
-        }
+        read_only_fields = ['id', 'uuid', 'created_at', 'updated_at']
 
     def get_is_active_now(self, obj):
         """Check if project is currently active"""

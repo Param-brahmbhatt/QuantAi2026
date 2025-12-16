@@ -59,12 +59,7 @@ class Project(models.Model):
     mode = models.CharField(max_length=2, choices=PROJECT_MODE_CHOICES, default='DE')
 
     # Logo configuration
-    logo = models.ImageField(
-        upload_to='projects/logos/',
-        blank=True,
-        null=True,
-        help_text="Project logo image file"
-    )
+    logo_url = models.URLField(max_length=500, blank=True, null=True, help_text="URL to project logo")
     logo_width = models.IntegerField(blank=True, null=True, help_text="Logo width in pixels")
     logo_height = models.IntegerField(blank=True, null=True, help_text="Logo height in pixels")
     logo_location = models.CharField(
@@ -132,13 +127,6 @@ class Project(models.Model):
         from django.utils import timezone
         now = timezone.now()
         return self.active and self.start_time <= now <= self.end_time
-
-    @property
-    def logo_url(self):
-        """Return the full URL of the logo file if it exists"""
-        if self.logo:
-            return self.logo.url
-        return None
 
 
 class ProjectFilter(models.Model):

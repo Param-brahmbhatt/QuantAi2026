@@ -15,4 +15,3 @@ PyJWT
 social-auth-core
 social-auth-app-django
 cryptography
-pillow
