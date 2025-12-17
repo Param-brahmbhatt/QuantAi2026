@@ -10,7 +10,7 @@ class Variable(models.Model):
 
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=100)
-    project = models.ForeignKey('Projects.Project', on_delete=models.CASCADE, related_name='variables')
+    project = models.ForeignKey('Projects.Project', on_delete=models.CASCADE, related_name='variables', null=True, blank=True)
     question = models.OneToOneField('Survey.Question', on_delete=models.CASCADE, related_name='variable', null=True, blank=True)
     value = models.TextField(blank=True, null=True)
     type = models.CharField(max_length=2, choices=VARIABLE_TYPE_CHOICES)

@@ -45,6 +45,6 @@ export const GetProjectList = async () => {
 
 ///////// Create Project ////////////
 export const CreateProject = async (data) => {
-    const response = await axiosPost('/api/projects/', data)
+    const response = await axiosPost('/api/projects/surveys/', data)
     return response.data 
 }

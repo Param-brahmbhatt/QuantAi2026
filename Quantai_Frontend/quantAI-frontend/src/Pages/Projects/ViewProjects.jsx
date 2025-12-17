@@ -310,7 +310,7 @@ const ProjectListPage = () => {
                             bgcolor: DARK_BLUE,
                             "&:hover": { bgcolor: "#08306A" },
                             width: "130px",
-                            width: "150px",
+                            // width: "150px",
                             marginLeft: "680%"
                           }}
                         >

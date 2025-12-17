@@ -1,0 +1,15 @@
+[Unit]
+Description=Gunicorn daemon for QuantAI Django Backend
+After=network.target
+
+[Service]
+User=www-data
+Group=www-data
+WorkingDirectory=/home/ubuntu/quantai/Quantai_Backend/backend
+Environment="DJANGO_SETTINGS_MODULE=backend.settings"
+ExecStart=/home/ubuntu/quantai/Quantai_Backend/backend/venv/bin/gunicorn backend.wsgi:application \
+    --bind unix:/run/gunicorn-quantai.sock --workers 3 --timeout 120
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

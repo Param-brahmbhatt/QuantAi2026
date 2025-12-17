@@ -9,7 +9,14 @@ class Question(models.Model):
     project = models.ForeignKey(
         Project,
         on_delete=models.CASCADE,
-        related_name='questions'
+        related_name='questions',
+        null=True,
+        blank=True,
+        help_text="Project this question belongs to (null for profiling questions)"
+    )
+    is_profiling_question = models.BooleanField(
+        default=False,
+        help_text="True if this is a standalone profiling question (asked during onboarding)"
     )
     variable_name = models.CharField(max_length=100, help_text="Variable identifier for data collection")
     title = models.TextField(help_text="Question text/prompt")
@@ -58,6 +65,7 @@ class Question(models.Model):
         indexes = [
             models.Index(fields=['project', 'display_index']),
             models.Index(fields=['is_initial_question']),
+            models.Index(fields=['is_profiling_question', 'display_index']),
         ]
 
     def __str__(self):
@@ -180,7 +188,14 @@ class QuestionColumn(models.Model):
 class Answer(models.Model):
     id = models.AutoField(primary_key=True)
     question = models.ForeignKey('Question', on_delete=models.CASCADE, related_name='answers')
-    project = models.ForeignKey('Projects.Project', on_delete=models.CASCADE, related_name='answers')
+    project = models.ForeignKey(
+        'Projects.Project',
+        on_delete=models.CASCADE,
+        related_name='answers',
+        null=True,
+        blank=True,
+        help_text="Project this answer belongs to (null for profiling answers)"
+    )
     profile = models.ForeignKey('Users.Profile', on_delete=models.CASCADE, related_name='answers')
     variable = models.ForeignKey('Questionlogic.Variable', on_delete=models.SET_NULL, null=True, related_name='answers')
     option = models.ManyToManyField('QuestionChoices', related_name='answers', blank=True)
@@ -197,6 +212,32 @@ class Answer(models.Model):
             models.Index(fields=['profile', 'project']),
             models.Index(fields=['question']),
         ]
+
+    @property
+    def value(self):
+        """
+        Extract the actual answer value from option or input
+        Returns the stored value regardless of answer type
+        """
+        # For choice-based questions (option is ManyToMany)
+        options = self.option.all()
+        if options.exists():
+            if options.count() == 1:
+                # Single choice - return the value
+                return options.first().value
+            else:
+                # Multiple choice - return list of values
+                return [opt.value for opt in options]
+
+        # For text/number/date inputs
+        if self.input is not None:
+            return self.input
+
+        # For matrix/grid questions
+        if self.input_row is not None:
+            return self.input_row
+
+        return None
 
     def __str__(self):
         return f"Answer by {self.profile.email} for Q{self.question.id}"
