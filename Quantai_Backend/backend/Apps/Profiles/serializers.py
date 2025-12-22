@@ -215,5 +215,12 @@ class ProfilingAnswerSerializer(serializers.ModelSerializer):
             'DT': 'date',
             'FIL': 'file',
             'GEO': 'text',
+            # New specialized question types
+            'EML': 'text',      # Email stored as text
+            'PHN': 'text',      # Phone stored as text
+            'URL': 'text',      # URL stored as text
+            'NUM': 'number',    # Number stored as numeric
+            'ADR': 'json',      # Address stored as JSON object
+            'CTI': 'json',      # Contact info stored as JSON object
         }
         return type_mapping.get(question_type, 'text')

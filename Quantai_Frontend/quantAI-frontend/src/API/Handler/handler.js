@@ -30,7 +30,11 @@ axiosAuthenticated.interceptors.request.use(
             request.headers.Authorization = `Bearer ${token}`;
         }
 
-        if (request.data && !request.headers["Content-Type"]) {
+        // Check if data is FormData - if so, remove Content-Type header
+        // to let the browser set it automatically with the correct boundary
+        if (request.data instanceof FormData) {
+            delete request.headers["Content-Type"];
+        } else if (request.data && !request.headers["Content-Type"]) {
             request.headers["Content-Type"] = "application/json";
         }
         return request;

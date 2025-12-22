@@ -5,6 +5,14 @@ from .models import (
 )
 
 from Apps.Projects.models import Project
+from .validators import (
+    validate_email_answer,
+    validate_phone_answer,
+    validate_url_answer,
+    validate_number_answer,
+    validate_address_answer,
+    validate_contact_info_answer
+)
 
 
 class QuestionChoicesSerializer(serializers.ModelSerializer):
@@ -40,7 +48,7 @@ class QuestionChoicesGroupSerializer(serializers.ModelSerializer):
     options = QuestionChoicesSerializer(many=True, read_only=True)
     option_ids = serializers.PrimaryKeyRelatedField(
         many=True,
-        queryset=QuestionChoices.objects.all,
+        queryset=QuestionChoices.objects.all(),
         source='options',
         write_only=True,
         required=False
@@ -179,15 +187,71 @@ class AnswerSerializer(serializers.ModelSerializer):
         """
         Validate answer submission:
         1. Ensure project is active
-        2. Ensure profile is eligible (basic check, can be expanded)
+        2. Validate answer data based on question type
+        3. Ensure required questions are answered
         """
+        # Existing validation
         project = data.get('project')
         if project and not project.active:
-             raise serializers.ValidationError({
+            raise serializers.ValidationError({
                 'project': 'Cannot submit answers for an inactive project.'
             })
-        
-        # Note: Full eligibility check (ProjectFilter) is complex and usually done 
-        # when starting the survey (ProjectAudianceDetails), but we can add a check here if needed.
-        
+
+        # NEW: Question type-specific validation
+        question = data.get('question')
+        if not question:
+            raise serializers.ValidationError({
+                'question': 'Question is required.'
+            })
+
+        # Get the answer value from appropriate field
+        answer_value = data.get('input')  # New types use 'input' field
+
+        # Required field validation
+        if question.is_required and not answer_value:
+            raise serializers.ValidationError({
+                'input': f'This question is required: {question.title}'
+            })
+
+        # Type-specific validation (only if answer provided)
+        if answer_value is not None:
+            is_valid, error_msg = self._validate_by_question_type(
+                question.question_type,
+                answer_value
+            )
+            if not is_valid:
+                raise serializers.ValidationError({
+                    'input': error_msg
+                })
+
         return data
+
+    def _validate_by_question_type(self, question_type, value):
+        """
+        Validate answer value based on question type
+
+        Args:
+            question_type: The question type code (EML, PHN, etc.)
+            value: The answer value to validate
+
+        Returns:
+            tuple: (is_valid, error_message)
+        """
+        # Validation mapping
+        validators = {
+            'EML': validate_email_answer,
+            'PHN': validate_phone_answer,
+            'URL': validate_url_answer,
+            'NUM': validate_number_answer,
+            'ADR': validate_address_answer,
+            'CTI': validate_contact_info_answer,
+        }
+
+        # Get validator for this question type
+        validator = validators.get(question_type)
+
+        if validator:
+            return validator(value)
+
+        # No specific validation for this type (existing types)
+        return True, None

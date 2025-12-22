@@ -41,6 +41,12 @@ class Question(models.Model):
         ('SIG', 'Signature Capture'),
         ('GEO', 'Geolocation'),
         ('AV', 'Audio/Video Response'),
+        ('EML', 'Email Address'),
+        ('PHN', 'Phone Number'),
+        ('URL', 'Website URL'),
+        ('NUM', 'Numeric Input'),
+        ('ADR', 'Address'),
+        ('CTI', 'Contact Information'),
     ]
 
     question_type = models.CharField(max_length=5, choices=QUESTION_TYPE_CHOICES, help_text="Type of question")

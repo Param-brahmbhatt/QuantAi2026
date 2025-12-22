@@ -17,3 +17,4 @@ social-auth-app-django
 cryptography
 pillow
 django-filter>=23.0
+drf-spectacular

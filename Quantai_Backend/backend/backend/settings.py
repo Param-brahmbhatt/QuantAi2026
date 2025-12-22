@@ -63,6 +63,7 @@ INSTALLED_APPS = [
     "phone_field",
     # "geoip2_extras",
     "django_user_agents",
+    "drf_spectacular",
 # local apps
     "Apps.Users",
     "Apps.Profiles",
@@ -227,6 +228,7 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "oauth2_provider.contrib.rest_framework.authentication.OAuth2Authentication",
     ),
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "TEST_REQUEST_DEFAULT_FORMAT": "json",
     "DATE_FORMAT": "%d %b %Y",
     "DATETIME_FORMAT": "%d-%m-%Y %H:%M",

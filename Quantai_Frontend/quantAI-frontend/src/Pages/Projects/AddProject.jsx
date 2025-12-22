@@ -22,7 +22,7 @@ const initialState = {
   title: "",
   description: "",
   language_ids: [],
-  active: "",
+  active: false,
   start_time: "",
   end_time: "",
   reward_points: "",
@@ -30,16 +30,16 @@ const initialState = {
   project_type: "",
   mode: "",
 
-  logo: "",
+  logo: null,
   logo_width: "",
   logo_height: "",
   logo_location: "center",
-  fit_logo: "",
+  fit_logo: false,
 
-  display_welcome_message: "",
+  display_welcome_message: false,
   welcome_message: "",
 
-  display_thankyou_message: "",
+  display_thankyou_message: false,
   thankyou_message: "",
 
   quotefull_message: "",
@@ -51,8 +51,8 @@ const initialState = {
   complete_btn_text: "",
   previous_btn_text: "",
   next_btn_text: "",
-  show_progress_bar: "",
-  answer_preview: "",
+  show_progress_bar: false,
+  answer_preview: false,
 };
 
 /* ------------------ Styles ------------------ */
@@ -67,9 +67,9 @@ const inputStyles = {
       boxShadow: "0 0 0 2px rgba(74,95,212,0.15)",
     },
   },
-  "& .MuiInputBase-input": { padding: "13px 14px" },
 };
 
+/* ------------------ Section Wrapper ------------------ */
 const SectionPaper = memo(({ title, children }) => (
   <Paper
     elevation={0}
@@ -78,11 +78,10 @@ const SectionPaper = memo(({ title, children }) => (
       borderRadius: "18px",
       border: "1px solid #e7ebf4",
       background: "#fff",
-      boxShadow: "0 6px 25px rgba(20, 30, 70, 0.06)",
     }}
   >
     {title && (
-      <Typography variant="h6" sx={{ fontWeight: 700, mb: 3, color: "#122046" }}>
+      <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>
         {title}
       </Typography>
     )}
@@ -113,35 +112,74 @@ const CreateProjectPage = () => {
     }
   }, []);
 
-  /* ------------------ Submit Handler ------------------ */
+  /* ------------------ Submit (FormData) ------------------ */
   const handleSubmit = async () => {
     try {
-      const payload = {
-        ...formData,
-        active: Boolean(formData.active),
-        fit_logo: Boolean(formData.fit_logo),
-        display_welcome_message: Boolean(formData.display_welcome_message),
-        display_thankyou_message: Boolean(formData.display_thankyou_message),
-        show_progress_bar: Boolean(formData.show_progress_bar),
-        answer_preview: Boolean(formData.answer_preview),
-        language_ids: formData.language_ids || [],
-        participant_limit: Number(formData.participant_limit),
-        reward_points: Number(formData.reward_points),
-        start_time: formData.start_time
-          ? new Date(formData.start_time).toISOString()
-          : null,
-        end_time: formData.end_time
-          ? new Date(formData.end_time).toISOString()
-          : null,
-      };
+      const fd = new FormData();
+
+      // Basic
+      fd.append("title", formData.title);
+      fd.append("description", formData.description);
+      fd.append("code", formData.code);
+      fd.append("project_type", formData.project_type);
+      fd.append("mode", formData.mode);
+
+      // Boolean
+      fd.append("active", formData.active ? "1" : "0");
+      fd.append("fit_logo", formData.fit_logo ? "1" : "0");
+      fd.append(
+        "display_welcome_message",
+        formData.display_welcome_message ? "1" : "0"
+      );
+      fd.append(
+        "display_thankyou_message",
+        formData.display_thankyou_message ? "1" : "0"
+      );
+      fd.append("show_progress_bar", formData.show_progress_bar ? "1" : "0");
+      fd.append("answer_preview", formData.answer_preview ? "1" : "0");
+
+      // Numbers
+      fd.append("reward_points", Number(formData.reward_points || 0));
+      fd.append("participant_limit", Number(formData.participant_limit || 0));
+
+      // Dates
+      if (formData.start_time)
+        fd.append("start_time", new Date(formData.start_time).toISOString());
+      if (formData.end_time)
+        fd.append("end_time", new Date(formData.end_time).toISOString());
+
+      // Arrays
+      formData.language_ids.forEach((id) =>
+        fd.append("language_ids[]", id)
+      );
+
+      // Logo
+      fd.append("logo_width", formData.logo_width);
+      fd.append("logo_height", formData.logo_height);
+      fd.append("logo_location", formData.logo_location);
+      if (formData.logo) fd.append("logo", formData.logo);
+
+      // Messages
+      fd.append("welcome_message", formData.welcome_message);
+      fd.append("thankyou_message", formData.thankyou_message);
+      fd.append("quotefull_message", formData.quotefull_message);
+      fd.append("terminate_message", formData.terminate_message);
+      fd.append("navigation_message", formData.navigation_message);
+
+      // Buttons
+      fd.append("start_btn_text", formData.start_btn_text);
+      fd.append("complete_btn_text", formData.complete_btn_text);
+      fd.append("previous_btn_text", formData.previous_btn_text);
+      fd.append("next_btn_text", formData.next_btn_text);
+
       toast.loading("Creating project...");
-      await CreateProject(payload);
+      await CreateProject(fd);
       toast.dismiss();
       toast.success("Project created successfully!");
       navigate("/projects");
-    } catch (error) {
+    } catch (err) {
       toast.dismiss();
-      toast.error(error.response?.data?.message || "Something went wrong");
+      toast.error(err?.response?.data?.message || "Something went wrong");
     }
   };
 
@@ -251,7 +289,7 @@ const CreateProjectPage = () => {
                   value={formData.project_type}
                   onChange={handleChange}
                   fullWidth
-                   sx={{ ...inputStyles, width: "200px" }}
+                  sx={{ ...inputStyles, width: "200px" }}
                 >
                   <MenuItem value="SU">Survey</MenuItem>
                   <MenuItem value="PR">Profiling</MenuItem>
@@ -303,7 +341,7 @@ const CreateProjectPage = () => {
                   value={formData.mode}
                   onChange={handleChange}
                   fullWidth
-                   sx={{ ...inputStyles, width: "200px" }}
+                  sx={{ ...inputStyles, width: "200px" }}
                 >
                   <MenuItem value="PR">Preview</MenuItem>
                   <MenuItem value="DE">Development</MenuItem>

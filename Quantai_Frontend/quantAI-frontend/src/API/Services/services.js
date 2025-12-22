@@ -39,7 +39,7 @@ export const GetUserDetails = async () => {
 
 ///////// Get Project ////////////
 export const GetProjectList = async () => {
-    const response = await axiosGet('/api/projects/')
+    const response = await axiosGet('/api/projects/surveys/')
     return response?.data || response || []
 }
 
