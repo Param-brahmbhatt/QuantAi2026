@@ -1,5 +1,5 @@
 import React from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import LoginPage from "../Authentication/pages/LoginPage";
 import PasswordResetPage from "../Authentication/pages/ForgotPassword";
 import EmailVerificationPage from "../Authentication/pages/VerifyEmail";
@@ -20,40 +20,44 @@ import MasterDataPage from "../Pages/MasterData/MasterDataPage";
 import RedemptionSettings from "../Pages/Settings/Redemption";
 
 export const AppRoutes = () => {
-        return (
-                <Routes>
-                        {/* //////////// AUTH ROUTES ////////////// */}
-                        <Route path="/Login" element={<LoginPage />} />
-                        <Route path="/forgot-password" element={<PasswordResetPage />} />
-                        <Route path="/reset-password" element={<ResetPassword />} />
-                        <Route path="/verify-email" element={<EmailVerificationPage />} />
-                        <Route path="/register" element={<SignupUI />} />
-                        <Route path="/welcome" element={<WelcomePage />} />
-                        <Route path="/welcome-details" element={<UserDetailsForm />} />
-                        {/* //////////// Dashboard ////////////// */}
-                        <Route path="/" element={<Dashboard />} />
+  return (
+    <Routes>
+      {/* 🔹 Default redirect */}
+      <Route path="/" element={<Navigate to="/login" replace />} />
 
-                        {/* //////////// Users ////////////// */}
-                        <Route path="/users" element={<UserTable />} />
-                        <Route path="/users/new-add" element={<AddUserForm />} />
+      {/* 🔹 Auth Routes */}
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/forgot-password" element={<PasswordResetPage />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/verify-email" element={<EmailVerificationPage />} />
+      <Route path="/register" element={<SignupUI />} />
+      <Route path="/welcome" element={<WelcomePage />} />
+      <Route path="/welcome-details" element={<UserDetailsForm />} />
 
-                        {/* //////////// Projects //////////// */}
-                        <Route path="/projects" element={<ProjectOverviewCards />} />
-                        <Route path="/projects/add-project" element={<AddProjectForm />} />
-                        <Route path="/projects/:projectId/edit" element={<ProjectDetail />} />
+      {/* 🔹 Dashboard */}
+      <Route path="/dashboard" element={<Dashboard />} />
 
-                        {/* //////////// Master Data //////////// */}
-                        <Route path="/master-data" element={<MasterDataPage />} />
+      {/* 🔹 Users */}
+      <Route path="/users" element={<UserTable />} />
+      <Route path="/users/new-add" element={<AddUserForm />} />
 
-                        {/* //////////// Earnings children ////////////// */}
-                        <Route path="/rewards" element={<RewardsPage />} />
-                        <Route path="/settings/transactions" element={<Transactions />} />
+      {/* 🔹 Projects */}
+      <Route path="/projects" element={<ProjectOverviewCards />} />
+      <Route path="/projects/add-project" element={<AddProjectForm />} />
+      <Route path="/projects/:projectId/edit" element={<ProjectDetail />} />
 
-                        {/* //////////// Profile ////////////// */}
-                        <Route path='/profile' element={<ProfilePage />} />
-                        
-                        {/* /////////// Settings ////////////// */}
-                        <Route path="/settings/redeemptions" element={<RedemptionSettings/>} />
-                </Routes>
-        )
-}
+      {/* 🔹 Master Data */}
+      <Route path="/master-data" element={<MasterDataPage />} />
+
+      {/* 🔹 Earnings */}
+      <Route path="/rewards" element={<RewardsPage />} />
+      <Route path="/settings/transactions" element={<Transactions />} />
+
+      {/* 🔹 Profile */}
+      <Route path="/profile" element={<ProfilePage />} />
+
+      {/* 🔹 Settings */}
+      <Route path="/settings/redeemptions" element={<RedemptionSettings />} />
+    </Routes>
+  );
+};

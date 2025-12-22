@@ -29,7 +29,7 @@ const Sidebar = () => {
   const navigate = useNavigate();
 
   const menuItems = [
-    { text: 'Dashboard', icon: <DashboardIcon />, path: '/', children: [] },
+    { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard', children: [] },
     { text: 'Projects', icon: <BarChartIcon />, path: '/projects', children: [] },
     { text: 'Transactions', icon: <AttachMoneyIcon />, path: '/settings/transactions', children: [] },
     { text: 'Master Data', icon: <StorageIcon />, path: '/master-data', children: [] },

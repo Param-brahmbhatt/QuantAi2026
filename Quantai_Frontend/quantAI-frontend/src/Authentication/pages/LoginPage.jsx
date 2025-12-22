@@ -84,7 +84,7 @@ export default function LoginPage() {
             });
 
             setTimeout(() => {
-                navigate("/");
+                navigate("/dashboard");
             }, 1500);
 
         } catch (err) {
