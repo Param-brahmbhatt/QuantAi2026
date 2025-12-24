@@ -25,23 +25,23 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "56yex+)g1xo9spba)=)mlr4ux^_@gfog&f3_=3100=zvxx86(f"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = [
     "portal-staging.quantaigroup.com",
     "localhost",
     "127.0.0.1",
     "portal.quantaigroup.com",
-    "quantaitest.loca.lt",
-    "quantai-m6zl.onrender.com"
+    # "quantaitest.loca.lt",
+    # "quantai-m6zl.onrender.com"
 ]
 
 CSRF_TRUSTED_ORIGINS = [
     "https://portal-staging.quantaigroup.com",
     "http://localhost:3000",
     "https://portal.quantaigroup.com",
-    "https://quantaitest.loca.lt",
-    "https://quantai-m6zl.onrender.com"
+    # "https://quantaitest.loca.lt",
+    # "https://quantai-m6zl.onrender.com"
 ]
 
 # Application definition
@@ -80,17 +80,18 @@ AUTH_USER_MODEL = "Users.User"
 
 # Simple email backend for development — prints emails to console. Replace in production.
 # Use real email backend from environment in production; default to console for local dev
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+# EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 DEFAULT_FROM_EMAIL = "noreply@quantaigroup.com"
 
-# SMTP Settings (commented out for development, uncomment for production)
-# EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-# EMAIL_HOST = "smtpout.secureserver.net"
-# EMAIL_USE_TLS = True
-# EMAIL_PORT = 587
-# EMAIL_HOST_USER = "hello@quantaigroup.com"
-# EMAIL_HOST_PASSWORD = "QuantAI@365"
+# SMTP Settings (production email backend)
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtpout.secureserver.net"
+EMAIL_USE_TLS = True
+EMAIL_PORT = 587
+EMAIL_HOST_USER = "hello@quantaigroup.com"
+EMAIL_HOST_PASSWORD = "QuantAI@365"
 # EMAIL_LINK_HOST = "https://portal-staging.quantaigroup.com"
+EMAIL_LINK_HOST = "https://portal.quantaigroup.com"
 
 # Load social credentials from environment if set (examples present in your .env)
 import os

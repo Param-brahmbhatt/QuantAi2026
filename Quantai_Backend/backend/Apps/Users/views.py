@@ -14,7 +14,7 @@ from .serializers import (
     PasswordResetConfirmSerializer,
     UserSerializer,
 )
-from .utils import create_and_send_otp
+from .utils import create_and_send_otp, send_welcome_email
 from .token_utils import issue_token_for_user
 from .models import User, EmailOTP
 from django.conf import settings
@@ -49,9 +49,18 @@ class VerifyOTPView(APIView):
         serializer.is_valid(raise_exception=True)
         otp = serializer.validated_data["otp_obj"]
         user = otp.user or User.objects.get(email__iexact=otp.email)
+
+        # Check if this is the first time user is being verified
+        is_first_verification = not user.is_verified
+
         user.is_verified = True
         user.save()
         otp.mark_used()
+
+        # Send welcome email on first verification
+        if is_first_verification:
+            send_welcome_email(user)
+
         # Generate JWT token
         token = issue_token_for_user(user)
         return Response({
