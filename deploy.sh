@@ -47,6 +47,7 @@ sudo cp -r dist/. $DEST_PATH  # Usually not needed if Nginx is set to FRONTEND_D
 
 # --------- RESTART SERVICES ---------
 echo "Restarting Gunicorn and Nginx..."
+sudo systemctl daemon-reload
 sudo systemctl restart $GUNICORN_SERVICE
 sudo systemctl reload nginx
 
