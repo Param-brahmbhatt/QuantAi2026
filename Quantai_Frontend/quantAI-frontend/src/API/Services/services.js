@@ -1,4 +1,4 @@
-import { axiosDelete, axiosGet, axiosPost, axiosPut } from "../Handler/handler"
+import { axiosDelete, axiosGet, axiosPatch, axiosPost, axiosPut } from "../Handler/handler"
 
 
 /////////// Login ///////////
@@ -44,15 +44,15 @@ export const GetProjectList = async () => {
 }
 export const CreateProject = async (data) => {
     const response = await axiosPost('/api/projects/surveys/', data)
-    return response.data 
+    return response.data
 }
-export const UpdateProject = async() => {
+export const UpdateProject = async () => {
     const response = await axiosPost(`/api/projects/surveys/${project_id}/`, data)
     return response.data
 }
 export const getProjectById = async (project_id) => {
-  const response = await axiosGet(`/api/projects/${project_id}/`);
-  return response.data;
+    const response = await axiosGet(`/api/projects/${project_id}/`);
+    return response.data;
 };
 
 ///////// List Users ////////////
@@ -68,6 +68,14 @@ export const DeleteUser = async (id) => {
     const response = await axiosDelete(`/api/users/admin/users/${id}/`)
     return response.data
 }
+export const UpdateRole = async (id, data) => {
+    const response = await axiosPatch(
+        `/api/users/admin/users/${id}/`,
+        data
+    );
+    return response.data;
+};
+
 
 ///////// Logic Nodes ////////////
 export const GetLogicNodes = async () => {

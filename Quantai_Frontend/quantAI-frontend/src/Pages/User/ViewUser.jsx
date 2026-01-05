@@ -10,155 +10,204 @@ import {
   Button,
   TextField,
   Typography,
+  Dialog,
+  MenuItem,
+  Select,
 } from "@mui/material";
 import { Link } from "react-router-dom";
-import { ListUser, DeleteUser } from "../../API/Services/services";
+import WarningAmberRoundedIcon from "@mui/icons-material/WarningAmberRounded";
+
+import { ListUser, DeleteUser, UpdateRole } from "../../API/Services/services";
+
+/* 🔑 ROLE LABEL MAP */
+const ROLE_LABELS = {
+  AD: "Admin",
+  SU: "SuperUser / Developer",
+  AM: "Admin Manager",
+  CL: "Vendor",
+  CM: "Vendor Manager",
+  AU: "Audience",
+};
 
 export default function UserTable() {
   const [user, setUser] = useState([]);
   const [search, setSearch] = useState("");
 
-  const handleRoleUpdate = (id) => {
-    setUser((prev) =>
-      prev.map((u) =>
-        u.id === id
-          ? { ...u, role: u.role === "Admin" ? "User" : "Admin" }
-          : u
-      )
-    );
+  /* 🔴 DELETE MODAL */
+  const [openDelete, setOpenDelete] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState(null);
+
+  /* 🔵 UPDATE ROLE MODAL */
+  const [openRole, setOpenRole] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [selectedRole, setSelectedRole] = useState("");
+
+  /* 🔴 Open Delete */
+  const handleDeleteClick = (id) => {
+    setSelectedUserId(id);
+    setOpenDelete(true);
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this user?")) return;
+  /* ❌ Close Delete */
+  const handleCloseDelete = () => {
+    setOpenDelete(false);
+    setSelectedUserId(null);
+  };
 
+  /* ✅ Confirm Delete */
+  const handleConfirmDelete = async () => {
     try {
-      await DeleteUser(id);
-      setUser((prev) => prev.filter((u) => u.id !== id));
+      await DeleteUser(selectedUserId);
+      setUser((prev) => prev.filter((u) => u.id !== selectedUserId));
+      handleCloseDelete();
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
   };
 
+  /* 🔵 Open Role Modal */
+  const handleOpenRole = (user) => {
+    setSelectedUser(user);
+    setSelectedRole(user.profile_type);
+    setOpenRole(true);
+  };
+
+  /* ❌ Close Role Modal */
+  const handleCloseRole = () => {
+    setOpenRole(false);
+    setSelectedUser(null);
+    setSelectedRole("");
+  };
+
+  /* ✅ Confirm Role Update */
+  const handleConfirmRoleUpdate = async () => {
+    try {
+      await UpdateRole(selectedUser.id, {
+        profile_type: selectedRole,
+      });
+
+      setUser((prev) =>
+        prev.map((u) =>
+          u.id === selectedUser.id
+            ? { ...u, profile_type: selectedRole }
+            : u
+        )
+      );
+
+      handleCloseRole();
+    } catch (error) {
+      console.error("Role update failed:", error);
+    }
+  };
+
+  /* 🔄 FETCH USERS */
   useEffect(() => {
-    const users = async () => {
+    const fetchUsers = async () => {
       try {
         const response = await ListUser();
         setUser(response);
       } catch (error) {
-        console.log(error);
+        console.error(error);
       }
     };
-    users();
+    fetchUsers();
   }, []);
 
-  /* 🔍 Search Filter */
+  /* 🔍 SEARCH */
   const filteredUsers = useMemo(() => {
-    return user.filter((u) => {
-      const query = search.toLowerCase();
-      return (
+    const query = search.toLowerCase();
+    return user.filter(
+      (u) =>
         u.first_name?.toLowerCase().includes(query) ||
         u.last_name?.toLowerCase().includes(query) ||
         u.email?.toLowerCase().includes(query)
-      );
-    });
+    );
   }, [user, search]);
 
   return (
     <Box sx={{ p: 4 }}>
-      {/* Header */}
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          mb: 2,
-          alignItems: "center",
-          gap: 2,
-        }}
-      >
-        <Typography sx={{ fontSize: "28px", color: "#27356eff" }}>
+      {/* HEADER */}
+      <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
+        <Typography sx={{ fontSize: 28, color: "#27356eff" }}>
           User Management
         </Typography>
 
         <Box sx={{ display: "flex", gap: 2 }}>
           <TextField
             size="small"
-            placeholder="Search name or email..."
+            placeholder="Search..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
 
           <Link to="/users/new-add">
-            <Button
-              sx={{
-                border: "1px solid #27356eff",
-                color: "#27356eff",
-              }}
-            >
+            <Button sx={{ border: "1px solid #27356eff", color: "#27356eff" }}>
               Add User
             </Button>
           </Link>
         </Box>
       </Box>
 
-      {/* User Table */}
-      <TableContainer sx={{ borderRadius: 3 }}>
+      {/* TABLE */}
+      <TableContainer>
         <Table>
           <TableHead>
             <TableRow sx={{ backgroundColor: "#211f48ff" }}>
-              <TableCell sx={{ color: "#fff" }}>Name</TableCell>
-              <TableCell sx={{ color: "#fff" }}>Email</TableCell>
-              <TableCell sx={{ color: "#fff" }}>Role</TableCell>
-              <TableCell sx={{ color: "#fff" }}>Joining Date</TableCell>
-              <TableCell sx={{ color: "#fff" }}>End Date</TableCell>
-              <TableCell sx={{ color: "#fff" }}>Update Role</TableCell>
-              <TableCell sx={{ color: "#fff" }}>Action</TableCell>
+              {[
+                "Name",
+                "Email",
+                "Role",
+                "Joining Date",
+                "Last Login",
+                "Update Role",
+                "Action",
+              ].map((h) => (
+                <TableCell key={h} sx={{ color: "#fff" }}>
+                  {h}
+                </TableCell>
+              ))}
             </TableRow>
           </TableHead>
 
           <TableBody>
-            {filteredUsers.length > 0 ? (
+            {filteredUsers.length ? (
               filteredUsers.map((u) => (
-                <TableRow key={u.id} hover>
+                <TableRow key={u.id}>
                   <TableCell>
                     {u.first_name} {u.last_name}
                   </TableCell>
-
                   <TableCell>{u.email}</TableCell>
 
-                  <TableCell>{u.role_display || "-"}</TableCell>
+                  {/* ✅ ROLE NAME DISPLAY */}
+                  <TableCell>
+                    {ROLE_LABELS[u.profile_type] || "-"}
+                  </TableCell>
 
-                  <TableCell>{u.date_joined}</TableCell>
-
+                  <TableCell>{u.date_joined || "-"}</TableCell>
                   <TableCell>{u.last_login || "-"}</TableCell>
 
-                  {/* Update Role */}
+                  {/* UPDATE ROLE */}
                   <TableCell>
                     <Button
                       size="small"
                       variant="outlined"
-                      onClick={() => handleRoleUpdate(u.id)}
+                      onClick={() => handleOpenRole(u)}
                       sx={{
-                        textTransform: "none",
-                        borderColor: "#171260ff",
-                        color: "#171260ff",
-                        "&:hover": {
-                          backgroundColor: "#171260ff",
-                          color: "#fff",
-                        },
+                        border: "1px solid #03106cff",
+                        color: "#0d173aff",
                       }}
                     >
-                      Make {u.role === "Admin" ? "User" : "Admin"}
+                      Update Role
                     </Button>
                   </TableCell>
 
-                  {/* Delete */}
+                  {/* DELETE */}
                   <TableCell>
                     <Button
                       size="small"
-                      variant="outlined"
                       color="error"
-                      onClick={() => handleDelete(u.id)}
-                      sx={{ textTransform: "none" }}
+                      variant="outlined"
+                      onClick={() => handleDeleteClick(u.id)}
                     >
                       Delete
                     </Button>
@@ -167,7 +216,7 @@ export default function UserTable() {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={8} align="center">
+                <TableCell colSpan={7} align="center">
                   No users found
                 </TableCell>
               </TableRow>
@@ -175,6 +224,74 @@ export default function UserTable() {
           </TableBody>
         </Table>
       </TableContainer>
+
+      {/* 🔴 DELETE MODAL */}
+      <Dialog open={openDelete} onClose={handleCloseDelete} maxWidth="xs" fullWidth>
+        <Box sx={{ textAlign: "center", p: 3 }}>
+          <WarningAmberRoundedIcon sx={{ fontSize: 60, color: "#d32f2f" }} />
+          <Typography fontSize={22} fontWeight={600}>
+            Delete User?
+          </Typography>
+          <Typography color="text.secondary" mb={3}>
+            This action cannot be undone.
+          </Typography>
+
+          <Box sx={{ display: "flex", gap: 2 }}>
+            <Button fullWidth variant="outlined" onClick={handleCloseDelete}>
+              Cancel
+            </Button>
+            <Button
+              fullWidth
+              variant="contained"
+              color="error"
+              onClick={handleConfirmDelete}
+            >
+              Delete
+            </Button>
+          </Box>
+        </Box>
+      </Dialog>
+
+      {/* 🔵 UPDATE ROLE MODAL */}
+      <Dialog open={openRole} onClose={handleCloseRole} maxWidth="xs" fullWidth>
+        <Box sx={{ p: 3 }}>
+          <Typography fontSize={20} fontWeight={600} mb={2}>
+            Update User Role
+          </Typography>
+
+          <Typography fontSize={14} mb={1}>
+            {selectedUser?.first_name} {selectedUser?.last_name} —{" "}
+            {ROLE_LABELS[selectedUser?.profile_type]}
+          </Typography>
+
+          <Select
+            fullWidth
+            value={selectedRole}
+            onChange={(e) => setSelectedRole(e.target.value)}
+            sx={{ mb: 3 }}
+          >
+            <MenuItem value="AD">Admin</MenuItem>
+            <MenuItem value="SU">SuperUser / Developer</MenuItem>
+            <MenuItem value="AM">Admin Manager</MenuItem>
+            <MenuItem value="CL">Vendor</MenuItem>
+            <MenuItem value="CM">Vendor Manager</MenuItem>
+            <MenuItem value="AU">Audience</MenuItem>
+          </Select>
+
+          <Box sx={{ display: "flex", gap: 2 }}>
+            <Button fullWidth variant="outlined" onClick={handleCloseRole}>
+              Cancel
+            </Button>
+            <Button
+              fullWidth
+              variant="contained"
+              onClick={handleConfirmRoleUpdate}
+            >
+              Update
+            </Button>
+          </Box>
+        </Box>
+      </Dialog>
     </Box>
   );
 }
