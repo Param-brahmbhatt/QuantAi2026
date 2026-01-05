@@ -12,6 +12,8 @@ import RewardsPage from "../Pages/Earnings/Rewards/RewardsPage";
 import ProfilePage from "../Pages/Profile/ProfilePage";
 import Transactions from "../Pages/Earnings/Transactions/TransactionsPage";
 import UserTable from "../Pages/User/ViewUser";
+import FAQ from "../Pages/Help/FAQ";
+import HowToEarn from "../Pages/Help/HowToEarn";
 import AddUserForm from "../Pages/User/AddUser";
 import ProjectOverviewCards from "../Pages/Projects/ViewProjects";
 import AddProjectForm from "../Pages/Projects/AddProject";
@@ -55,6 +57,10 @@ export const AppRoutes = () => {
 
       {/* 🔹 Profile */}
       <Route path="/profile" element={<ProfilePage />} />
+
+      {/* 🔹 Help */}
+      <Route path="/faq" element={<FAQ />} />
+      <Route path="/how-to-earn" element={<HowToEarn />} />
 
       {/* 🔹 Settings */}
       <Route path="/settings/redeemptions" element={<RedemptionSettings />} />

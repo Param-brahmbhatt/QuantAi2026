@@ -66,7 +66,8 @@ class QuestionChoicesGroupSerializer(serializers.ModelSerializer):
 class QuestionSerializer(serializers.ModelSerializer):
     """Serializer for Question model"""
 
-    choice_groups = QuestionChoicesGroupSerializer(many=True, read_only=True)
+    choice_groups = serializers.ListField(child=serializers.DictField(), required=False, write_only=True)
+    choice_groups_data = QuestionChoicesGroupSerializer(source='choice_groups', many=True, read_only=True)
     project_title = serializers.CharField(source='project.title', read_only=True)
 
     class Meta:
@@ -75,7 +76,7 @@ class QuestionSerializer(serializers.ModelSerializer):
             'id', 'project', 'project_title', 'variable_name', 'title', 'description',
             'is_required', 'is_initial_question', 'display_index', 'question_type',
             'widget', 'file_upload_allowed_extention', 'option_rotation',
-            'choice_groups', 'created_at', 'updated_at'
+            'choice_groups', 'choice_groups_data', 'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
 
@@ -117,6 +118,75 @@ class QuestionSerializer(serializers.ModelSerializer):
                     })
         
         return data
+
+    def create(self, validated_data):
+        """
+        Create question with nested choice_groups and options
+        """
+        # Extract choice_groups from validated data
+        choice_groups_data = validated_data.pop('choice_groups', [])
+        
+        # Create the question
+        question = Question.objects.create(**validated_data)
+        
+        # Create choice groups and options
+        self._create_choice_groups(question, choice_groups_data)
+        
+        return question
+
+    def update(self, instance, validated_data):
+        """
+        Update question and handle nested choice_groups and options
+        """
+        # Extract choice_groups from validated data
+        choice_groups_data = validated_data.pop('choice_groups', None)
+        
+        # Update question fields
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        
+        # Update choice groups if provided
+        if choice_groups_data is not None:
+            # Clear existing choice groups
+            instance.choice_groups.all().delete()
+            
+            # Create new choice groups
+            self._create_choice_groups(instance, choice_groups_data)
+        
+        return instance
+
+    def _create_choice_groups(self, question, choice_groups_data):
+        """
+        Helper method to create choice groups and their options
+        
+        Args:
+            question: Question instance
+            choice_groups_data: List of choice group data with nested options
+        """
+        for group_data in choice_groups_data:
+            # Extract options data
+            options_data = group_data.pop('options', [])
+            
+            # Create the choice group
+            choice_group = QuestionChoicesGroup.objects.create(
+                question=question,
+                title=group_data.get('title', ''),
+                title_align=group_data.get('title_align', 'left'),
+                description=group_data.get('description', ''),
+                description_align=group_data.get('description_align', 'left')
+            )
+            
+            # Create options and associate with the group
+            for option_data in options_data:
+                choice = QuestionChoices.objects.create(
+                    text=option_data.get('text', ''),
+                    value=option_data.get('value', ''),
+                    order=option_data.get('order', 0)
+                )
+                choice_group.options.add(choice)
+
+
 
 
 class QuestionListSerializer(serializers.ModelSerializer):
@@ -183,6 +253,16 @@ class AnswerSerializer(serializers.ModelSerializer):
         model = Answer
         fields = '__all__'
 
+    def create(self, validated_data):
+        """
+        Auto-populate project from question if not provided
+        """
+        question = validated_data.get('question')
+        if question and not validated_data.get('project'):
+            validated_data['project'] = question.project
+        
+        return super().create(validated_data)
+
     def validate(self, data):
         """
         Validate answer submission:
@@ -190,6 +270,11 @@ class AnswerSerializer(serializers.ModelSerializer):
         2. Validate answer data based on question type
         3. Ensure required questions are answered
         """
+        # Get question and auto-set project if not provided
+        question = data.get('question')
+        if question and not data.get('project'):
+            data['project'] = question.project
+        
         # Existing validation
         project = data.get('project')
         if project and not project.active:
@@ -205,19 +290,30 @@ class AnswerSerializer(serializers.ModelSerializer):
             })
 
         # Get the answer value from appropriate field
-        answer_value = data.get('input')  # New types use 'input' field
+        # Choice-based questions use 'option', text-based use 'input'
+        option_value = data.get('option')  # ManyToMany field for choices
+        input_value = data.get('input')     # Text/number/structured data
 
-        # Required field validation
-        if question.is_required and not answer_value:
-            raise serializers.ValidationError({
-                'input': f'This question is required: {question.title}'
-            })
+        # Required field validation - check BOTH option and input
+        if question.is_required:
+            # Choice-based questions (RDO, CHB, DRP, RAT, NPS, IMG, RNK)
+            if question.question_type in ['RDO', 'CHB', 'DRP', 'RAT', 'NPS', 'IMG', 'RNK']:
+                if not option_value or len(option_value) == 0:
+                    raise serializers.ValidationError({
+                        'option': f'This question is required: {question.title}'
+                    })
+            # Text/Input-based questions (TXT, TXTL, EML, PHN, URL, NUM, etc.)
+            else:
+                if not input_value:
+                    raise serializers.ValidationError({
+                        'input': f'This question is required: {question.title}'
+                    })
 
         # Type-specific validation (only if answer provided)
-        if answer_value is not None:
+        if input_value is not None:
             is_valid, error_msg = self._validate_by_question_type(
                 question.question_type,
-                answer_value
+                input_value
             )
             if not is_valid:
                 raise serializers.ValidationError({

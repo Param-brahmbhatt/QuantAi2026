@@ -13,7 +13,6 @@ import {
   Typography,
 } from "@mui/material";
 import { Upload } from "@mui/icons-material";
-import { CreateProject } from "../../API/Services/services";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 
@@ -91,7 +90,7 @@ const SectionPaper = memo(({ title, children }) => (
 SectionPaper.displayName = "SectionPaper";
 
 /* ------------------ Main Component ------------------ */
-const CreateProjectPage = () => {
+const EditProjectPage = () => {
   const [formData, setFormData] = useState(initialState);
   const navigate = useNavigate();
 
@@ -112,76 +111,6 @@ const CreateProjectPage = () => {
     }
   }, []);
 
-  /* ------------------ Submit (FormData) ------------------ */
-  const handleSubmit = async () => {
-    try {
-      const fd = new FormData();
-
-      // Basic
-      fd.append("title", formData.title);
-      fd.append("description", formData.description);
-      fd.append("code", formData.code);
-      fd.append("project_type", formData.project_type);
-      fd.append("mode", formData.mode);
-
-      // Boolean
-      fd.append("active", formData.active ? "1" : "0");
-      fd.append("fit_logo", formData.fit_logo ? "1" : "0");
-      fd.append(
-        "display_welcome_message",
-        formData.display_welcome_message ? "1" : "0"
-      );
-      fd.append(
-        "display_thankyou_message",
-        formData.display_thankyou_message ? "1" : "0"
-      );
-      fd.append("show_progress_bar", formData.show_progress_bar ? "1" : "0");
-      fd.append("answer_preview", formData.answer_preview ? "1" : "0");
-
-      // Numbers
-      fd.append("reward_points", Number(formData.reward_points || 0));
-      fd.append("participant_limit", Number(formData.participant_limit || 0));
-
-      // Dates
-      if (formData.start_time)
-        fd.append("start_time", new Date(formData.start_time).toISOString());
-      if (formData.end_time)
-        fd.append("end_time", new Date(formData.end_time).toISOString());
-
-      // Arrays
-      formData.language_ids.forEach((id) =>
-        fd.append("language_ids[]", id)
-      );
-
-      // Logo
-      fd.append("logo_width", formData.logo_width);
-      fd.append("logo_height", formData.logo_height);
-      fd.append("logo_location", formData.logo_location);
-      if (formData.logo) fd.append("logo", formData.logo);
-
-      // Messages
-      fd.append("welcome_message", formData.welcome_message);
-      fd.append("thankyou_message", formData.thankyou_message);
-      fd.append("quotefull_message", formData.quotefull_message);
-      fd.append("terminate_message", formData.terminate_message);
-      fd.append("navigation_message", formData.navigation_message);
-
-      // Buttons
-      fd.append("start_btn_text", formData.start_btn_text);
-      fd.append("complete_btn_text", formData.complete_btn_text);
-      fd.append("previous_btn_text", formData.previous_btn_text);
-      fd.append("next_btn_text", formData.next_btn_text);
-
-      toast.loading("Creating project...");
-      await CreateProject(fd);
-      toast.dismiss();
-      toast.success("Project created successfully!");
-      navigate("/projects");
-    } catch (err) {
-      toast.dismiss();
-      toast.error(err?.response?.data?.message || "Something went wrong");
-    }
-  };
 
   return (
     <Box sx={{ minHeight: "100vh", py: 4 }}>
@@ -596,7 +525,6 @@ const CreateProjectPage = () => {
 
           <Button
             variant="contained"
-            onClick={handleSubmit}
             sx={{
               px: 4,
               py: 1.5,
@@ -614,4 +542,5 @@ const CreateProjectPage = () => {
   );
 };
 
-export default CreateProjectPage;
+export default EditProjectPage;
+ 

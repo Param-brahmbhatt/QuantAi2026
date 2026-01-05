@@ -13,13 +13,11 @@ export const useAuth = () => {
 
 const extractToken = (rawToken) => {
   if (!rawToken) return null;
-  // If token is stored as JSON stringified object, extract access_token
   try {
     const parsed = typeof rawToken === 'string' ? JSON.parse(rawToken) : rawToken;
     if (parsed?.access_token) return parsed.access_token;
     if (parsed?.token) return parsed.token;
   } catch (e) {
-    // not JSON, fall back
   }
   return rawToken;
 };
@@ -38,7 +36,6 @@ export const AuthProvider = ({ children }) => {
     const checkAuth = async () => {
       const rawToken = localStorage.getItem("access_token");
       const token = extractToken(rawToken);
-      // normalize storage to the extracted string token
       if (token && token !== rawToken) {
         localStorage.setItem("access_token", token);
       }
@@ -46,14 +43,17 @@ export const AuthProvider = ({ children }) => {
       if (token) {
         try {
           const userData = await GetUserDetails();
-          
           setUser({
+            ...userData,
             id: userData?.id || null,
-            name: userData?.name || userData?.first_name || userData?.email || 'User',
             email: userData?.email || '',
             role: userData?.role || userData?.user_type || 'User',
             isAuthenticated: true,
-            ...userData,
+            first_name: userData?.first_name ?? '',
+            last_name: userData?.last_name ?? '',
+            name: userData?.name || (userData?.first_name && userData?.last_name 
+              ? `${userData.first_name} ${userData.last_name}` 
+              : userData?.first_name || userData?.email || 'User'),
           });
         } catch (error) {
           console.error("Error fetching user details:", error);
@@ -78,7 +78,6 @@ export const AuthProvider = ({ children }) => {
       
       setLoading(false);
     };
-
     checkAuth();
   }, []);
 
@@ -93,23 +92,28 @@ export const AuthProvider = ({ children }) => {
     try {
       const userDetails = await GetUserDetails();
       setUser({
+        ...userDetails,
         id: userDetails?.id || userData?.id || null,
-        name: userDetails?.name || userDetails?.first_name || userData?.name || userDetails?.email || 'User',
         email: userDetails?.email || userData?.email || '',
         role: userDetails?.role || userDetails?.user_type || userData?.role || 'User',
         isAuthenticated: true,
-        ...userDetails,
+        first_name: userDetails?.first_name ?? '',
+        last_name: userDetails?.last_name ?? '',
+        name: userDetails?.name || (userDetails?.first_name && userDetails?.last_name 
+          ? `${userDetails.first_name} ${userDetails.last_name}` 
+          : userDetails?.first_name || userDetails?.email || 'User'),
       });
     } catch (error) {
       console.error("Error fetching user details after login:", error);
-      // If fetching user details fails, use provided userData
       setUser({
+        ...userData,
         id: userData?.id || null,
-        name: userData?.name || userData?.email || 'User',
+        name: userData?.name || userData?.first_name || userData?.email || 'User',
         email: userData?.email || '',
         role: userData?.role || 'User',
         isAuthenticated: true,
-        ...userData,
+        first_name: userData?.first_name || '',
+        last_name: userData?.last_name || '',
       });
     }
   };

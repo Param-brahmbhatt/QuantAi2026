@@ -8,6 +8,10 @@ app_name = "users"
 router = DefaultRouter()
 router.register(r'users', views.UserViewSet, basename='user')
 
+# Admin router for admin-only user management
+admin_router = DefaultRouter()
+admin_router.register(r'users', views.AdminUserViewSet, basename='admin-user')
+
 urlpatterns = [
     # Authentication endpoints
     path("signup/", views.SignupView.as_view(), name="signup"),
@@ -21,6 +25,9 @@ urlpatterns = [
 
     # Utility endpoints
     path("countries/", views.CountriesView.as_view(), name="countries"),
+
+    # Admin-only user management endpoints
+    path("admin/", include(admin_router.urls)),
 
     # User CRUD endpoints (from ViewSet router)
     path("", include(router.urls)),

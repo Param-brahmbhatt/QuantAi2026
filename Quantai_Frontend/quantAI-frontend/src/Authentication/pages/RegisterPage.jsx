@@ -351,7 +351,7 @@ export default function SignupUI() {
                                 background: "white",
                                 boxShadow: "0 4px 10px rgba(33, 150, 243, 0.4)",
                                 borderRadius: "5px",
-                                color: "black",
+                                color: "#000",
                             }}
                         >
                             Back

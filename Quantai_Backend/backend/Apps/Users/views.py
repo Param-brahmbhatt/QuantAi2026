@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status, permissions
 from django.contrib.auth import authenticate
 from django.utils import timezone
+from django.db import models
 import requests
 import jwt
 from jwt import PyJWKClient
@@ -13,6 +14,9 @@ from .serializers import (
     PasswordResetRequestSerializer,
     PasswordResetConfirmSerializer,
     UserSerializer,
+    AdminUserCreateSerializer,
+    AdminUserUpdateSerializer,
+    AdminUserListSerializer,
 )
 from .utils import create_and_send_otp, send_welcome_email
 from .token_utils import issue_token_for_user
@@ -306,7 +310,7 @@ class LoginView(APIView):
 class IsOwnerOrAdmin(BasePermission):
     """
     Custom permission to only allow users to access their own data.
-    Admins (SU, AD, AM) can access all users.
+    Admins (SU, DV, AD, AM) can access all users.
     """
     def has_permission(self, request, view):
         # Must be authenticated
@@ -314,12 +318,27 @@ class IsOwnerOrAdmin(BasePermission):
 
     def has_object_permission(self, request, view, obj):
         # Superusers and admin roles can access all users
-        admin_roles = ['SU', 'AD', 'AM']  # Superuser, Admin, Admin Manager
+        admin_roles = ['SU', 'DV', 'AD', 'AM']  # Superuser, Developer, Admin, Admin Manager
         if request.user.is_superuser or request.user.profile_type in admin_roles:
             return True
 
         # Regular users can only access their own data
         return obj.id == request.user.id
+
+
+class IsAdmin(BasePermission):
+    """
+    Permission class that only allows admin users (SU, DV, AD, AM) to access.
+    Used for admin-only endpoints like user creation and role management.
+    """
+    def has_permission(self, request, view):
+        # Must be authenticated
+        if not (request.user and request.user.is_authenticated):
+            return False
+
+        # Only allow admin roles
+        admin_roles = ['SU', 'DV', 'AD', 'AM']  # Superuser, Developer, Admin, Admin Manager
+        return request.user.is_superuser or request.user.profile_type in admin_roles
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -346,11 +365,11 @@ class UserViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         """
         Filter users based on role:
-        - Admins (SU, AD, AM): See all users
+        - Admins (SU, DV, AD, AM): See all users
         - Others: See only themselves
         """
         user = self.request.user
-        admin_roles = ['SU', 'AD', 'AM']
+        admin_roles = ['SU', 'DV', 'AD', 'AM']
 
         # Admin roles can see all users
         if user.is_superuser or user.profile_type in admin_roles:
@@ -396,3 +415,124 @@ class UserViewSet(viewsets.ModelViewSet):
             return Response(serializer.data)
 
         return Response({'detail': 'Method not allowed'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+
+class AdminUserViewSet(viewsets.ModelViewSet):
+    """
+    Admin-only ViewSet for comprehensive user management.
+
+    Only accessible to admin roles: SU (Superuser), DV (Developer), AD (Admin), AM (Admin Manager)
+
+    Features:
+    - Create users with role assignment
+    - Assign Django groups and permissions
+    - Update user roles and permissions
+    - View all users with their roles, groups, and permissions
+    - Activate/deactivate users
+    - Delete users
+
+    Endpoints:
+    - POST /api/users/admin/users/ - Create user with role assignment
+    - GET /api/users/admin/users/ - List all users (filterable by role, verification, active status)
+    - GET /api/users/admin/users/{pk}/ - Get specific user details
+    - PATCH /api/users/admin/users/{pk}/ - Partial update user
+    - PUT /api/users/admin/users/{pk}/ - Full update user
+    - DELETE /api/users/admin/users/{pk}/ - Delete user
+    """
+    queryset = User.objects.all().select_related('profile').prefetch_related('groups', 'user_permissions')
+    permission_classes = [IsAuthenticated, IsAdmin]
+
+    def get_serializer_class(self):
+        """
+        Use different serializers for different actions.
+        """
+        if self.action == 'create':
+            return AdminUserCreateSerializer
+        elif self.action in ['update', 'partial_update']:
+            return AdminUserUpdateSerializer
+        elif self.action == 'list':
+            return AdminUserListSerializer
+        return AdminUserListSerializer
+
+    def get_queryset(self):
+        """
+        Filter users based on query parameters.
+        Admins can filter by profile_type, is_verified, is_active, etc.
+        """
+        queryset = User.objects.all().select_related('profile').prefetch_related('groups', 'user_permissions')
+
+        # Filter by profile type (role)
+        profile_type = self.request.query_params.get('profile_type', None)
+        if profile_type:
+            queryset = queryset.filter(profile_type=profile_type)
+
+        # Filter by verification status
+        is_verified = self.request.query_params.get('is_verified', None)
+        if is_verified is not None:
+            queryset = queryset.filter(is_verified=is_verified.lower() == 'true')
+
+        # Filter by active status
+        is_active = self.request.query_params.get('is_active', None)
+        if is_active is not None:
+            queryset = queryset.filter(is_active=is_active.lower() == 'true')
+
+        # Filter by staff status
+        is_staff = self.request.query_params.get('is_staff', None)
+        if is_staff is not None:
+            queryset = queryset.filter(is_staff=is_staff.lower() == 'true')
+
+        # Search by email or name
+        search = self.request.query_params.get('search', None)
+        if search:
+            queryset = queryset.filter(
+                models.Q(email__icontains=search) |
+                models.Q(first_name__icontains=search) |
+                models.Q(last_name__icontains=search)
+            )
+
+        return queryset
+
+    def create(self, request, *args, **kwargs):
+        """
+        Create a new user with role and permission assignment.
+        """
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+
+        # Return the created user with full details
+        response_serializer = AdminUserListSerializer(user)
+        return Response({
+            "detail": "User created successfully.",
+            "user": response_serializer.data,
+            "success": True
+        }, status=status.HTTP_201_CREATED)
+
+    def update(self, request, *args, **kwargs):
+        """
+        Update user with role and permission changes.
+        """
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+
+        # Return updated user with full details
+        response_serializer = AdminUserListSerializer(user)
+        return Response({
+            "detail": "User updated successfully.",
+            "user": response_serializer.data,
+            "success": True
+        }, status=status.HTTP_200_OK)
+
+    def destroy(self, request, *args, **kwargs):
+        """
+        Delete a user.
+        """
+        instance = self.get_object()
+        instance.delete()
+        return Response({
+            "detail": "User deleted successfully.",
+            "success": True
+        }, status=status.HTTP_200_OK)

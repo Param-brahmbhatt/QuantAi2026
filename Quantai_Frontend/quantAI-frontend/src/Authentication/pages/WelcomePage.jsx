@@ -115,7 +115,7 @@ const WelcomePage = () => {
                   >
                     <CheckCircle
                       sx={{
-                        color: "#5a67d8",
+                        color: "#0e994dff",
                         fontSize: 24,
                         mt: 0.4,
                         flexShrink: 0,

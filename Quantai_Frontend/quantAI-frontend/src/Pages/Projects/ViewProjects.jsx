@@ -27,7 +27,7 @@ import { GetProjectList } from "../../API/Services/services";
 const DARK_BLUE = "#14243cff";
 
 
-const ProjectListPage = () => {
+const ProjectListPage = () => { 
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [priorityFilter, setPriorityFilter] = useState("all");
@@ -236,10 +236,10 @@ const ProjectListPage = () => {
                     <Stack direction="row" spacing={3}>
                       <Avatar
                         sx={{
-                          width: 64,
-                          height: 64,
+                          width: 44,
+                          height: 44,
                           bgcolor: "#e8f0ff",
-                          fontSize: 22,
+                          fontSize: 15,
                           color: "#000",
                         }}
                       >
@@ -247,10 +247,10 @@ const ProjectListPage = () => {
                       </Avatar>
 
                       <Box flex={1}>
-                        <Typography variant="h5" fontWeight="bold">
+                        <Typography variant="h6" fontWeight="bold" sx={{fontSize: "16px"}}>
                           {p.name || p.title || p.project_name || "Unnamed Project"}
                         </Typography>
-                        <Typography color="text.secondary">
+                        <Typography color="text.secondary" sx={{fontSize: "10px"}}>
                           {p.code || p.type || p.project_category || "No Category"}
                         </Typography>
 
@@ -262,6 +262,7 @@ const ProjectListPage = () => {
                                 size="small"
                                 color="success"
                                 icon={<EmojiEvents />}
+                                sx={{fontSize: "10px"}}
                               />
                             )}
                           </Stack>
@@ -270,12 +271,12 @@ const ProjectListPage = () => {
                         {(p.start_time !== undefined || p.end_time !== undefined) && (
                           <Stack direction="row" spacing={4} mt={2}>
                             {p.start_time !== undefined && (
-                              <Typography>
+                              <Typography sx={{fontSize: "12px"}}>
                                Start Time: {p.start_time}
                               </Typography>
                             )}
                             {p.end_time !== undefined && (
-                              <Typography>
+                              <Typography sx={{fontSize: "12px"}}> 
                                 End Time: {p.end_time}
                               </Typography>
                             )}
@@ -283,7 +284,7 @@ const ProjectListPage = () => {
                         )}
 
                         {(p.reward_points || p.totalreward_points) && (
-                          <Typography mt={2}> 
+                          <Typography mt={2} sx={{fontSize: "12px"}}> 
                             reward_points: {p.reward_points || "N/A"}
                           </Typography>
                         )}
@@ -309,9 +310,9 @@ const ProjectListPage = () => {
                           sx={{
                             bgcolor: DARK_BLUE,
                             "&:hover": { bgcolor: "#08306A" },
-                            width: "130px",
-                            // width: "150px",
-                            marginLeft: "680%"
+                            width: "150px",
+                            marginLeft: "660%",
+                            fontSize: "11px"
                           }}
                         >
                           View Details

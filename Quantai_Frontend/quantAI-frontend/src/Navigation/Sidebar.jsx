@@ -54,8 +54,8 @@ const Sidebar = () => {
 
     // 🔥 LOGOUT FUNCTIONALITY
     if (path === '/logout') {
-      localStorage.removeItem('access_token'); // remove correct token name
-      navigate('/login'); // redirect to login page
+      localStorage.removeItem('access_token'); 
+      navigate('/login'); 
       return;
     }
 
@@ -92,7 +92,6 @@ const Sidebar = () => {
       </Box>
 
       <Divider sx={{ border: '1px solid #ddd', width: '180px', margin: '0 auto 8px' }} />
-
       {/* Navigation */}
       <Box sx={{ flex: 1, px: 2, py: 2, overflowY: 'auto' }}>
         <List sx={{ padding: 0 }}>
@@ -128,7 +127,6 @@ const Sidebar = () => {
                   >
                     {item.icon}
                   </Box>
-
                   <ListItemText
                     primary={item.text}
                     primaryTypographyProps={{
@@ -137,7 +135,6 @@ const Sidebar = () => {
                       color: 'rgb(103, 116, 142)'
                     }}
                   />
-
                   {item.children.length > 0 &&
                     (openMenus[item.text] ? <ExpandLess /> : <ExpandMore />)}
                 </ListItemButton>

@@ -3,9 +3,7 @@ import {
     Box, Button, Link, Paper, TextField, Typography,
     IconButton, Snackbar, Alert, Divider, useTheme, useMediaQuery
 } from "@mui/material";
-
-import { Google, Twitter, Instagram, Apple } from "@mui/icons-material";
-
+import { Twitter, Instagram, Apple } from "@mui/icons-material";
 import OtpBox from "./OTPDailogue";
 import { UserLogin, RequestOTPLogin, LoginWithOTP } from "../../API/Services/services";
 import { useAuth } from "../../contexts/AuthContext";
@@ -73,10 +71,8 @@ export default function LoginPage() {
             if (res?.access_token) {
                 await login({ email: formData.email }, res.access_token);
             } else {
-                // If no token in response, still try to login (token might be in localStorage)
                 await login({ email: formData.email });
             }
-
             setSnackbar({
                 open: true,
                 message: res?.detail || "Login successful!",
@@ -338,12 +334,12 @@ export default function LoginPage() {
                         </Button>
 
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-                            <Link href="#" onClick={(e) => { e.preventDefault(); setUseOtp(!useOtp); }} color="#17c1e8" sx={{ textDecoration: 'none', fontSize: 14 }}>
+                            <Link href="#" onClick={(e) => { e.preventDefault(); setUseOtp(!useOtp); }} color="#17c1e8" sx={{ textDecoration: 'none', fontSize: 14, fontFamily: "sans-serif" }}>
                                 {useOtp ? 'Use Email & Password instead' : 'Use OTP instead'}
                             </Link>
                         </Box>
 
-                        <Divider sx={{ color: '#7f8c8d', my: 1.5 }}>Or continue with</Divider>
+                        <Divider sx={{ color: '#7f8c8d', my: 1.5, fontFamily: "sans-serif" }}>or continue with</Divider>
                         <Box
                             sx={{
                                 display: "flex",

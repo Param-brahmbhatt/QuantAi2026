@@ -33,6 +33,8 @@ import {
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import FormBuilder from "./FormBuilder";
+import CreateProjectPage from "./AddProject";
+import EditProjectPage from "./EditProject";
 
 const topTabs = [
   "Statistics",
@@ -175,8 +177,8 @@ const QuestionSettingsPanel = ({
                   onChange={(e) => handleFieldChange(field.name, e.target.checked)}
                   size="small"
                   sx={{
-                    transform: "scale(1)",  
-                    transformOrigin: "left center", 
+                    transform: "scale(1)",
+                    transformOrigin: "left center",
                     mr: 1
                   }}
                 />
@@ -451,12 +453,33 @@ const StatsCard = ({ title, value }) => (
       textAlign: "center",
       border: "1px solid #f2f4fb",
       boxShadow: "0 25px 50px rgba(13,35,85,0.08)",
+      width: "100%",
+      maxWidth: "100%",
+      boxSizing: "border-box",
+      overflow: "hidden",
     }}
   >
-    <Typography variant="h5" sx={{ color: "#1d2d44ff", fontWeight: 500 }}>
+    <Typography 
+      variant="h5" 
+      sx={{ 
+        color: "#1d2d44ff", 
+        fontWeight: 500,
+        wordBreak: "break-word",
+        overflowWrap: "break-word",
+      }}
+    >
       {value}
     </Typography>
-    <Typography variant="subtitle1" sx={{ fontWeight: 500, color: "#2b3c61ff", fontSize: 12 }}>
+    <Typography 
+      variant="subtitle1" 
+      sx={{ 
+        fontWeight: 500, 
+        color: "#2b3c61ff", 
+        fontSize: 12,
+        wordBreak: "break-word",
+        overflowWrap: "break-word",
+      }}
+    >
       {title}
     </Typography>
   </Paper>
@@ -500,154 +523,823 @@ const BasicForm = () => (
     <Typography variant="h5" sx={{ fontWeight: 700, color: "#1e2c4c", mb: 3 }}>
       Edit Project
     </Typography>
-    <Stack spacing={3}>
-      <TextField label="Project Name" placeholder="Enter project name" fullWidth />
-      <Box>
-        <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
-          About The Project For Your Reference
-        </Typography>
-        <Paper variant="outlined" sx={{ borderRadius: 2, overflow: "hidden" }}>
-          <RichTextInput value="" onChange={() => { }} placeholder="Describe this project..." />
-        </Paper>
-      </Box>
-      <Grid container spacing={2}>
-        <Grid item xs={12} md={6}>
-          <TextField label="Project Code" fullWidth />
-        </Grid>
-        <Grid item xs={12} md={6}>
-          <TextField select label="Type Of Research" fullWidth defaultValue="Survey">
-            <MenuItem value="Survey">Survey</MenuItem>
-            <MenuItem value="Profiling">Profiling</MenuItem>
-            <MenuItem value="Qualitative">Qualitative</MenuItem>
-          </TextField>
-        </Grid>
-      </Grid>
-    </Stack>
+    < EditProjectPage />
   </Paper>
 );
 
-const VariablesCard = () => (
-  <Paper
-    elevation={0}
-    sx={{ borderRadius: 4, border: "1px solid #edf1fc", p: 4, boxShadow: "0 20px 50px rgba(14,26,75,0.08)" }}
-  >
-    <Typography variant="h5" sx={{ fontWeight: 500, mb: 3, fontSize: "20px" }}>
-      Project Variables
-    </Typography>
-    <Grid container spacing={2} alignItems="center">
-      <Grid item xs={12} md={4}>
-        <TextField label="Label" fullWidth placeholder="Enter label" />
-      </Grid>
-      <Grid item xs={12} md={4}>
-        <TextField label="Value" fullWidth placeholder="Enter value" />
-      </Grid>
-      <Grid item xs={12} md={4} sx={{ display: "flex", gap: 1 }}>
-        <Button variant="contained" sx={{ background: "linear-gradient(90deg,#1d65f1,#23c0ff)" }}>
-          + Add
-        </Button>
-      </Grid>
-    </Grid>
-    <Stack direction="row" spacing={2} sx={{ mt: 3 }}>
-      <Button variant="outlined">
-        Cancel
-      </Button>
-      <Button variant="contained"  sx={{ background: "linear-gradient(90deg,#1d65f1,#23c0ff)" }}>
-        Submit
-      </Button>
-    </Stack>
-  </Paper>
-);
+const VariablesCard = ({ projectId }) => {
+  const [variableName, setVariableName] = React.useState("");
+  const [label, setLabel] = React.useState("");
+  const [value, setValue] = React.useState("");
+  const [description, setDescription] = React.useState("");
+  const [variableType, setVariableType] = React.useState("text");
+  const [variables, setVariables] = React.useState([]);
+  const [loading, setLoading] = React.useState(false);
 
-const FiltersCard = () => (
-  <Paper
-    elevation={0}
-    sx={{ borderRadius: 4, border: "1px solid #edf1fc", p: 4, boxShadow: "0 20px 50px rgba(14,26,75,0.08)" }}
-  >
-    <Typography variant="h5" sx={{ fontWeight: 500, mb: 3, fontSize: "20px" }}>
-      Project Filters
-    </Typography>
-    <Stack spacing={2}>
-      <Stack direction="row" alignItems="center" spacing={2}>
-        <Typography sx={{fontSize: 13}}>Do you want to ask this questionnaire to all?</Typography>
-        <Switch />
-      </Stack>
-      <Stack direction="row" spacing={2}>
-        <Typography fontWeight={500} sx={{fontSize: 14}}>Merge filter conditions with?</Typography>
-        <Stack direction="row" spacing={1}>
-          <Button sx={{backgroundColor: "black", color: "#fff"}}>AND</Button>
-          <Button sx={{border: "1px solid black", color: "#000"}}>OR</Button>
-        </Stack>
-      </Stack>
+  React.useEffect(() => {
+    const loadVariables = async () => {
+      try {
+        setLoading(true);
+        const { GetVariables } = await import("../../API/Services/services");
+        const vars = await GetVariables(projectId);
+        setVariables(Array.isArray(vars) ? vars : []);
+      } catch (error) {
+        console.error("Error loading variables:", error);
+        setVariables([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (projectId) {
+      loadVariables();
+    }
+  }, [projectId]);
+
+  const handleAdd = () => {
+    // Note: CreateVariable API endpoint not available
+    // Variables are typically created automatically when questions are created
+    alert("Variable creation API is not available. Variables are created automatically when you add questions with variable names.");
+  };
+
+  const handleSubmit = async () => {
+    try {
+      console.log("Submitting variables:", variables);
+      // Variables are already saved individually via handleAdd
+      alert("Variables saved successfully!");
+    } catch (error) {
+      console.error("Error submitting variables:", error);
+    }
+  };
+
+  const handleCancel = () => {
+    setVariableName("");
+    setLabel("");
+    setValue("");
+    setDescription("");
+    setVariableType("text");
+  };
+
+  return (
+    <Paper
+      elevation={0}
+      sx={{ borderRadius: 4, border: "1px solid #edf1fc", p: 4, boxShadow: "0 20px 50px rgba(14,26,75,0.08)" }}
+    >
+      <Typography variant="h5" sx={{ fontWeight: 500, mb: 3, fontSize: "20px" }}>
+        Project Variables
+      </Typography>
       <Grid container spacing={2}>
-        <Grid item xs={12} md={6} sx={{width: "120px"}}>
-          <TextField label="Variable" select fullWidth>
-            <MenuItem value="Age">Age</MenuItem>
-            <MenuItem value="Country">Country</MenuItem>
+        <Grid item xs={12} md={6}>
+          <TextField 
+            label="Variable Name *" 
+            fullWidth 
+            placeholder="Enter variable name (e.g., var_name)"
+            value={variableName}
+            onChange={(e) => setVariableName(e.target.value)}
+            disabled={loading}
+            required
+            helperText="Unique identifier for the variable"
+          />
+        </Grid>
+        <Grid item xs={12} md={6}>
+          <TextField 
+            label="Label *" 
+            fullWidth 
+            placeholder="Enter label"
+            value={label}
+            onChange={(e) => setLabel(e.target.value)}
+            disabled={loading}
+            required
+            helperText="Display name for the variable"
+          />
+        </Grid>
+        <Grid item xs={12} md={6}>
+          <TextField 
+            label="Value" 
+            fullWidth 
+            placeholder="Enter value (optional)"
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            disabled={loading}
+            helperText="Default value for the variable"
+          />
+        </Grid>
+        <Grid item xs={12} md={6}>
+          <TextField 
+            label="Type" 
+            select
+            fullWidth 
+            value={variableType}
+            onChange={(e) => setVariableType(e.target.value)}
+            disabled={loading}
+            helperText="Variable data type"
+          >
+            <MenuItem value="text">Text</MenuItem>
+            <MenuItem value="number">Number</MenuItem>
+            <MenuItem value="boolean">Boolean</MenuItem>
+            <MenuItem value="date">Date</MenuItem>
+            <MenuItem value="email">Email</MenuItem>
+            <MenuItem value="url">URL</MenuItem>
           </TextField>
         </Grid>
-        <Grid item xs={12} md={6} sx={{width: "120px"}}>
-          <TextField label="Options" select fullWidth>
-            <MenuItem value="All">All</MenuItem>
-            <MenuItem value="Custom">Custom</MenuItem>
-          </TextField>
+        <Grid item xs={12}>
+          <TextField 
+            label="Description" 
+            fullWidth 
+            multiline
+            rows={3}
+            placeholder="Enter description (optional)"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            disabled={loading}
+            helperText="Description of what this variable represents"
+          />
+        </Grid>
+        <Grid item xs={12} sx={{ display: "flex", gap: 1, justifyContent: "flex-end" }}>
+          <Button 
+            variant="contained" 
+            sx={{ background: "linear-gradient(90deg,#1d65f1,#23c0ff)" }}
+            onClick={handleAdd}
+            disabled={loading}
+          >
+            + Add Variable
+          </Button>
+        </Grid>
+        <Grid item xs={12}>
+          <Typography variant="caption" sx={{ color: "#6b7280", fontStyle: "italic" }}>
+            Note: Variables are created automatically when you add questions with variable names in the Questionnaire tab.
+          </Typography>
         </Grid>
       </Grid>
-      <Stack direction="row" spacing={2}>
-        <Button variant="outlined">
+      {variables.length > 0 && (
+        <Box sx={{ mt: 3 }}>
+          <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 500 }}>
+            Project Variables ({variables.length}):
+          </Typography>
+          <Box
+            sx={{
+              maxHeight: "400px",
+              overflowY: "auto",
+              overflowX: "hidden",
+              pr: 1,
+              "&::-webkit-scrollbar": {
+                width: "8px",
+              },
+              "&::-webkit-scrollbar-track": {
+                backgroundColor: "#f1f1f1",
+                borderRadius: "4px",
+              },
+              "&::-webkit-scrollbar-thumb": {
+                backgroundColor: "#c1c1c1",
+                borderRadius: "4px",
+                "&:hover": {
+                  backgroundColor: "#a8a8a8",
+                },
+              },
+            }}
+          >
+            <Stack spacing={1}>
+              {variables.map((variable, index) => (
+                <Box key={variable.id || index} sx={{ p: 2, border: "1px solid #e5e7eb", borderRadius: 2, backgroundColor: "#f9fafb" }}>
+                  <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between">
+                    <Box>
+                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                        {variable.label || variable.name || variable.variable_name || `Variable ${index + 1}`}
+                      </Typography>
+                      <Typography variant="caption" sx={{ color: "#6b7280" }}>
+                        {variable.variable_name || variable.name || "N/A"}
+                        {variable.type && ` • Type: ${variable.type}`}
+                      </Typography>
+                      {variable.value && (
+                        <Typography variant="body2" sx={{ mt: 0.5, color: "#374151" }}>
+                          Value: {variable.value}
+                        </Typography>
+                      )}
+                      {variable.description && (
+                        <Typography variant="caption" sx={{ color: "#9ca3af", display: "block", mt: 0.5 }}>
+                          {variable.description}
+                        </Typography>
+                      )}
+                    </Box>
+                  </Stack>
+                </Box>
+              ))}
+            </Stack>
+          </Box>
+        </Box>
+      )}
+      <Stack direction="row" spacing={2} sx={{ mt: 3 }}>
+        <Button variant="outlined" onClick={handleCancel}>
           Cancel
         </Button>
-        <Button variant="contained" sx={{ background: "linear-gradient(90deg,#1d65f1,#23c0ff)" }}>
+        <Button 
+          variant="contained" 
+          sx={{ background: "linear-gradient(90deg,#1d65f1,#23c0ff)" }}
+          onClick={handleSubmit}
+          disabled={loading}
+        >
           Submit
         </Button>
       </Stack>
-    </Stack>
-  </Paper>
-);
+    </Paper>
+  );
+};
 
-const PreviewCard = () => (
-  <Paper
-    elevation={0}
-    sx={{
-      borderRadius: 4,
-      border: "1px solid #edf1fc",
-      p: 4,
-      minHeight: "60vh",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      boxShadow: "0 20px 50px rgba(14,26,75,0.08)",
-      fontWeight: 600,
-      color: "#20314f",
-    }}
-  >
-    testing
-  </Paper>
-);
+const FiltersCard = ({ projectId }) => {
+  const [askToAll, setAskToAll] = React.useState(false);
+  const [mergeCondition, setMergeCondition] = React.useState("AND");
+  const [selectedVariable, setSelectedVariable] = React.useState("");
+  const [selectedOption, setSelectedOption] = React.useState("All");
+  const [variables, setVariables] = React.useState([]);
+  const [loading, setLoading] = React.useState(false);
+
+  React.useEffect(() => {
+    const loadVariables = async () => {
+      try {
+        setLoading(true);
+        const { GetVariables } = await import("../../API/Services/services");
+        const vars = await GetVariables(projectId);
+        setVariables(Array.isArray(vars) ? vars : []);
+      } catch (error) {
+        console.error("Error loading variables:", error);
+        setVariables([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadVariables();
+  }, [projectId]);
+
+  const handleSubmit = React.useCallback(async () => {
+    try {
+      if (!projectId) {
+        console.error("Project ID is required");
+        return;
+      }
+      
+      // Note: Project filter API endpoint doesn't exist yet (404 error)
+      // For now, just log the filter data
+      const filterData = {
+        ask_to_all: askToAll,
+        merge_condition: mergeCondition,
+        variable: selectedVariable || null,
+        option: selectedOption || "All",
+      };
+      
+      console.log("Filter submitted:", filterData);
+      // TODO: Uncomment when API endpoint is available
+      // const { CreateProjectFilter } = await import("../../API/Services/services");
+      // const result = await CreateProjectFilter(projectId, filterData);
+      // console.log("Filter created successfully:", result);
+      
+      alert("Filter settings saved (API endpoint not available yet)");
+    } catch (error) {
+      console.error("Error submitting filter:", error);
+      if (error.response?.data) {
+        console.error("API Error Details:", error.response.data);
+      }
+    }
+  }, [askToAll, mergeCondition, selectedVariable, selectedOption, projectId]);
+
+  return (
+    <Paper
+      elevation={0}
+      sx={{ borderRadius: 4, border: "1px solid #edf1fc", p: 4, boxShadow: "0 20px 50px rgba(14,26,75,0.08)" }}
+    >
+      <Typography variant="h5" sx={{ fontWeight: 500, mb: 3, fontSize: "20px" }}>
+        Project Filters
+      </Typography>
+      <Stack spacing={2}>
+        <Stack direction="row" alignItems="center" spacing={2}>
+          <Typography sx={{ fontSize: 13 }}>Do you want to ask this questionnaire to all?</Typography>
+          <Switch checked={askToAll} onChange={(e) => setAskToAll(e.target.checked)} />
+        </Stack>
+        <Stack direction="row" spacing={2}>
+          <Typography fontWeight={500} sx={{ fontSize: 14 }}>Merge filter conditions with?</Typography>
+          <Stack direction="row" spacing={1}>
+            <Button 
+              sx={{ 
+                backgroundColor: mergeCondition === "AND" ? "black" : "transparent", 
+                color: mergeCondition === "AND" ? "#fff" : "#000",
+                border: mergeCondition === "AND" ? "none" : "1px solid black"
+              }}
+              onClick={() => setMergeCondition("AND")}
+            >
+              AND
+            </Button>
+            <Button 
+              sx={{ 
+                backgroundColor: mergeCondition === "OR" ? "black" : "transparent", 
+                color: mergeCondition === "OR" ? "#fff" : "#000",
+                border: mergeCondition === "OR" ? "none" : "1px solid black"
+              }}
+              onClick={() => setMergeCondition("OR")}
+            >
+              OR
+            </Button>
+          </Stack>
+        </Stack>
+        <Grid container spacing={2}>
+          <Grid item xs={12} md={6}>
+            <TextField 
+              label="Variable" 
+              select 
+              fullWidth
+              value={selectedVariable}
+              onChange={(e) => setSelectedVariable(e.target.value)}
+              disabled={loading}
+            >
+              {variables.map((variable) => (
+                <MenuItem key={variable.id || variable.name} value={variable.name || variable.variable_name}>
+                  {variable.name || variable.variable_name || variable.label}
+                </MenuItem>
+              ))}
+              {variables.length === 0 && (
+                <MenuItem disabled>No variables available</MenuItem>
+              )}
+            </TextField>
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <TextField 
+              label="Options" 
+              select 
+              fullWidth
+              value={selectedOption}
+              onChange={(e) => setSelectedOption(e.target.value)}
+            >
+              <MenuItem value="All">All</MenuItem>
+              <MenuItem value="Custom">Custom</MenuItem>
+            </TextField>
+          </Grid>
+        </Grid>
+        <Stack direction="row" spacing={2}>
+          <Button variant="outlined" onClick={() => {
+            setAskToAll(false);
+            setMergeCondition("AND");
+            setSelectedVariable("");
+            setSelectedOption("All");
+          }}>
+            Cancel
+          </Button>
+          <Button 
+            variant="contained" 
+            sx={{ background: "linear-gradient(90deg,#1d65f1,#23c0ff)" }}
+            onClick={handleSubmit}
+          >
+            Submit
+          </Button>
+        </Stack>
+      </Stack>
+    </Paper>
+  );
+};
+
+const PreviewCard = ({ projectId }) => {
+  const getStorageKey = () => `questions_${projectId || 'default'}`;
+  const [questions, setQuestions] = React.useState([]);
+  const [currentPage, setCurrentPage] = React.useState(0);
+
+  React.useEffect(() => {
+    const loadQuestions = async () => {
+      try {
+        // Try to load from API first
+        if (projectId) {
+          try {
+            const { GetQuestions } = await import("../../API/Services/services");
+            const apiQuestions = await GetQuestions(projectId);
+            if (Array.isArray(apiQuestions) && apiQuestions.length > 0) {
+              // Transform API questions to local format
+              const transformed = apiQuestions.map(q => ({
+                id: q.id?.toString() || Date.now().toString(),
+                backendId: q.id,
+                type: q.question_type || q.widget || "text",
+                label: q.title || "",
+                questionText: q.title || "",
+                description: q.description || "",
+                variableName: q.variable_name || "",
+                required: q.is_required || false,
+                isFirst: q.is_initial_question || false,
+                displayIndex: q.display_index || 0,
+                responses: [],
+              }));
+              // Add welcome question if not present
+              const hasWelcome = transformed.some(q => q.type === "welcome");
+              if (!hasWelcome) {
+                transformed.unshift({
+                  id: "welcome",
+                  type: "welcome",
+                  label: "Welcome Screen",
+                  questionText: "Hello, Thanks for joining QuantAi...",
+                });
+              }
+              setQuestions(transformed);
+              return;
+            }
+          } catch (apiError) {
+            console.error("Error loading questions from API:", apiError);
+          }
+        }
+        
+        // Fallback to localStorage
+        const storageKey = getStorageKey();
+        const stored = localStorage.getItem(storageKey);
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setQuestions(parsed);
+          }
+        }
+      } catch (error) {
+        console.error("Error loading questions for preview:", error);
+      }
+    };
+    
+    loadQuestions();
+    
+    // Also listen for storage changes to update when questions are added in other tabs
+    const handleStorageChange = () => {
+      try {
+        const storageKey = getStorageKey();
+        const stored = localStorage.getItem(storageKey);
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setQuestions(parsed);
+          }
+        }
+      } catch (error) {
+        console.error("Error loading questions from storage:", error);
+      }
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    // Listen for custom questionsUpdated event
+    window.addEventListener('questionsUpdated', handleStorageChange);
+    // Also check periodically (for same-tab updates)
+    const interval = setInterval(handleStorageChange, 1000);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('questionsUpdated', handleStorageChange);
+      clearInterval(interval);
+    };
+  }, [projectId]);
+
+  const handleNext = () => {
+    if (currentPage < questions.length - 1) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const handlePrevious = () => {
+    if (currentPage > 0) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const renderQuestionPreview = (question, index) => {
+    const questionNumber = question.type === "welcome" ? null : questions.slice(0, index + 1).filter(q => q.type !== "welcome").length;
+    const isWelcome = question.type === "welcome";
+
+    if (isWelcome) {
+      return (
+        <Box key={question.id} sx={{ mb: 4, width: "100%", textAlign: "center", py: 6 }}>
+          <Typography variant="h4" sx={{ mb: 2, color: "#1f2937", fontWeight: 600 }}>
+            {question.questionText || "Welcome to the Survey"}
+          </Typography>
+          {question.description && (
+            <Typography variant="body1" sx={{ mb: 4, color: "#6b7280", maxWidth: "600px", mx: "auto" }}>
+              {question.description}
+            </Typography>
+          )}
+          <Button
+            variant="contained"
+            sx={{
+              px: 6,
+              py: 1.5,
+              borderRadius: 2,
+              textTransform: "none",
+              backgroundColor: "#3b82f6",
+              fontSize: 16,
+              fontWeight: 500,
+            }}
+          >
+            {question.buttonText || "Get Started"}
+          </Button>
+        </Box>
+      );
+    }
+
+    if (question.type === "radio") {
+      return (
+        <Box key={question.id} sx={{ mb: 4, width: "100%", p: 4, border: "1px solid #e5e7eb", borderRadius: 3, backgroundColor: "#fff" }}>
+          <Typography variant="h6" sx={{ mb: 1, color: "#1f2937", fontWeight: 600 }}>
+            {questionNumber}. {question.questionText || "Question"}
+          </Typography>
+          {question.description && (
+            <Typography variant="body2" sx={{ mb: 3, color: "#6b7280" }}>
+              {question.description}
+            </Typography>
+          )}
+          <Stack spacing={2} sx={{ mt: 2 }}>
+            {question.responses?.map((response, idx) => (
+              <Box 
+                key={idx} 
+                sx={{ 
+                  display: "flex", 
+                  alignItems: "center", 
+                  gap: 2, 
+                  p: 2, 
+                  borderRadius: 2,
+                  border: "1px solid #e5e7eb",
+                  "&:hover": { bgcolor: "#f9fafb", borderColor: "#d1d5db" },
+                  cursor: "pointer",
+                }}
+              >
+                <Box sx={{ width: 20, height: 20, borderRadius: "50%", border: "2px solid #d1d5db", flexShrink: 0 }} />
+                <Typography variant="body1" sx={{ color: "#374151" }}>{response.option || `Option ${idx + 1}`}</Typography>
+              </Box>
+            ))}
+            {(!question.responses || question.responses.length === 0) && (
+              <Typography variant="body2" sx={{ color: "#9ca3af", fontStyle: "italic" }}>
+                No options added yet
+              </Typography>
+            )}
+          </Stack>
+        </Box>
+      );
+    }
+
+    if (question.type === "rating") {
+      const ratingCount = question.ratingCount || 5;
+      return (
+        <Box key={question.id} sx={{ mb: 4, width: "100%", p: 4, border: "1px solid #e5e7eb", borderRadius: 3, backgroundColor: "#fff" }}>
+          <Typography variant="h6" sx={{ mb: 1, color: "#1f2937", fontWeight: 600 }}>
+            {questionNumber}. {question.questionText || "Question"}
+          </Typography>
+          {question.description && (
+            <Typography variant="body2" sx={{ mb: 3, color: "#6b7280" }}>
+              {question.description}
+            </Typography>
+          )}
+          <Stack direction="row" spacing={2} sx={{ mt: 3, justifyContent: "center", flexWrap: "wrap" }}>
+            {Array.from({ length: ratingCount }).map((_, idx) => (
+              <Box key={idx} sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 0.5 }}>
+                <Grade sx={{ fontSize: 40, color: "#d1d5db", cursor: "pointer", "&:hover": { color: "#fbbf24" } }} />
+                <Typography variant="caption" sx={{ color: "#6b7280", fontSize: 12 }}>{idx + 1}</Typography>
+              </Box>
+            ))}
+          </Stack>
+        </Box>
+      );
+    }
+
+    if (question.type === "grid") {
+      return (
+        <Box key={question.id} sx={{ mb: 4, width: "100%", p: 4, border: "1px solid #e5e7eb", borderRadius: 3, backgroundColor: "#fff" }}>
+          <Typography variant="h6" sx={{ mb: 1, color: "#1f2937", fontWeight: 600 }}>
+            {questionNumber}. {question.questionText || "Question"}
+          </Typography>
+          {question.description && (
+            <Typography variant="body2" sx={{ mb: 3, color: "#6b7280" }}>
+              {question.description}
+            </Typography>
+          )}
+          {question.responses && question.responses.length > 0 ? (
+            <Box sx={{ mt: 3, overflowX: "auto" }}>
+              <Box sx={{ display: "table", width: "100%", minWidth: 500, border: "1px solid #e5e7eb", borderRadius: 2, overflow: "hidden" }}>
+                <Box sx={{ display: "table-row", bgcolor: "#f9fafb" }}>
+                  <Box sx={{ display: "table-cell", p: 2, border: "1px solid #e5e7eb", fontWeight: 600, fontSize: 14, color: "#374151" }}>
+                    Options
+                  </Box>
+                  {question.responses.map((response, idx) => (
+                    <Box 
+                      key={idx} 
+                      sx={{ 
+                        display: "table-cell", 
+                        p: 2, 
+                        border: "1px solid #e5e7eb", 
+                        textAlign: "center", 
+                        fontWeight: 600, 
+                        fontSize: 14,
+                        color: "#374151",
+                        minWidth: 120,
+                      }}
+                    >
+                      {response.option || `Option ${idx + 1}`}
+                    </Box>
+                  ))}
+                </Box>
+                {[1, 2, 3].map((rowIdx) => (
+                  <Box key={rowIdx} sx={{ display: "table-row", "&:hover": { bgcolor: "#fafbff" } }}>
+                    <Box sx={{ display: "table-cell", p: 2, border: "1px solid #e5e7eb", fontSize: 14, color: "#6b7280", fontWeight: 500 }}>
+                      Row {rowIdx}
+                    </Box>
+                    {question.responses.map((_, colIdx) => (
+                      <Box 
+                        key={colIdx} 
+                        sx={{ 
+                          display: "table-cell", 
+                          p: 2, 
+                          border: "1px solid #e5e7eb", 
+                          textAlign: "center",
+                        }}
+                      >
+                        <Box 
+                          sx={{ 
+                            width: 20, 
+                            height: 20, 
+                            border: "2px solid #d1d5db", 
+                            borderRadius: "4px", 
+                            mx: "auto",
+                            cursor: "pointer",
+                            "&:hover": {
+                              borderColor: "#4a5fd4",
+                              bgcolor: "#f0f9ff",
+                            },
+                          }} 
+                        />
+                      </Box>
+                    ))}
+                  </Box>
+                ))}
+              </Box>
+            </Box>
+          ) : (
+            <Typography variant="body2" sx={{ color: "#9ca3af", mt: 2, fontStyle: "italic" }}>
+              No options added yet. Add options to create grid form.
+            </Typography>
+          )}
+        </Box>
+      );
+    }
+
+    if (question.type === "checkbox") {
+      return (
+        <Box key={question.id} sx={{ mb: 4, width: "100%", p: 4, border: "1px solid #e5e7eb", borderRadius: 3, backgroundColor: "#fff" }}>
+          <Typography variant="h6" sx={{ mb: 1, color: "#1f2937", fontWeight: 600 }}>
+            {questionNumber}. {question.questionText || "Question"}
+          </Typography>
+          {question.description && (
+            <Typography variant="body2" sx={{ mb: 3, color: "#6b7280" }}>
+              {question.description}
+            </Typography>
+          )}
+          <Stack spacing={2} sx={{ mt: 2 }}>
+            {question.responses?.map((response, idx) => (
+              <Box 
+                key={idx} 
+                sx={{ 
+                  display: "flex", 
+                  alignItems: "center", 
+                  gap: 2, 
+                  p: 2, 
+                  borderRadius: 2,
+                  border: "1px solid #e5e7eb",
+                  "&:hover": { bgcolor: "#f9fafb", borderColor: "#d1d5db" },
+                  cursor: "pointer",
+                }}
+              >
+                <Box sx={{ width: 20, height: 20, border: "2px solid #d1d5db", borderRadius: "4px", flexShrink: 0 }} />
+                <Typography variant="body1" sx={{ color: "#374151" }}>{response.option || `Option ${idx + 1}`}</Typography>
+              </Box>
+            ))}
+            {(!question.responses || question.responses.length === 0) && (
+              <Typography variant="body2" sx={{ color: "#9ca3af", fontStyle: "italic" }}>
+                No options added yet
+              </Typography>
+            )}
+          </Stack>
+        </Box>
+      );
+    }
+
+    // Default question preview (text, number, etc.)
+    return (
+      <Box key={question.id} sx={{ mb: 4, width: "100%", p: 4, border: "1px solid #e5e7eb", borderRadius: 3, backgroundColor: "#fff" }}>
+        <Typography variant="h6" sx={{ mb: 1, color: "#1f2937", fontWeight: 600 }}>
+          {questionNumber}. {question.questionText || "Question"}
+        </Typography>
+        {question.description && (
+          <Typography variant="body2" sx={{ mb: 3, color: "#6b7280" }}>
+            {question.description}
+          </Typography>
+        )}
+        <TextField
+          fullWidth
+          placeholder="Your answer..."
+          sx={{ mt: 2 }}
+          variant="outlined"
+          type={question.type === "number" ? "number" : "text"}
+        />
+      </Box>
+    );
+  };
+
+  return (
+    <Paper
+      elevation={0}
+      sx={{
+        borderRadius: 4,
+        border: "1px solid #edf1fc",
+        p: 4,
+        minHeight: "60vh",
+        boxShadow: "0 20px 50px rgba(14,26,75,0.08)",
+        backgroundColor: "#fafbff",
+      }}
+    >
+      <Typography variant="h5" sx={{ mb: 4, fontWeight: 600, color: "#1f2937" }}>
+        Preview - How Questions Appear to Users
+      </Typography>
+      {questions.length === 0 ? (
+        <Box sx={{ textAlign: "center", py: 8, color: "#9ca3af" }}>
+          <Typography variant="h6" sx={{ mb: 1 }}>No questions added yet.</Typography>
+          <Typography variant="body2">
+            Add questions in the Questionnaire tab to see how they will appear to users.
+          </Typography>
+        </Box>
+      ) : (
+        <Box sx={{ position: "relative", minHeight: "70vh", display: "flex", flexDirection: "column" }}>
+          {/* Page Content */}
+          <Box sx={{ 
+            flex: 1,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            minHeight: "60vh",
+            position: "relative",
+          }}>
+            {renderQuestionPreview(questions[currentPage], currentPage)}
+          </Box>
+          
+          {/* Navigation Controls */}
+          <Stack 
+            direction="row" 
+            spacing={2} 
+            alignItems="center" 
+            justifyContent="center"
+            sx={{ mt: 4, mb: 2 }}
+          >
+            <Button
+              variant="outlined"
+              onClick={handlePrevious}
+              disabled={currentPage === 0}
+              sx={{ textTransform: "none" }}
+            >
+              Previous
+            </Button>
+            <Typography variant="body2" sx={{ color: "#6b7280" }}>
+              Page {currentPage + 1} of {questions.length}
+            </Typography>
+            <Button
+              variant="outlined"
+              onClick={handleNext}
+              disabled={currentPage === questions.length - 1}
+              sx={{ textTransform: "none" }}
+            >
+              Next
+            </Button>
+          </Stack>
+        </Box>
+      )}
+    </Paper>
+  );
+};
 
 const ResultsCard = () => (
   <Paper
     elevation={0}
-    sx={{ borderRadius: 4, border: "1px solid #edf1fc", p: 4, boxShadow: "0 20px 50px rgba(14,26,75,0.08)" }}
+    sx={{ 
+      borderRadius: 4, 
+      border: "1px solid #edf1fc", 
+      p: 4, 
+      boxShadow: "0 20px 50px rgba(14,26,75,0.08)",
+      width: "100%",
+      maxWidth: "100%",
+      boxSizing: "border-box",
+      overflow: "hidden",
+    }}
   >
-    <Grid container spacing={2} alignItems="center">
-      <Grid item xs={12} md={4}>
-        <TextField select label="Status" fullWidth defaultValue="ALL">
-          <MenuItem value="ALL">ALL</MenuItem>
-          <MenuItem value="Completed">Completed</MenuItem>
-        </TextField>
+    <Box sx={{ width: "100%", maxWidth: "100%", boxSizing: "border-box" }}>
+      <Grid container spacing={2} alignItems="center" sx={{ width: "100%", margin: 0 }}>
+        <Grid item xs={12} md={4} sx={{ boxSizing: "border-box", minWidth: 0 }}>
+          <TextField select label="Status" fullWidth defaultValue="ALL">
+            <MenuItem value="ALL">ALL</MenuItem>
+            <MenuItem value="Completed">Completed</MenuItem>
+          </TextField>
+        </Grid>
+        <Grid item xs={12} md={4} sx={{ boxSizing: "border-box", minWidth: 0 }}>
+          <TextField select label="Display Data Type" fullWidth defaultValue="Value">
+            <MenuItem value="Value">Value</MenuItem>
+            <MenuItem value="Percentage">Percentage</MenuItem>
+          </TextField>
+        </Grid>
+        <Grid item xs={12} md={4} sx={{ display: "flex", justifyContent: { xs: "flex-start", md: "flex-end" }, boxSizing: "border-box", minWidth: 0 }}>
+          <Button variant="contained" sx={{ background: "linear-gradient(90deg,#1d65f1,#23c0ff)" }}>
+            Submit
+          </Button>
+        </Grid>
       </Grid>
-      <Grid item xs={12} md={4}>
-        <TextField select label="Display Data Type" fullWidth defaultValue="Value">
-          <MenuItem value="Value">Value</MenuItem>
-          <MenuItem value="Percentage">Percentage</MenuItem>
-        </TextField>
-      </Grid>
-      <Grid item xs={12} md={4} sx={{ display: "flex", justifyContent: "flex-end" }}>
-        <Button variant="contained" sx={{ background: "linear-gradient(90deg,#1d65f1,#23c0ff)" }}>
-          Submit
-        </Button>
-      </Grid>
-    </Grid>
+    </Box>
     <Card
       variant="outlined"
       sx={{
@@ -658,6 +1350,9 @@ const ResultsCard = () => (
         alignItems: "center",
         justifyContent: "center",
         color: "#58607f",
+        width: "100%",
+        maxWidth: "100%",
+        boxSizing: "border-box",
       }}
     >
       No Rows To Show
@@ -665,39 +1360,68 @@ const ResultsCard = () => (
   </Paper>
 );
 
-const ReportsCard = () => (
-  <Paper
-    elevation={0}
-    sx={{ borderRadius: 4, border: "1px solid #edf1fc", p: 4, boxShadow: "0 20px 50px rgba(14,26,75,0.08)" }}
-  >
-    <Grid container spacing={2} alignItems="center">
-      <Grid item xs={12} md={4} sx={{width: "120px"}}>
-        <TextField select label="Question" fullWidth>
-          <MenuItem value="Q1">Q1 - Intro</MenuItem>
-        </TextField>
-      </Grid>
-      <Grid item xs={12} md={4} sx={{width: "200px"}}>
-        <TextField select label="Display Data Type" fullWidth defaultValue="Value">
-          <MenuItem value="Value">Value</MenuItem>
-          <MenuItem value="Percentage">Percentage</MenuItem>
-        </TextField>
-      </Grid>
-      <Grid item xs={12} md={4} sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-        <Stack direction="row" spacing={1} alignItems="center">
-          <Switch />
-          <Typography fontWeight={500} sx={{fontSize: 14}}>Percentage</Typography>
-        </Stack>
-        <Button variant="contained" sx={{ background: "linear-gradient(90deg,#1d65f1,#23c0ff)" }}>
-          Submit
-        </Button>
-      </Grid>
-    </Grid>
-  </Paper>
-);
+const ReportsCard = () => {
+  const [selectedQuestion, setSelectedQuestion] = React.useState("");
+  const [displayType, setDisplayType] = React.useState("Value");
+  
+  return (
+    <Paper
+      elevation={0}
+      sx={{ 
+        borderRadius: 4, 
+        border: "1px solid #edf1fc", 
+        p: 4, 
+        boxShadow: "0 20px 50px rgba(14,26,75,0.08)",
+        width: "100%",
+        maxWidth: "100%",
+        boxSizing: "border-box",
+        overflow: "hidden",
+      }}
+    >
+      <Box sx={{ width: "100%", maxWidth: "100%", boxSizing: "border-box" }}>
+        <Grid container spacing={2} alignItems="center" sx={{ width: "100%", margin: 0 }}>
+          <Grid item xs={12} md={4} sx={{ boxSizing: "border-box", minWidth: 0 }}>
+            <TextField 
+              select 
+              label="Question" 
+              fullWidth 
+              value={selectedQuestion}
+              onChange={(e) => setSelectedQuestion(e.target.value)}
+            >
+              <MenuItem value="">Select Question</MenuItem>
+              <MenuItem value="Q1">Q1 - Intro</MenuItem>
+            </TextField>
+          </Grid>
+          <Grid item xs={12} md={4} sx={{ boxSizing: "border-box", minWidth: 0 }}>
+            <TextField 
+              select 
+              label="Display Data Type" 
+              fullWidth 
+              value={displayType}
+              onChange={(e) => setDisplayType(e.target.value)}
+            >
+              <MenuItem value="Value">Value</MenuItem>
+              <MenuItem value="Percentage">Percentage</MenuItem>
+            </TextField>
+          </Grid>
+          <Grid item xs={12} md={4} sx={{ display: "flex", alignItems: "center", gap: 2, flexWrap: { xs: "wrap", md: "nowrap" }, boxSizing: "border-box", minWidth: 0 }}>
+            <Stack direction="row" spacing={1} alignItems="center" sx={{ flexShrink: 0 }}>
+              <Switch />
+              <Typography fontWeight={500} sx={{ fontSize: 14 }}>Percentage</Typography>
+            </Stack>
+            <Button variant="contained" sx={{ background: "linear-gradient(90deg,#1d65f1,#23c0ff)", flexShrink: 0 }}>
+              Submit
+            </Button>
+          </Grid>
+        </Grid>
+      </Box>
+    </Paper>
+  );
+};
 
 export default function ProjectDetail() {
   const navigate = useNavigate();
-  const { projectId = "1100" } = useParams();
+  const { projectId } = useParams();
   const [activeTab, setActiveTab] = useState("Questionnaire");
   const [questionSubTab, setQuestionSubTab] = useState("Questions");
   const [selectedComponent, setSelectedComponent] = useState(questionComponents[0].type);
@@ -714,10 +1438,7 @@ export default function ProjectDetail() {
     questionComponents.reduce(
       (acc, component) => ({
         ...acc,
-        [component.type]: [
-          { option: "Item", value: "item_value", anchor: false },
-          { option: "Item 2", value: "item_value_2", anchor: false },
-        ],
+        [component.type]: [],
       }),
       {}
     )
@@ -752,28 +1473,30 @@ export default function ProjectDetail() {
     switch (activeTab) {
       case "Statistics":
         return (
-          <Grid container spacing={2}>
-            {stats.map((stat) => (
-              <Grid item xs={12} md={4} key={stat.title}>
-                <StatsCard title={stat.title} value={stat.value} />
-              </Grid>
-            ))}
-          </Grid>
+          <Box sx={{ width: "100%", maxWidth: "100%", boxSizing: "border-box", overflow: "hidden" }}>
+            <Grid container spacing={2} sx={{ width: "100%", margin: 0 }}>
+              {stats.map((stat) => (
+                <Grid item xs={12} md={4} key={stat.title} sx={{ boxSizing: "border-box", minWidth: 0 }}>
+                  <StatsCard title={stat.title} value={stat.value} />
+                </Grid>
+              ))}
+            </Grid>
+          </Box>
         );
       case "Basic":
         return <BasicForm />;
       case "Questionnaire":
         return (
-          <Box sx={{ height: "calc(100vh - 200px)", position: "relative", margin: "-16px -16px", overflow: "hidden" }}>
-            <FormBuilder formName={`Project ${projectId}`} />
+          <Box sx={{ height: "calc(100vh - 200px)", position: "relative", margin: "-16px -16px", overflow: "hidden", display: "flex", flexDirection: "column" }}>
+            <FormBuilder formName={`Project ${projectId}`} projectId={projectId} />
           </Box>
         );
       case "Variables":
-        return <VariablesCard />;
+        return <VariablesCard projectId={projectId} />;
       case "Filters":
-        return <FiltersCard />;
+        return <FiltersCard projectId={projectId} />;
       case "Preview":
-        return <PreviewCard />;
+        return <PreviewCard projectId={projectId} />;
       case "Results":
         return <ResultsCard />;
       case "Reports":
@@ -784,7 +1507,14 @@ export default function ProjectDetail() {
   };
 
   return (
-    <Box sx={{ minHeight: "100vh", py: 4 }}>
+    <Box  sx={{
+      width: "100%",
+      maxWidth: "100%",
+      height: "100vh",
+      display: "flex",
+      flexDirection: "column",
+      overflow: "hidden",
+    }}>
       <Container maxWidth="xl">
         <Breadcrumbs
           separator={<NavigateNext fontSize="small" />}

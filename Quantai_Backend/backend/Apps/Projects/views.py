@@ -33,6 +33,22 @@ class LanguageViewSet(viewsets.ModelViewSet):
     ordering_fields = ['name', 'code', 'created_at']
     ordering = ['name']
 
+    def get_queryset(self):
+        """
+        Languages are generally global resources, but we can optionally
+        filter to show only languages used in user's projects.
+        
+        For now: All users can see all languages (global resource)
+        """
+        # Languages are a global resource - no filtering needed
+        # If you want to restrict: uncomment the code below
+        # user = self.request.user
+        # if user.profile_type in ['CL', 'CM']:
+        #     return Language.objects.filter(
+        #         project_languages__created_by=user
+        #     ).distinct()
+        return super().get_queryset()
+
 
 class ProjectViewSet(viewsets.ModelViewSet):
     """
@@ -54,6 +70,43 @@ class ProjectViewSet(viewsets.ModelViewSet):
     search_fields = ['title', 'code', 'description']
     ordering_fields = ['created_at', 'start_time', 'end_time', 'title']
     ordering = ['-created_at']
+
+    def get_queryset(self):
+        """
+        Filter projects based on user role:
+        - Audience (AU): Only active surveys in production/live mode (public surveys)
+        - Clients (CL, CM): See only projects they created
+        - Admins (SU, DV, AD, AM): See all projects
+        """
+        user = self.request.user
+        queryset = super().get_queryset()
+
+        # Audience users can see active public surveys only
+        if user.profile_type == 'AU':
+            return queryset.filter(
+                active=True,
+                mode__in=['PR', 'LI']  # Production or Live
+            )
+
+        # Admins see all projects
+        if user.profile_type in ['SU', 'DV', 'AD', 'AM']:
+            return queryset
+
+        # Clients see only their own projects
+        if user.profile_type in ['CL', 'CM']:
+            return queryset.filter(created_by=user)
+
+        # Default: only public surveys
+        return queryset.filter(active=True, mode__in=['PR', 'LI'])
+
+    def list(self, request, *args, **kwargs):
+        """
+        Override list to show public surveys to audience users.
+        
+        AU users can see active surveys in production/live mode
+        """
+        # Allow audience users to see public/active surveys
+        return super().list(request, *args, **kwargs)
 
     def get_serializer_class(self):
         """Use different serializers for list and detail views"""
@@ -94,6 +147,92 @@ class ProjectViewSet(viewsets.ModelViewSet):
         serializer = QuestionListSerializer(questions, many=True)
         return Response(serializer.data)
 
+    @action(detail=True, methods=['get'])
+    def statistics(self, request, pk=None):
+        """
+        Get comprehensive statistics for this project/survey
+        
+        Returns:
+            - Project summary (total questions, total participants, completion rate)
+            - Question-level stats (responses per question)
+            - Participant-level stats (who answered, completion percentage)
+        """
+        from django.db.models import Count
+        from Apps.Survey.models import Question, Answer
+        
+        project = self.get_object()
+        
+        # Get all questions for this project
+        questions = Question.objects.filter(project=project).values('id', 'title', 'is_required')
+        total_questions = questions.count()
+        
+        # Get all answers for this project
+        answers = Answer.objects.filter(project=project)
+        
+        # Get unique participants
+        participants = answers.values('profile').annotate(
+            answer_count=Count('id')
+        ).values('profile', 'profile__email', 'profile__first_name', 'profile__last_name', 'answer_count')
+        
+        total_participants = participants.count()
+        
+        # Calculate question statistics
+        question_stats = []
+        for question in questions:
+            responses_count = Answer.objects.filter(
+                project=project,
+                question_id=question['id']
+            ).count()
+            
+            completion_percentage = (responses_count / total_participants * 100) if total_participants > 0 else 0
+            
+            question_stats.append({
+                'question_id': question['id'],
+                'title': question['title'],
+                'is_required': question['is_required'],
+                'responses_count': responses_count,
+                'completion_percentage': round(completion_percentage, 2)
+            })
+        
+        # Calculate participant statistics
+        participant_stats = []
+        for participant in participants:
+            completion_percentage = (participant['answer_count'] / total_questions * 100) if total_questions > 0 else 0
+            
+            # Get last answer timestamp
+            last_answer = Answer.objects.filter(
+                project=project,
+                profile_id=participant['profile']
+            ).order_by('-created_at').first()
+            
+            participant_stats.append({
+                'profile_id': participant['profile'],
+                'email': participant['profile__email'],
+                'name': f"{participant['profile__first_name'] or ''} {participant['profile__last_name'] or ''}".strip() or 'N/A',
+                'answered_questions': participant['answer_count'],
+                'total_questions': total_questions,
+                'completion_percentage': round(completion_percentage, 2),
+                'last_answer_at': last_answer.created_at.strftime('%d-%m-%Y %H:%M') if last_answer else None
+            })
+        
+        # Overall completion rate
+        total_possible_answers = total_questions * total_participants
+        total_actual_answers = answers.count()
+        overall_completion_rate = (total_actual_answers / total_possible_answers * 100) if total_possible_answers > 0 else 0
+        
+        return Response({
+            'project': {
+                'id': project.id,
+                'title': project.title,
+                'code': project.code,
+                'total_questions': total_questions,
+                'total_participants': total_participants,
+                'overall_completion_rate': round(overall_completion_rate, 2)
+            },
+            'question_statistics': question_stats,
+            'participant_statistics': participant_stats
+        })
+
     def perform_destroy(self, instance):
         """Custom delete to check if project can be deleted"""
         if instance.active:
@@ -121,14 +260,23 @@ class ProjectQuotaViewSet(viewsets.ModelViewSet):
     ordering = ['-created_at']
 
     def get_queryset(self):
-        """Filter by project if provided in query params"""
+        """
+        Filter project quotas based on user role.
+        Quotas belong to projects.
+        """
+        user = self.request.user
         queryset = super().get_queryset()
-        project_id = self.request.query_params.get('project')
 
-        if project_id:
-            queryset = queryset.filter(project_id=project_id)
+        # Admins see all quotas
+        if user.profile_type in ['SU', 'DV', 'AD', 'AM']:
+            return queryset
 
-        return queryset
+        # Clients see only quotas from their own projects
+        if user.profile_type in ['CL', 'CM']:
+            return queryset.filter(project__created_by=user)
+
+        # Audience: no access to quotas
+        return ProjectQuota.objects.none()
 
 
 class ProjectFilterViewSet(viewsets.ModelViewSet):
@@ -236,6 +384,24 @@ class ProjectAudianceDetailsViewSet(viewsets.ModelViewSet):
     queryset = ProjectAudianceDetails.objects.all()
     serializer_class = ProjectAudianceDetailsSerializer
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        """
+        Filter audience details based on user role.
+        """
+        user = self.request.user
+        queryset = super().get_queryset()
+
+        # Admins see all audience details
+        if user.profile_type in ['SU', 'DV', 'AD', 'AM']:
+            return queryset
+
+        # Clients see only audience details from their own projects
+        if user.profile_type in ['CL', 'CM']:
+            return queryset.filter(project__created_by=user)
+
+        # Audience: no access to project audience details
+        return ProjectAudianceDetails.objects.none()
 
 
 @api_view(['POST'])
