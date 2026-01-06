@@ -32,6 +32,9 @@ const ROLE_LABELS = {
 export default function UserTable() {
   const [user, setUser] = useState([]);
   const [search, setSearch] = useState("");
+  
+  /* 🔐 CURRENT USER ROLE - Get from your auth context/state */
+  const [currentUserRole, setCurrentUserRole] = useState("");
 
   /* 🔴 DELETE MODAL */
   const [openDelete, setOpenDelete] = useState(false);
@@ -41,6 +44,9 @@ export default function UserTable() {
   const [openRole, setOpenRole] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [selectedRole, setSelectedRole] = useState("");
+
+  /* 🔐 CHECK IF USER IS ADMIN */
+  const isAdmin = currentUserRole === "AD";
 
   /* 🔴 Open Delete */
   const handleDeleteClick = (id) => {
@@ -67,6 +73,10 @@ export default function UserTable() {
 
   /* 🔵 Open Role Modal */
   const handleOpenRole = (user) => {
+    if (!isAdmin) {
+      alert("Only admins can update user roles");
+      return;
+    }
     setSelectedUser(user);
     setSelectedRole(user.profile_type);
     setOpenRole(true);
@@ -81,6 +91,11 @@ export default function UserTable() {
 
   /* ✅ Confirm Role Update */
   const handleConfirmRoleUpdate = async () => {
+    if (!isAdmin) {
+      alert("Only admins can update user roles");
+      return;
+    }
+
     try {
       await UpdateRole(selectedUser.id, {
         profile_type: selectedRole,
@@ -100,12 +115,19 @@ export default function UserTable() {
     }
   };
 
-  /* 🔄 FETCH USERS */
+  /* 🔄 FETCH USERS AND CURRENT USER ROLE */
   useEffect(() => {
     const fetchUsers = async () => {
       try {
         const response = await ListUser();
         setUser(response);
+        
+        // TODO: Get current user's role from your auth context/localStorage/API
+        // Example: const currentUser = JSON.parse(localStorage.getItem("user"));
+        // setCurrentUserRole(currentUser?.profile_type || "");
+        
+        // For testing, you can set it manually:
+        setCurrentUserRole("AD"); // Change to test different roles
       } catch (error) {
         console.error(error);
       }
@@ -186,15 +208,20 @@ export default function UserTable() {
                   <TableCell>{u.date_joined || "-"}</TableCell>
                   <TableCell>{u.last_login || "-"}</TableCell>
 
-                  {/* UPDATE ROLE */}
+                  {/* UPDATE ROLE - ONLY FOR ADMINS */}
                   <TableCell>
                     <Button
                       size="small"
                       variant="outlined"
                       onClick={() => handleOpenRole(u)}
+                      disabled={!isAdmin}
                       sx={{
                         border: "1px solid #03106cff",
-                        color: "#0d173aff",
+                        color: isAdmin ? "#0d173aff" : "#ccc",
+                        borderColor: isAdmin ? "#03106cff" : "#ccc",
+                        "&:hover": {
+                          borderColor: isAdmin ? "#03106cff" : "#ccc",
+                        },
                       }}
                     >
                       Update Role

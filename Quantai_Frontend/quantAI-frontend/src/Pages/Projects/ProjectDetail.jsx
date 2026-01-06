@@ -33,7 +33,6 @@ import {
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import FormBuilder from "./FormBuilder";
-import CreateProjectPage from "./AddProject";
 import EditProjectPage from "./EditProject";
 
 const topTabs = [
@@ -580,13 +579,13 @@ const VariablesCard = ({ projectId }) => {
   };
 
   return (
-    <Paper
-      elevation={0}
-      sx={{ borderRadius: 4, border: "1px solid #edf1fc", p: 4, boxShadow: "0 20px 50px rgba(14,26,75,0.08)" }}
-    >
-      <Typography variant="h5" sx={{ fontWeight: 500, mb: 3, fontSize: "20px" }}>
-        Project Variables
-      </Typography>
+  <Paper
+    elevation={0}
+    sx={{ borderRadius: 4, border: "1px solid #edf1fc", p: 4, boxShadow: "0 20px 50px rgba(14,26,75,0.08)" }}
+  >
+    <Typography variant="h5" sx={{ fontWeight: 500, mb: 3, fontSize: "20px" }}>
+      Project Variables
+    </Typography>
       <Grid container spacing={2}>
         <Grid item xs={12} md={6}>
           <TextField 
@@ -599,7 +598,7 @@ const VariablesCard = ({ projectId }) => {
             required
             helperText="Unique identifier for the variable"
           />
-        </Grid>
+      </Grid>
         <Grid item xs={12} md={6}>
           <TextField 
             label="Label *" 
@@ -611,7 +610,7 @@ const VariablesCard = ({ projectId }) => {
             required
             helperText="Display name for the variable"
           />
-        </Grid>
+      </Grid>
         <Grid item xs={12} md={6}>
           <TextField 
             label="Value" 
@@ -662,13 +661,13 @@ const VariablesCard = ({ projectId }) => {
             disabled={loading}
           >
             + Add Variable
-          </Button>
-        </Grid>
+        </Button>
+      </Grid>
         <Grid item xs={12}>
           <Typography variant="caption" sx={{ color: "#6b7280", fontStyle: "italic" }}>
             Note: Variables are created automatically when you add questions with variable names in the Questionnaire tab.
           </Typography>
-        </Grid>
+    </Grid>
       </Grid>
       {variables.length > 0 && (
         <Box sx={{ mt: 3 }}>
@@ -727,21 +726,21 @@ const VariablesCard = ({ projectId }) => {
           </Box>
         </Box>
       )}
-      <Stack direction="row" spacing={2} sx={{ mt: 3 }}>
+    <Stack direction="row" spacing={2} sx={{ mt: 3 }}>
         <Button variant="outlined" onClick={handleCancel}>
-          Cancel
-        </Button>
+        Cancel
+      </Button>
         <Button 
           variant="contained" 
           sx={{ background: "linear-gradient(90deg,#1d65f1,#23c0ff)" }}
           onClick={handleSubmit}
           disabled={loading}
         >
-          Submit
-        </Button>
-      </Stack>
-    </Paper>
-  );
+        Submit
+      </Button>
+    </Stack>
+  </Paper>
+);
 };
 
 const FiltersCard = ({ projectId }) => {
@@ -801,21 +800,21 @@ const FiltersCard = ({ projectId }) => {
   }, [askToAll, mergeCondition, selectedVariable, selectedOption, projectId]);
 
   return (
-    <Paper
-      elevation={0}
-      sx={{ borderRadius: 4, border: "1px solid #edf1fc", p: 4, boxShadow: "0 20px 50px rgba(14,26,75,0.08)" }}
-    >
-      <Typography variant="h5" sx={{ fontWeight: 500, mb: 3, fontSize: "20px" }}>
-        Project Filters
-      </Typography>
-      <Stack spacing={2}>
-        <Stack direction="row" alignItems="center" spacing={2}>
-          <Typography sx={{ fontSize: 13 }}>Do you want to ask this questionnaire to all?</Typography>
+  <Paper
+    elevation={0}
+    sx={{ borderRadius: 4, border: "1px solid #edf1fc", p: 4, boxShadow: "0 20px 50px rgba(14,26,75,0.08)" }}
+  >
+    <Typography variant="h5" sx={{ fontWeight: 500, mb: 3, fontSize: "20px" }}>
+      Project Filters
+    </Typography>
+    <Stack spacing={2}>
+      <Stack direction="row" alignItems="center" spacing={2}>
+        <Typography sx={{ fontSize: 13 }}>Do you want to ask this questionnaire to all?</Typography>
           <Switch checked={askToAll} onChange={(e) => setAskToAll(e.target.checked)} />
-        </Stack>
-        <Stack direction="row" spacing={2}>
-          <Typography fontWeight={500} sx={{ fontSize: 14 }}>Merge filter conditions with?</Typography>
-          <Stack direction="row" spacing={1}>
+      </Stack>
+      <Stack direction="row" spacing={2}>
+        <Typography fontWeight={500} sx={{ fontSize: 14 }}>Merge filter conditions with?</Typography>
+        <Stack direction="row" spacing={1}>
             <Button 
               sx={{ 
                 backgroundColor: mergeCondition === "AND" ? "black" : "transparent", 
@@ -836,9 +835,9 @@ const FiltersCard = ({ projectId }) => {
             >
               OR
             </Button>
-          </Stack>
         </Stack>
-        <Grid container spacing={2}>
+      </Stack>
+      <Grid container spacing={2}>
           <Grid item xs={12} md={6}>
             <TextField 
               label="Variable" 
@@ -856,8 +855,8 @@ const FiltersCard = ({ projectId }) => {
               {variables.length === 0 && (
                 <MenuItem disabled>No variables available</MenuItem>
               )}
-            </TextField>
-          </Grid>
+          </TextField>
+        </Grid>
           <Grid item xs={12} md={6}>
             <TextField 
               label="Options" 
@@ -866,52 +865,102 @@ const FiltersCard = ({ projectId }) => {
               value={selectedOption}
               onChange={(e) => setSelectedOption(e.target.value)}
             >
-              <MenuItem value="All">All</MenuItem>
-              <MenuItem value="Custom">Custom</MenuItem>
-            </TextField>
-          </Grid>
+            <MenuItem value="All">All</MenuItem>
+            <MenuItem value="Custom">Custom</MenuItem>
+          </TextField>
         </Grid>
-        <Stack direction="row" spacing={2}>
+      </Grid>
+      <Stack direction="row" spacing={2}>
           <Button variant="outlined" onClick={() => {
             setAskToAll(false);
             setMergeCondition("AND");
             setSelectedVariable("");
             setSelectedOption("All");
           }}>
-            Cancel
-          </Button>
+          Cancel
+        </Button>
           <Button 
             variant="contained" 
             sx={{ background: "linear-gradient(90deg,#1d65f1,#23c0ff)" }}
             onClick={handleSubmit}
           >
-            Submit
-          </Button>
-        </Stack>
+          Submit
+        </Button>
       </Stack>
-    </Paper>
-  );
+    </Stack>
+  </Paper>
+);
 };
 
 const PreviewCard = ({ projectId }) => {
-  const getStorageKey = () => `questions_${projectId || 'default'}`;
+  const getStorageKey = () => `questions_${projectId || "default"}`;
+  const getWelcomeKey = () => `welcome_${projectId || "default"}`;
+  const defaultWelcomeQuestion = {
+    id: "welcome",
+    type: "welcome",
+    label: "Welcome Screen",
+    questionText:
+      "Hello, Thanks for joining QuantAi. Please take 10 - 15 minutes to complete the survey which could reward you 1000 points. The survey is based on your personal preferences and choices",
+    description: "",
+    buttonText: "lets go",
+  };
   const [questions, setQuestions] = React.useState([]);
   const [currentPage, setCurrentPage] = React.useState(0);
 
   React.useEffect(() => {
     const loadQuestions = async () => {
       try {
-        // Try to load from API first
-        if (projectId) {
-          try {
+        // 1) Build welcome question, overriding from localStorage if present
+        let welcomeQuestion = { ...defaultWelcomeQuestion };
+        try {
+          const storedWelcome = localStorage.getItem(getWelcomeKey());
+          if (storedWelcome) {
+            const parsed = JSON.parse(storedWelcome);
+            welcomeQuestion = { ...welcomeQuestion, ...parsed };
+          }
+        } catch (e) {
+          console.error("Error reading welcome question from storage:", e);
+        }
+
+        // 2) Load questions from API
+        let apiQuestions = [];
+        try {
+          if (projectId) {
             const { GetQuestions } = await import("../../API/Services/services");
-            const apiQuestions = await GetQuestions(projectId);
-            if (Array.isArray(apiQuestions) && apiQuestions.length > 0) {
-              // Transform API questions to local format
-              const transformed = apiQuestions.map(q => ({
+            const loaded = await GetQuestions(projectId);
+            const backendCodeToFrontendType = {
+              RDO: "radio",
+              CHB: "checkbox",
+              DRP: "list",
+              TXT: "text",
+              TXTL: "text",
+              RAT: "rating",
+              NPS: "rating",
+              SLI: "rating",
+              RNK: "rating",
+              MTX: "grid",
+              FIL: "view",
+              DT: "view",
+              IMG: "view",
+              SIG: "view",
+              GEO: "view",
+              AV: "view",
+              EML: "text",
+              PHN: "text",
+              URL: "text",
+              NUM: "number",
+              ADR: "text",
+              CTI: "text",
+            };
+
+            if (Array.isArray(loaded) && loaded.length > 0) {
+              apiQuestions = loaded.map((q) => ({
                 id: q.id?.toString() || Date.now().toString(),
                 backendId: q.id,
-                type: q.question_type || q.widget || "text",
+                type:
+                  (q.question_type && backendCodeToFrontendType[q.question_type]) ||
+                  q.widget ||
+                  "text",
                 label: q.title || "",
                 questionText: q.title || "",
                 description: q.description || "",
@@ -919,69 +968,32 @@ const PreviewCard = ({ projectId }) => {
                 required: q.is_required || false,
                 isFirst: q.is_initial_question || false,
                 displayIndex: q.display_index || 0,
-                responses: [],
+                responses: [], // TODO: map options when backend provides them
               }));
-              // Add welcome question if not present
-              const hasWelcome = transformed.some(q => q.type === "welcome");
-              if (!hasWelcome) {
-                transformed.unshift({
-                  id: "welcome",
-                  type: "welcome",
-                  label: "Welcome Screen",
-                  questionText: "Hello, Thanks for joining QuantAi...",
-                });
-              }
-              setQuestions(transformed);
-              return;
             }
-          } catch (apiError) {
-            console.error("Error loading questions from API:", apiError);
           }
+        } catch (apiError) {
+          console.error("Error loading questions from API for preview:", apiError);
         }
-        
-        // Fallback to localStorage
-        const storageKey = getStorageKey();
-        const stored = localStorage.getItem(storageKey);
-        if (stored) {
-          const parsed = JSON.parse(stored);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            setQuestions(parsed);
-          }
+
+        const combined = [welcomeQuestion, ...apiQuestions];
+
+        // 3) Cache combined list in localStorage for quick access
+        try {
+          const storageKey = getStorageKey();
+          localStorage.setItem(storageKey, JSON.stringify(combined));
+        } catch (cacheError) {
+          console.error("Error caching preview questions:", cacheError);
         }
-      } catch (error) {
-        console.error("Error loading questions for preview:", error);
-      }
+
+        setQuestions(combined);
+    } catch (error) {
+      console.error("Error loading questions for preview:", error);
+        setQuestions([defaultWelcomeQuestion]);
+    }
     };
-    
+
     loadQuestions();
-    
-    // Also listen for storage changes to update when questions are added in other tabs
-    const handleStorageChange = () => {
-      try {
-        const storageKey = getStorageKey();
-        const stored = localStorage.getItem(storageKey);
-        if (stored) {
-          const parsed = JSON.parse(stored);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            setQuestions(parsed);
-          }
-        }
-      } catch (error) {
-        console.error("Error loading questions from storage:", error);
-      }
-    };
-    
-    window.addEventListener('storage', handleStorageChange);
-    // Listen for custom questionsUpdated event
-    window.addEventListener('questionsUpdated', handleStorageChange);
-    // Also check periodically (for same-tab updates)
-    const interval = setInterval(handleStorageChange, 1000);
-    
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('questionsUpdated', handleStorageChange);
-      clearInterval(interval);
-    };
   }, [projectId]);
 
   const handleNext = () => {
@@ -1260,7 +1272,7 @@ const PreviewCard = ({ projectId }) => {
       ) : (
         <Box sx={{ position: "relative", minHeight: "70vh", display: "flex", flexDirection: "column" }}>
           {/* Page Content */}
-          <Box sx={{ 
+        <Box sx={{ 
             flex: 1,
             display: "flex",
             alignItems: "center",
@@ -1365,21 +1377,21 @@ const ReportsCard = () => {
   const [displayType, setDisplayType] = React.useState("Value");
   
   return (
-    <Paper
-      elevation={0}
-      sx={{ 
-        borderRadius: 4, 
-        border: "1px solid #edf1fc", 
-        p: 4, 
-        boxShadow: "0 20px 50px rgba(14,26,75,0.08)",
-        width: "100%",
-        maxWidth: "100%",
-        boxSizing: "border-box",
-        overflow: "hidden",
-      }}
-    >
-      <Box sx={{ width: "100%", maxWidth: "100%", boxSizing: "border-box" }}>
-        <Grid container spacing={2} alignItems="center" sx={{ width: "100%", margin: 0 }}>
+  <Paper
+    elevation={0}
+    sx={{ 
+      borderRadius: 4, 
+      border: "1px solid #edf1fc", 
+      p: 4, 
+      boxShadow: "0 20px 50px rgba(14,26,75,0.08)",
+      width: "100%",
+      maxWidth: "100%",
+      boxSizing: "border-box",
+      overflow: "hidden",
+    }}
+  >
+    <Box sx={{ width: "100%", maxWidth: "100%", boxSizing: "border-box" }}>
+      <Grid container spacing={2} alignItems="center" sx={{ width: "100%", margin: 0 }}>
           <Grid item xs={12} md={4} sx={{ boxSizing: "border-box", minWidth: 0 }}>
             <TextField 
               select 
@@ -1389,9 +1401,9 @@ const ReportsCard = () => {
               onChange={(e) => setSelectedQuestion(e.target.value)}
             >
               <MenuItem value="">Select Question</MenuItem>
-              <MenuItem value="Q1">Q1 - Intro</MenuItem>
-            </TextField>
-          </Grid>
+            <MenuItem value="Q1">Q1 - Intro</MenuItem>
+          </TextField>
+        </Grid>
           <Grid item xs={12} md={4} sx={{ boxSizing: "border-box", minWidth: 0 }}>
             <TextField 
               select 
@@ -1400,23 +1412,23 @@ const ReportsCard = () => {
               value={displayType}
               onChange={(e) => setDisplayType(e.target.value)}
             >
-              <MenuItem value="Value">Value</MenuItem>
-              <MenuItem value="Percentage">Percentage</MenuItem>
-            </TextField>
-          </Grid>
-          <Grid item xs={12} md={4} sx={{ display: "flex", alignItems: "center", gap: 2, flexWrap: { xs: "wrap", md: "nowrap" }, boxSizing: "border-box", minWidth: 0 }}>
-            <Stack direction="row" spacing={1} alignItems="center" sx={{ flexShrink: 0 }}>
-              <Switch />
-              <Typography fontWeight={500} sx={{ fontSize: 14 }}>Percentage</Typography>
-            </Stack>
-            <Button variant="contained" sx={{ background: "linear-gradient(90deg,#1d65f1,#23c0ff)", flexShrink: 0 }}>
-              Submit
-            </Button>
-          </Grid>
+            <MenuItem value="Value">Value</MenuItem>
+            <MenuItem value="Percentage">Percentage</MenuItem>
+          </TextField>
         </Grid>
-      </Box>
-    </Paper>
-  );
+          <Grid item xs={12} md={4} sx={{ display: "flex", alignItems: "center", gap: 2, flexWrap: { xs: "wrap", md: "nowrap" }, boxSizing: "border-box", minWidth: 0 }}>
+          <Stack direction="row" spacing={1} alignItems="center" sx={{ flexShrink: 0 }}>
+            <Switch />
+            <Typography fontWeight={500} sx={{ fontSize: 14 }}>Percentage</Typography>
+          </Stack>
+          <Button variant="contained" sx={{ background: "linear-gradient(90deg,#1d65f1,#23c0ff)", flexShrink: 0 }}>
+            Submit
+          </Button>
+        </Grid>
+      </Grid>
+    </Box>
+  </Paper>
+);
 };
 
 export default function ProjectDetail() {

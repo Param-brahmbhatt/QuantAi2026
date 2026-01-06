@@ -27,7 +27,7 @@ const Header = ({ isSidebarCollapsed }) => {
         {!isSidebarCollapsed && (
           <Breadcrumbs aria-label="breadcrumb" sx={{ ml: 3 }}>
             <Link
-              to="/"
+              to="/dashboard"
               style={{
                 display: 'flex',
                 alignItems: 'center',

@@ -25,7 +25,7 @@ import {
   CheckBox,
   GridOn,
   Visibility,
-  Numbers, 
+  Numbers,
   ShortText,
   Close,
   Share,
@@ -44,7 +44,7 @@ import {
   QuestionMark,
   List,
 } from "@mui/icons-material";
-import { CKEditor } from "@ckeditor/ckeditor5-react";  
+import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import {
   GetLogicNodes,
@@ -56,11 +56,9 @@ import {
   SubmitAnswer,
   CalculateNextQuestion,
   GetQuestions,
-  GetQuestionById,
   CreateQuestion,
   UpdateQuestion,
   DeleteQuestion,
-  GetQuestionChoices,
   GetQuestionTypes,
 } from "../../API/Services/services";
 import { useParams } from "react-router-dom";
@@ -189,23 +187,44 @@ const InlineEditable = ({ value, onChange, placeholder, questionNumber, isDescri
   const editableRef = useRef(null);
   const containerRef = useRef(null);
   const lastExternalValueRef = useRef(value || "");
+  const isInitializedRef = useRef(false);
+  const saveTimeoutRef = useRef(null);
 
-  // Initialize content on mount
+  // Initialize content on mount and when value changes
   useEffect(() => {
     if (editableRef.current) {
       const currentText = editableRef.current.textContent || "";
       const newValue = value || "";
-      // Set content if empty or if value changed externally (and not currently editing)
-      if ((!currentText || currentText.trim() === "") && newValue) {
-        editableRef.current.textContent = newValue;
-        lastExternalValueRef.current = newValue;
-      } else if (!isEditing && lastExternalValueRef.current !== newValue) {
-        // Only update if value changed externally and we're not editing
-        editableRef.current.textContent = newValue;
-        lastExternalValueRef.current = newValue;
+
+      // On initial mount, always set the value if it exists
+      if (!isInitializedRef.current) {
+        if (newValue) {
+          editableRef.current.textContent = newValue;
+          lastExternalValueRef.current = newValue;
+        }
+        isInitializedRef.current = true;
+      } else if (!isEditing) {
+        // After initialization, only update if value changed externally and we're not editing
+        if (newValue !== lastExternalValueRef.current) {
+          editableRef.current.textContent = newValue;
+          lastExternalValueRef.current = newValue;
+        } else if (!newValue && currentText) {
+          // If value is cleared externally, clear the content
+          editableRef.current.textContent = "";
+          lastExternalValueRef.current = "";
+        }
       }
     }
-  }, [value]);
+  }, [value, isEditing]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Preserve content when editing starts
   useEffect(() => {
@@ -237,10 +256,10 @@ const InlineEditable = ({ value, onChange, placeholder, questionNumber, isDescri
     const handleClickOutside = (event) => {
       if (!containerRef.current) return;
       if (!containerRef.current.contains(event.target)) {
-        const isClickingOnOption = event.target.closest('[data-question-option]') || 
-                                   event.target.closest('button') ||
-                                   event.target.closest('[role="button"]') ||
-                                   event.target.closest('.MuiButton-root');
+        const isClickingOnOption = event.target.closest('[data-question-option]') ||
+          event.target.closest('button') ||
+          event.target.closest('[role="button"]') ||
+          event.target.closest('.MuiButton-root');
         if (!isClickingOnOption) {
           setTimeout(() => {
             if (isEditing) {
@@ -293,8 +312,21 @@ const InlineEditable = ({ value, onChange, placeholder, questionNumber, isDescri
   };
 
   const handleInput = () => {
-    // Don't interfere - let browser handle cursor naturally
-    // We'll save the value on blur
+    // Save on input with debouncing for better persistence
+    // This ensures changes are saved even if user doesn't blur
+    if (onChange && editableRef.current) {
+      const text = editableRef.current.textContent || "";
+      // Use a small delay to debounce rapid typing
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+      saveTimeoutRef.current = setTimeout(() => {
+        if (onChange && editableRef.current) {
+          const currentText = editableRef.current.textContent || "";
+          onChange(currentText);
+        }
+      }, 500); // Save after 500ms of no typing
+    }
   };
 
   const isEmpty = !value || value.trim() === "";
@@ -363,9 +395,7 @@ const InlineEditable = ({ value, onChange, placeholder, questionNumber, isDescri
             },
           }}
           suppressHydrationWarning
-        >
-          {!isEditing && (displayText || "")}
-        </Box>
+        />
       </Box>
     );
   }
@@ -433,9 +463,7 @@ const InlineEditable = ({ value, onChange, placeholder, questionNumber, isDescri
             margin: "-4px -8px",
           },
         }}
-      >
-        {!isEditing && displayText}
-      </Box>
+      />
     </Box>
   );
 };
@@ -469,33 +497,33 @@ const RichTextInput = ({ value, onChange, placeholder }) => {
   }, [value]);
 
   return (
-  <CKEditor
-    editor={ClassicEditor}
-    data={value || ""}
+    <CKEditor
+      editor={ClassicEditor}
+      data={value || ""}
       onReady={handleEditorReady}
-    config={{
-      placeholder,
-      toolbar: {
-        items: [
-          "undo",
-          "redo",
-          "|",
-          "heading",
-          "|",
-          "bold",
-          "italic",
-          "bulletedList",
-          "numberedList",
-          "|",
-          "blockQuote",
-          "link",
-          "insertTable",
-        ],
-      },
-    }}
+      config={{
+        placeholder,
+        toolbar: {
+          items: [
+            "undo",
+            "redo",
+            "|",
+            "heading",
+            "|",
+            "bold",
+            "italic",
+            "bulletedList",
+            "numberedList",
+            "|",
+            "blockQuote",
+            "link",
+            "insertTable",
+          ],
+        },
+      }}
       onChange={handleEditorChange}
-  />
-);
+    />
+  );
 };
 
 // Welcome Screen Component
@@ -510,17 +538,28 @@ const WelcomeScreen = ({ question, onUpdate }) => {
         py: 4,
         display: "flex",
         flexDirection: "column",
-        justifyContent: "center",
         alignItems: "center",
-        minHeight: "min-content",
+        maxHeight: "120vh",
+        overflowY: "auto",
+        overflowX: "hidden",
         boxSizing: "border-box",
-        overflow: "hidden",
+        scrollbarWidth: "thin",
+        "&::-webkit-scrollbar": { width: "8px" },
+        "&::-webkit-scrollbar-track": { background: "#000" },
+        "&::-webkit-scrollbar-thumb": {
+          backgroundColor: "#c1c1c1",
+          borderRadius: "4px",
+        },
+        "&::-webkit-scrollbar-thumb:hover": {
+          backgroundColor: "#a8a8a8",
+        },
       }}
     >
       <Box sx={{ width: "100%", textAlign: "center", mb: 2, maxWidth: "100%", boxSizing: "border-box", overflow: "hidden" }}>
         <InlineEditable
           value={question?.questionText}
           onChange={(text) => onUpdate({ ...question, questionText: text })}
+          onSave={(text) => onUpdate({ ...question, questionText: text })}
           placeholder="Hello, Thanks for joining QuantAi. Please take 10 - 15 minutes to complete the survey which could reward you 1000 points. The survey is based on your personal preferences and choices"
         />
       </Box>
@@ -528,6 +567,7 @@ const WelcomeScreen = ({ question, onUpdate }) => {
         <InlineEditable
           value={question?.description}
           onChange={(text) => onUpdate({ ...question, description: text })}
+          onSave={(text) => onUpdate({ ...question, description: text })}
           placeholder="Description (optional)"
           isDescription
         />
@@ -662,411 +702,411 @@ const QuestionSettingsPanel = ({ question, config, onUpdate }) => {
         }}
       >
         <Stack spacing={2.5} sx={{ width: "100%", boxSizing: "border-box" }}>
-        {config.fields.map((field) => {
-          if (field.type === "text") {
-            const value = question[field.name] || "";
-            const maxLength = field.name === "buttonText" ? 24 : undefined;
-            return (
-              <Box key={field.name} sx={{ width: "100%", boxSizing: "border-box" }}>
-                <TextField
-                  label={field.label}
-                  value={value}
-                  onChange={(e) => {
-                    const newValue = maxLength ? e.target.value.slice(0, maxLength) : e.target.value;
-                    handleFieldChange(field.name, newValue);
-                  }}
-                  fullWidth
-                  size="small"
-                  inputProps={{ maxLength }}
-                  sx={{
-                    width: "100%",
-                    "& .MuiOutlinedInput-root": {
-                      backgroundColor: "#fff",
-                    },
-                  }}
-                  InputProps={{
-                    endAdornment: field.name === "buttonText" && (
-                      <InputAdornment position="end">
-                        <Typography variant="caption" sx={{ color: "#9ca3af", fontSize: 12, whiteSpace: "nowrap" }}>
-                          {value.length}/{maxLength}
-                        </Typography>
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-              </Box>
-            );
-          }
-
-          if (field.type === "select") {
-            return (
-              <Box key={field.name} sx={{ width: "100%", boxSizing: "border-box" }}>
-                <TextField
-                  select
-                  label={field.label}
-                  value={question[field.name] || field.options[0]}
-                  onChange={(e) => handleFieldChange(field.name, e.target.value)}
-                  fullWidth
-                  size="small"
-                  sx={{
-                    width: "100%",
-                    "& .MuiOutlinedInput-root": {
-                      backgroundColor: "#fff",
-                    },
-                  }}
-                >
-                  {field.options.map((option) => (
-                    <MenuItem key={option} value={option}>
-                      {option}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </Box>
-            );
-          }
-
-          if (field.type === "toggle") {
-            return (
-              <Box key={field.name} sx={{ width: "100%", boxSizing: "border-box" }}>
-                <Stack 
-                  direction="row" 
-                  alignItems="center" 
-                  justifyContent="space-between"
-                  sx={{ width: "100%" }}
-                >
-                  <Typography 
-                    variant="body2" 
-                    sx={{ 
-                      fontSize: 14, 
-                      color: "#374151",
-                      flex: 1,
-                      minWidth: 0,
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
+          {config.fields.map((field) => {
+            if (field.type === "text") {
+              const value = question[field.name] || "";
+              const maxLength = field.name === "buttonText" ? 24 : undefined;
+              return (
+                <Box key={field.name} sx={{ width: "100%", boxSizing: "border-box" }}>
+                  <TextField
+                    label={field.label}
+                    value={value}
+                    onChange={(e) => {
+                      const newValue = maxLength ? e.target.value.slice(0, maxLength) : e.target.value;
+                      handleFieldChange(field.name, newValue);
                     }}
-                  >
-                    {field.label}
-                  </Typography>
-                  <Switch
-                    checked={Boolean(question[field.name])}
-                    onChange={(e) => handleFieldChange(field.name, e.target.checked)}
+                    fullWidth
                     size="small"
-                    sx={{ flexShrink: 0, ml: 1 }}
-                  />
-                </Stack>
-              </Box>
-            );
-          }
-
-          if (field.type === "editor") {
-            return (
-              <Box key={field.name} sx={{ width: "100%", boxSizing: "border-box" }}>
-                <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1.5, fontSize: 14, color: "#374151" }}>
-                  {field.label}
-                </Typography>
-                <Paper
-                  variant="outlined"
-                  sx={{
-                    borderRadius: 2,
-                    overflow: "hidden",
-                    width: "100%",
-                    "& .ck.ck-toolbar": {
-                      border: "none",
-                      borderBottom: "1px solid #e5e7eb",
-                      background: "#f9fafb",
-                    },
-                    "& .ck-editor__editable": {
-                      minHeight: 120,
-                      border: "none",
-                      padding: "16px",
-                    },
-                  }}
-                >
-                  <RichTextInput
-                    key={`${question.id}-${field.name}`}
-                    value={question[field.name] || ""}
-                    onChange={(data) => handleFieldChange(field.name, data)}
-                    placeholder="Write question text..."
-                  />
-                </Paper>
-              </Box>
-            );
-          }
-
-          if (field.type === "responses") {
-            const responses = question.responses || [];
-            return (
-              <Box key={field.name} sx={{ width: "100%", boxSizing: "border-box" }}>
-                <Stack 
-                  direction="row" 
-                  alignItems="center" 
-                  justifyContent="space-between" 
-                  sx={{ mb: 1.5, width: "100%" }}
-                >
-                  <Typography variant="subtitle2" fontWeight={600} sx={{ fontSize: 14, color: "#374151" }}>
-                    Responses
-                  </Typography>
-                  <Button 
-                    size="small" 
-                    onClick={addResponse} 
-                    sx={{ 
-                      textTransform: "none",
-                      color: "#3b82f6",
-                      minWidth: "auto",
-                      px: 1.5,
-                    }}
-                  >
-                    + Add
-                  </Button>
-                </Stack>
-                <Stack spacing={1.5} sx={{ width: "100%" }}>
-                  {responses.map((response, index) => (
-                    <Stack 
-                      direction="row" 
-                      spacing={1} 
-                      key={index} 
-                      alignItems="center"
-                      sx={{ width: "100%", minWidth: 0 }}
-                    >
-                      <TextField
-                        label="Option"
-                        value={response.option}
-                        onChange={(e) => handleResponseChange(index, "option", e.target.value)}
-                        size="small"
-                        sx={{ flex: 1, minWidth: 0 }}
-                      />
-                      <TextField
-                        label="Value"
-                        value={response.value}
-                        onChange={(e) => handleResponseChange(index, "value", e.target.value)}
-                        size="small"
-                        sx={{ flex: 1, minWidth: 0 }}
-                      />
-                      <IconButton
-                        size="small"
-                        onClick={() => deleteResponse(index)}
-                        sx={{
-                          color: "#ef4444",
-                          flexShrink: 0,
-                          "&:hover": { backgroundColor: "#fee2e2" },
-                        }}
-                      >
-                        <Delete fontSize="small" />
-                      </IconButton>
-                    </Stack>
-                  ))}
-                </Stack>
-              </Box>
-            );
-          }
-
-          if (field.type === "image") {
-            return (
-              <Box key={field.name} sx={{ width: "100%", boxSizing: "border-box" }}>
-                <Typography 
-                  variant="body2" 
-                  sx={{ 
-                    fontSize: 14, 
-                    mb: 1.5,
-                    color: "#374151",
-                    fontWeight: 400,
-                  }}
-                >
-                  {field.label}
-                </Typography>
-                <Button
-                  variant="outlined"
-                  startIcon={<Add />}
-                  size="small"
-                  sx={{ 
-                    textTransform: "none",
-                    borderColor: "#e5e7eb",
-                    color: "#374151",
-                    "&:hover": {
-                      borderColor: "#d1d5db",
-                      backgroundColor: "#f9fafb",
-                    },
-                  }}
-                >
-                  Add
-                </Button>
-              </Box>
-            );
-          }
-
-          if (field.type === "questionType") {
-            const questionType = question.questionType || "text";
-            return (
-              <Box key={field.name} sx={{ width: "100%", boxSizing: "border-box" }}>
-                <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1.5 }}>
-                  <QuestionMark sx={{ fontSize: 18, color: "#6b7280", flexShrink: 0 }} />
-                  <Typography variant="subtitle2" sx={{ fontWeight: 600, fontSize: 14, color: "#374151" }}>
-                    {field.label}
-                  </Typography>
-                </Stack>
-                <Stack direction="row" spacing={1} sx={{ width: "100%" }}>
-                  <Button
-                    variant={questionType === "text" ? "contained" : "outlined"}
-                    onClick={() => handleFieldChange("questionType", "text")}
+                    inputProps={{ maxLength }}
                     sx={{
-                      textTransform: "none",
-                      flex: 1,
-                      minWidth: 0,
-                      ...(questionType === "text" ? {
-                        backgroundColor: "#f3f4f6",
-                        color: "#374151",
-                        border: "none",
-                      } : {
-                        borderColor: "#e5e7eb",
-                        color: "#6b7280",
-                      }),
+                      width: "100%",
+                      "& .MuiOutlinedInput-root": {
+                        backgroundColor: "#fff",
+                      },
                     }}
-                  >
-                    Text
-                  </Button>
-                  <Button
-                    variant={questionType === "video" ? "contained" : "outlined"}
-                    onClick={() => handleFieldChange("questionType", "video")}
-                    sx={{
-                      textTransform: "none",
-                      flex: 1,
-                      minWidth: 0,
-                      ...(questionType === "video" ? {
-                        backgroundColor: "#f3f4f6",
-                        color: "#374151",
-                        border: "none",
-                      } : {
-                        borderColor: "#e5e7eb",
-                        color: "#6b7280",
-                      }),
+                    InputProps={{
+                      endAdornment: field.name === "buttonText" && (
+                        <InputAdornment position="end">
+                          <Typography variant="caption" sx={{ color: "#9ca3af", fontSize: 12, whiteSpace: "nowrap" }}>
+                            {value.length}/{maxLength}
+                          </Typography>
+                        </InputAdornment>
+                      ),
                     }}
-                  >
-                    Video
-                  </Button>
-                </Stack>
-              </Box>
-            );
-          }
+                  />
+                </Box>
+              );
+            }
 
-          if (field.type === "answerType") {
-            return (
-              <Box key={field.name} sx={{ width: "100%", boxSizing: "border-box" }}>
-                <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1.5, fontSize: 14, color: "#374151" }}>
-                  {field.label}
-                </Typography>
-                <TextField
-                  select
-                  fullWidth
-                  size="small"
-                  value={question.answerType || "rating"}
-                  onChange={(e) => handleFieldChange("answerType", e.target.value)}
-                  sx={{
-                    width: "100%",
-                    "& .MuiOutlinedInput-root": {
-                      backgroundColor: "#fff",
-                    },
-                  }}
-                >
-                  <MenuItem value="rating">
-                    <Stack direction="row" alignItems="center" spacing={1}>
-                      <Star sx={{ fontSize: 18, color: "#6b7280" }} />
-                      <Typography>Rating</Typography>
-                    </Stack>
-                  </MenuItem>
-                </TextField>
-              </Box>
-            );
-          }
-
-          if (field.type === "ratingConfig") {
-            const ratingCount = question.ratingCount || 3;
-            const ratingShape = question.ratingShape || "star";
-            return (
-              <Box key={field.name} sx={{ width: "100%", boxSizing: "border-box" }}>
-                <Stack direction="row" spacing={1} sx={{ width: "100%" }}>
+            if (field.type === "select") {
+              return (
+                <Box key={field.name} sx={{ width: "100%", boxSizing: "border-box" }}>
                   <TextField
                     select
+                    label={field.label}
+                    value={question[field.name] || field.options[0]}
+                    onChange={(e) => handleFieldChange(field.name, e.target.value)}
+                    fullWidth
                     size="small"
-                    value={ratingCount}
-                    onChange={(e) => handleFieldChange("ratingCount", parseInt(e.target.value))}
                     sx={{
-                      flex: 1,
-                      minWidth: 0,
+                      width: "100%",
                       "& .MuiOutlinedInput-root": {
                         backgroundColor: "#fff",
                       },
                     }}
                   >
-                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
-                      <MenuItem key={num} value={num}>
-                        {num}
+                    {field.options.map((option) => (
+                      <MenuItem key={option} value={option}>
+                        {option}
                       </MenuItem>
                     ))}
                   </TextField>
-                  <TextField
-                    select
-                    size="small"
-                    value={ratingShape}
-                    onChange={(e) => handleFieldChange("ratingShape", e.target.value)}
+                </Box>
+              );
+            }
+
+            if (field.type === "toggle") {
+              return (
+                <Box key={field.name} sx={{ width: "100%", boxSizing: "border-box" }}>
+                  <Stack
+                    direction="row"
+                    alignItems="center"
+                    justifyContent="space-between"
+                    sx={{ width: "100%" }}
+                  >
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        fontSize: 14,
+                        color: "#374151",
+                        flex: 1,
+                        minWidth: 0,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                      }}
+                    >
+                      {field.label}
+                    </Typography>
+                    <Switch
+                      checked={Boolean(question[field.name])}
+                      onChange={(e) => handleFieldChange(field.name, e.target.checked)}
+                      size="small"
+                      sx={{ flexShrink: 0, ml: 1 }}
+                    />
+                  </Stack>
+                </Box>
+              );
+            }
+
+            if (field.type === "editor") {
+              return (
+                <Box key={field.name} sx={{ width: "100%", boxSizing: "border-box" }}>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1.5, fontSize: 14, color: "#374151" }}>
+                    {field.label}
+                  </Typography>
+                  <Paper
+                    variant="outlined"
                     sx={{
-                      flex: 1,
-                      minWidth: 0,
-                      "& .MuiOutlinedInput-root": {
-                        backgroundColor: "#fff",
+                      borderRadius: 2,
+                      overflow: "hidden",
+                      width: "100%",
+                      "& .ck.ck-toolbar": {
+                        border: "none",
+                        borderBottom: "1px solid #e5e7eb",
+                        background: "#f9fafb",
+                      },
+                      "& .ck-editor__editable": {
+                        minHeight: 120,
+                        border: "none",
+                        padding: "16px",
                       },
                     }}
                   >
-                    <MenuItem value="star">
-                      <Stack direction="row" alignItems="center" spacing={1}>
-                        <Star sx={{ fontSize: 18, color: "#6b7280" }} />
-                        <Typography>Star</Typography>
-                      </Stack>
-                    </MenuItem>
-                    <MenuItem value="heart">
-                      <Stack direction="row" alignItems="center" spacing={1}>
-                        <Grade sx={{ fontSize: 18, color: "#6b7280" }} />
-                        <Typography>Heart</Typography>
-                      </Stack>
-                    </MenuItem>
-                  </TextField>
-                </Stack>
-              </Box>
-            );
-          }
+                    <RichTextInput
+                      key={`${question.id}-${field.name}`}
+                      value={question[field.name] || ""}
+                      onChange={(data) => handleFieldChange(field.name, data)}
+                      placeholder="Write question text..."
+                    />
+                  </Paper>
+                </Box>
+              );
+            }
 
-          if (field.type === "branching") {
-            return (
-              <Box key={field.name} sx={{ width: "100%", boxSizing: "border-box" }}>
-                <Stack 
-                  direction="row" 
-                  alignItems="center" 
-                  justifyContent="space-between"
-                  sx={{ width: "100%" }}
-                >
-                  <Typography variant="subtitle2" sx={{ fontWeight: 600, fontSize: 14, color: "#374151" }}>
+            if (field.type === "responses") {
+              const responses = question.responses || [];
+              return (
+                <Box key={field.name} sx={{ width: "100%", boxSizing: "border-box" }}>
+                  <Stack
+                    direction="row"
+                    alignItems="center"
+                    justifyContent="space-between"
+                    sx={{ mb: 1.5, width: "100%" }}
+                  >
+                    <Typography variant="subtitle2" fontWeight={600} sx={{ fontSize: 14, color: "#374151" }}>
+                      Responses
+                    </Typography>
+                    <Button
+                      size="small"
+                      onClick={addResponse}
+                      sx={{
+                        textTransform: "none",
+                        color: "#3b82f6",
+                        minWidth: "auto",
+                        px: 1.5,
+                      }}
+                    >
+                      + Add
+                    </Button>
+                  </Stack>
+                  <Stack spacing={1.5} sx={{ width: "100%" }}>
+                    {responses.map((response, index) => (
+                      <Stack
+                        direction="row"
+                        spacing={1}
+                        key={index}
+                        alignItems="center"
+                        sx={{ width: "100%", minWidth: 0 }}
+                      >
+                        <TextField
+                          label="Option"
+                          value={response.option}
+                          onChange={(e) => handleResponseChange(index, "option", e.target.value)}
+                          size="small"
+                          sx={{ flex: 1, minWidth: 0 }}
+                        />
+                        <TextField
+                          label="Value"
+                          value={response.value}
+                          onChange={(e) => handleResponseChange(index, "value", e.target.value)}
+                          size="small"
+                          sx={{ flex: 1, minWidth: 0 }}
+                        />
+                        <IconButton
+                          size="small"
+                          onClick={() => deleteResponse(index)}
+                          sx={{
+                            color: "#ef4444",
+                            flexShrink: 0,
+                            "&:hover": { backgroundColor: "#fee2e2" },
+                          }}
+                        >
+                          <Delete fontSize="small" />
+                        </IconButton>
+                      </Stack>
+                    ))}
+                  </Stack>
+                </Box>
+              );
+            }
+
+            if (field.type === "image") {
+              return (
+                <Box key={field.name} sx={{ width: "100%", boxSizing: "border-box" }}>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      fontSize: 14,
+                      mb: 1.5,
+                      color: "#374151",
+                      fontWeight: 400,
+                    }}
+                  >
                     {field.label}
                   </Typography>
-                  <IconButton 
-                    size="small" 
-                    sx={{ 
-                      border: "1px dashed #d8dff2",
-                      flexShrink: 0,
-                      color: "#6b7280",
+                  <Button
+                    variant="outlined"
+                    startIcon={<Add />}
+                    size="small"
+                    sx={{
+                      textTransform: "none",
+                      borderColor: "#e5e7eb",
+                      color: "#374151",
                       "&:hover": {
-                        borderColor: "#c1c9e2",
+                        borderColor: "#d1d5db",
                         backgroundColor: "#f9fafb",
                       },
                     }}
                   >
-                    <Add />
-                  </IconButton>
-                </Stack>
-              </Box>
-            );
-          }
+                    Add
+                  </Button>
+                </Box>
+              );
+            }
 
-          return null;
-        })}
+            if (field.type === "questionType") {
+              const questionType = question.questionType || "text";
+              return (
+                <Box key={field.name} sx={{ width: "100%", boxSizing: "border-box" }}>
+                  <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1.5 }}>
+                    <QuestionMark sx={{ fontSize: 18, color: "#6b7280", flexShrink: 0 }} />
+                    <Typography variant="subtitle2" sx={{ fontWeight: 600, fontSize: 14, color: "#374151" }}>
+                      {field.label}
+                    </Typography>
+                  </Stack>
+                  <Stack direction="row" spacing={1} sx={{ width: "100%" }}>
+                    <Button
+                      variant={questionType === "text" ? "contained" : "outlined"}
+                      onClick={() => handleFieldChange("questionType", "text")}
+                      sx={{
+                        textTransform: "none",
+                        flex: 1,
+                        minWidth: 0,
+                        ...(questionType === "text" ? {
+                          backgroundColor: "#f3f4f6",
+                          color: "#374151",
+                          border: "none",
+                        } : {
+                          borderColor: "#e5e7eb",
+                          color: "#6b7280",
+                        }),
+                      }}
+                    >
+                      Text
+                    </Button>
+                    <Button
+                      variant={questionType === "video" ? "contained" : "outlined"}
+                      onClick={() => handleFieldChange("questionType", "video")}
+                      sx={{
+                        textTransform: "none",
+                        flex: 1,
+                        minWidth: 0,
+                        ...(questionType === "video" ? {
+                          backgroundColor: "#f3f4f6",
+                          color: "#374151",
+                          border: "none",
+                        } : {
+                          borderColor: "#e5e7eb",
+                          color: "#6b7280",
+                        }),
+                      }}
+                    >
+                      Video
+                    </Button>
+                  </Stack>
+                </Box>
+              );
+            }
+
+            if (field.type === "answerType") {
+              return (
+                <Box key={field.name} sx={{ width: "100%", boxSizing: "border-box" }}>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1.5, fontSize: 14, color: "#374151" }}>
+                    {field.label}
+                  </Typography>
+                  <TextField
+                    select
+                    fullWidth
+                    size="small"
+                    value={question.answerType || "rating"}
+                    onChange={(e) => handleFieldChange("answerType", e.target.value)}
+                    sx={{
+                      width: "100%",
+                      "& .MuiOutlinedInput-root": {
+                        backgroundColor: "#fff",
+                      },
+                    }}
+                  >
+                    <MenuItem value="rating">
+                      <Stack direction="row" alignItems="center" spacing={1}>
+                        <Star sx={{ fontSize: 18, color: "#6b7280" }} />
+                        <Typography>Rating</Typography>
+                      </Stack>
+                    </MenuItem>
+                  </TextField>
+                </Box>
+              );
+            }
+
+            if (field.type === "ratingConfig") {
+              const ratingCount = question.ratingCount || 3;
+              const ratingShape = question.ratingShape || "star";
+              return (
+                <Box key={field.name} sx={{ width: "100%", boxSizing: "border-box" }}>
+                  <Stack direction="row" spacing={1} sx={{ width: "100%" }}>
+                    <TextField
+                      select
+                      size="small"
+                      value={ratingCount}
+                      onChange={(e) => handleFieldChange("ratingCount", parseInt(e.target.value))}
+                      sx={{
+                        flex: 1,
+                        minWidth: 0,
+                        "& .MuiOutlinedInput-root": {
+                          backgroundColor: "#fff",
+                        },
+                      }}
+                    >
+                      {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
+                        <MenuItem key={num} value={num}>
+                          {num}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                    <TextField
+                      select
+                      size="small"
+                      value={ratingShape}
+                      onChange={(e) => handleFieldChange("ratingShape", e.target.value)}
+                      sx={{
+                        flex: 1,
+                        minWidth: 0,
+                        "& .MuiOutlinedInput-root": {
+                          backgroundColor: "#fff",
+                        },
+                      }}
+                    >
+                      <MenuItem value="star">
+                        <Stack direction="row" alignItems="center" spacing={1}>
+                          <Star sx={{ fontSize: 18, color: "#6b7280" }} />
+                          <Typography>Star</Typography>
+                        </Stack>
+                      </MenuItem>
+                      <MenuItem value="heart">
+                        <Stack direction="row" alignItems="center" spacing={1}>
+                          <Grade sx={{ fontSize: 18, color: "#6b7280" }} />
+                          <Typography>Heart</Typography>
+                        </Stack>
+                      </MenuItem>
+                    </TextField>
+                  </Stack>
+                </Box>
+              );
+            }
+
+            if (field.type === "branching") {
+              return (
+                <Box key={field.name} sx={{ width: "100%", boxSizing: "border-box" }}>
+                  <Stack
+                    direction="row"
+                    alignItems="center"
+                    justifyContent="space-between"
+                    sx={{ width: "100%" }}
+                  >
+                    <Typography variant="subtitle2" sx={{ fontWeight: 600, fontSize: 14, color: "#374151" }}>
+                      {field.label}
+                    </Typography>
+                    <IconButton
+                      size="small"
+                      sx={{
+                        border: "1px dashed #d8dff2",
+                        flexShrink: 0,
+                        color: "#6b7280",
+                        "&:hover": {
+                          borderColor: "#c1c9e2",
+                          backgroundColor: "#f9fafb",
+                        },
+                      }}
+                    >
+                      <Add />
+                    </IconButton>
+                  </Stack>
+                </Box>
+              );
+            }
+
+            return null;
+          })}
         </Stack>
       </Box>
     </Box>
@@ -1091,13 +1131,12 @@ const AddContentModal = ({ open, onClose, onAddQuestion, questionTypes = default
       id: Date.now().toString(),
       type: component.type,
       label: component.label,
-      icon: component.icon,
       questionText: "",
       description: "",
       variableName: "",
       responses: [],
     };
-    
+
     // Add type-specific defaults
     if (type === "rating") {
       baseQuestion.ratingCount = 3;
@@ -1110,7 +1149,7 @@ const AddContentModal = ({ open, onClose, onAddQuestion, questionTypes = default
       baseQuestion.responses = [];
       baseQuestion.description = "";
     }
-    
+
     onAddQuestion(baseQuestion);
     onClose();
   };
@@ -1173,9 +1212,9 @@ const AddContentModal = ({ open, onClose, onAddQuestion, questionTypes = default
                 overflowY: "auto",
               }}
             >
-              {filteredComponents.map((component) => (
+              {filteredComponents.map((component, idx) => (
                 <Paper
-                  key={component.type}
+                  key={`${component.type}-${idx}`}
                   elevation={0}
                   sx={{
                     p: 2,
@@ -1225,7 +1264,7 @@ const WorkflowView = ({ questions, logicNodes = [], conditions = [], variables =
   const [selectedNode, setSelectedNode] = useState(null);
   const [connectionPoints, setConnectionPoints] = useState({});
   const [draggingConnection, setDraggingConnection] = useState(null);
-  
+
   // Initialize positions
   useEffect(() => {
     const positions = {};
@@ -1240,7 +1279,7 @@ const WorkflowView = ({ questions, logicNodes = [], conditions = [], variables =
       setNodePositions(prev => ({ ...prev, ...positions }));
     }
   }, [questions.length]);
-  
+
   // Initialize connection control points
   useEffect(() => {
     const points = {};
@@ -1274,7 +1313,7 @@ const WorkflowView = ({ questions, logicNodes = [], conditions = [], variables =
     if (draggedQuestion && draggedOverIndex !== null) {
       const newQuestions = [...questions];
       const draggedIndex = questions.findIndex(q => q.id === draggedQuestion.id);
-      
+
       if (draggedIndex !== -1 && draggedIndex !== targetIndex) {
         const [removed] = newQuestions.splice(draggedIndex, 1);
         newQuestions.splice(targetIndex, 0, removed);
@@ -1343,8 +1382,8 @@ const WorkflowView = ({ questions, logicNodes = [], conditions = [], variables =
       </Box>
 
       {/* Main Canvas - Workflow Diagram */}
-      <Box 
-        sx={{ 
+        <Box
+          sx={{
           flex: 1, 
           overflow: "auto", 
           backgroundColor: "#fafbff", 
@@ -1403,20 +1442,20 @@ const WorkflowView = ({ questions, logicNodes = [], conditions = [], variables =
               const startPos = nodePositions[question.id] || { x: index * 150, y: 150 };
               const endPos = nodePositions[nextQuestion.id] || { x: (index + 1) * 150, y: 150 };
               const connectionKey = `${question.id}-${nextQuestion.id}`;
-              const controlPoint = connectionPoints[connectionKey] || { 
-                x: (startPos.x + endPos.x) / 2, 
-                y: (startPos.y + endPos.y) / 2 
+              const controlPoint = connectionPoints[connectionKey] || {
+                x: (startPos.x + endPos.x) / 2,
+                y: (startPos.y + endPos.y) / 2
               };
-              
+
               const startX = startPos.x + 50;
               const startY = startPos.y + 40;
               const endX = endPos.x;
               const endY = endPos.y + 40;
               const cpX = controlPoint.x;
               const cpY = controlPoint.y;
-              
+
               const path = `M ${startX} ${startY} Q ${cpX} ${cpY} ${endX} ${endY}`;
-              
+
               return (
                 <g key={`connection-${question.id}`}>
                   <path
@@ -1443,7 +1482,7 @@ const WorkflowView = ({ questions, logicNodes = [], conditions = [], variables =
                     r="12"
                     fill="transparent"
                     stroke="none"
-                    style={{ 
+                    style={{
                       cursor: draggingConnection === connectionKey ? "grabbing" : "grab",
                       pointerEvents: "all",
                     }}
@@ -1458,7 +1497,7 @@ const WorkflowView = ({ questions, logicNodes = [], conditions = [], variables =
                     cy={cpY}
                     r="6"
                     fill="#4a5fd4"
-                    style={{ 
+                    style={{
                       cursor: draggingConnection === connectionKey ? "grabbing" : "grab",
                       opacity: draggingConnection === connectionKey ? 0.8 : 0.6,
                       pointerEvents: "none",
@@ -1468,14 +1507,14 @@ const WorkflowView = ({ questions, logicNodes = [], conditions = [], variables =
               );
             })}
           </svg>
-          
+
           {/* Render question nodes */}
           {questions.map((question, index) => {
             const isWelcome = question.type === "welcome";
             const allTypes = [...defaultQuestionComponents];
             const component = allTypes.find((c) => c.type === question.type);
             const questionNumber = isWelcome ? null : questions.slice(0, index).filter(q => q.type !== "welcome").length;
-            
+
             // Node colors based on type
             const getNodeColor = () => {
               if (isWelcome) return "#9ca3af";
@@ -1490,9 +1529,9 @@ const WorkflowView = ({ questions, logicNodes = [], conditions = [], variables =
             const position = nodePositions[question.id] || { x: index * 200, y: 100 };
             const isDragged = draggedQuestion?.id === question.id;
             const isDraggedOver = draggedOverIndex === index;
-            
+
             return (
-              <Paper
+                <Paper
                 key={question.id}
                 draggable
                 onDragStart={(e) => handleDragStart(e, question)}
@@ -1501,16 +1540,16 @@ const WorkflowView = ({ questions, logicNodes = [], conditions = [], variables =
                 onDragEnd={handleDragEnd}
                 elevation={selectedNode === question.id ? 8 : 0}
                 onClick={() => setSelectedNode(question.id)}
-                sx={{
+                  sx={{
                   width: 100,
                   minHeight: 80,
                   backgroundColor: "#fff",
                   borderRadius: 1.5,
                   border: `2px solid ${getNodeColor()}`,
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
                   color: "#0f1f41",
                   position: "absolute",
                   left: `${position.x}px`,
@@ -1523,16 +1562,16 @@ const WorkflowView = ({ questions, logicNodes = [], conditions = [], variables =
                   transition: "all 0.2s",
                   p: 1.5,
                   zIndex: selectedNode === question.id ? 10 : 2,
-                  "&:hover": {
-                    boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                    "&:hover": {
+                      boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
                     transform: "scale(1.05)",
                     borderColor: getNodeColor(),
                   },
                   "&:active": {
                     cursor: "grabbing",
-                  },
-                }}
-              >
+                    },
+                  }}
+                >
                   <Box sx={{ 
                     color: getNodeColor(), 
                     mb: 0.5,
@@ -1566,7 +1605,7 @@ const WorkflowView = ({ questions, logicNodes = [], conditions = [], variables =
                   )}
                   <Typography 
                     variant="caption" 
-                    sx={{ 
+                    sx={{
                       fontSize: 9, 
                       textAlign: "center",
                       px: 0.5,
@@ -1599,7 +1638,7 @@ const WorkflowView = ({ questions, logicNodes = [], conditions = [], variables =
         <Typography variant="h6" sx={{ fontWeight: 600, mb: 3, color: "#0f1f41", fontSize: 16 }}>
           Actions & Logic
         </Typography>
-        
+
         <Stack spacing={3}>
           {/* Selected Question Logic Nodes */}
           {selectedNode && (
@@ -1628,13 +1667,13 @@ const WorkflowView = ({ questions, logicNodes = [], conditions = [], variables =
                 const selectedQ = questions.find(q => q.id === selectedNode);
                 return node.question === selectedQ?.id || node.question === selectedQ?.backendId;
               }).length === 0 && (
-                <Typography variant="body2" sx={{ color: "#9ca3af", fontSize: 12 }}>
-                  No logic nodes for this question
-                </Typography>
-              )}
+                  <Typography variant="body2" sx={{ color: "#9ca3af", fontSize: 12 }}>
+                    No logic nodes for this question
+                  </Typography>
+                )}
             </Box>
           )}
-          
+
           {/* API Data Summary */}
           <Box>
             <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
@@ -1752,79 +1791,92 @@ const FormBuilder = ({ formName = "My new form", projectId: propProjectId }) => 
   const { projectId: urlProjectId } = useParams();
   const projectId = propProjectId || urlProjectId;
   
-  // Default welcome question
+  // Default welcome question (can be overridden from localStorage)
   const defaultWelcomeQuestion = {
     id: "welcome",
     type: "welcome",
     label: "Welcome Screen",
-    questionText: "Hello, Thanks for joining QuantAi. Please take 10 - 15 minutes to complete the survey which could reward you 1000 points. The survey is based on your personal preferences and choices",
+    questionText:
+      "Hello, Thanks for joining QuantAi. Please take 10 - 15 minutes to complete the survey which could reward you 1000 points. The survey is based on your personal preferences and choices",
     description: "",
     buttonText: "lets go",
     timeToComplete: false,
     numberOfSubmissions: false,
   };
+
+  // Storage keys for this project
+  const getStorageKey = () => `questions_${projectId || "default"}`;
+  const getWelcomeKey = () => `welcome_${projectId || "default"}`;
   
-  // Get storage key for this project
-  const getStorageKey = () => `questions_${projectId || 'default'}`;
+  // Ensure we only persist serializable question data (no React elements like icons)
+  const getSerializableQuestions = (list) =>
+    (list || []).map(({ icon, ...rest }) => rest);
   
-  // Load questions from API and localStorage
+  // Load questions: API is source of truth for questions, localStorage only for welcome overrides / caching
   const loadQuestions = async () => {
+    // 1) Build welcome question, overriding from localStorage if present
+    let welcomeQuestion = { ...defaultWelcomeQuestion };
     try {
-      // Try to load from API first
-      if (projectId) {
-        const apiQuestions = await GetQuestions(projectId);
-        if (Array.isArray(apiQuestions) && apiQuestions.length > 0) {
-          // Transform API questions to local format
-          const transformed = apiQuestions.map(q => ({
-            id: q.id?.toString() || Date.now().toString(),
-            backendId: q.id,
-            type: q.question_type || q.widget || "text",
-            label: q.title || "",
-            questionText: q.title || "",
-            description: q.description || "",
-            variableName: q.variable_name || "",
-            required: q.is_required || false,
-            isFirst: q.is_initial_question || false,
-            displayIndex: q.display_index || 0,
-            responses: [],
-          }));
-          return [defaultWelcomeQuestion, ...transformed];
-        }
+      const storedWelcome = localStorage.getItem(getWelcomeKey());
+      if (storedWelcome) {
+        const parsed = JSON.parse(storedWelcome);
+        welcomeQuestion = { ...welcomeQuestion, ...parsed };
       }
-      
-      // Fallback to localStorage
-      const storageKey = getStorageKey();
-      const stored = localStorage.getItem(storageKey);
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed;
+    } catch (e) {
+      console.error("Error reading welcome question from localStorage:", e);
+    }
+
+    // 2) Load questions from API
+    let apiQuestions = [];
+    try {
+      if (projectId) {
+        const loaded = await GetQuestions(projectId);
+        if (Array.isArray(loaded) && loaded.length > 0) {
+          apiQuestions = loaded.map((q) => {
+            const frontendType =
+              (q.question_type && backendCodeToFrontendType[q.question_type]) ||
+              q.widget ||
+              "text";
+
+            return {
+              id: q.id?.toString() || Date.now().toString(),
+              backendId: q.id,
+              type: frontendType,
+              label: q.title || "",
+              questionText: q.title || "",
+              description: q.description || "",
+              variableName: q.variable_name || "",
+              required: q.is_required || false,
+              isFirst: q.is_initial_question || false,
+              displayIndex: q.display_index || 0,
+              responses: [], // TODO: map choices when API provides them
+            };
+          });
         }
       }
     } catch (error) {
-      console.error("Error loading questions:", error);
-      // Fallback to localStorage
-      try {
-        const storageKey = getStorageKey();
-        const stored = localStorage.getItem(storageKey);
-        if (stored) {
-          const parsed = JSON.parse(stored);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            return parsed;
-          }
-        }
-      } catch (e) {
-        console.error("Error loading from localStorage:", e);
-      }
+      console.error("Error loading questions from API:", error);
     }
-    return [defaultWelcomeQuestion];
+
+    const combined = [welcomeQuestion, ...apiQuestions];
+
+    // 3) Cache combined list in localStorage for quick access (not source of truth)
+    try {
+      const storageKey = getStorageKey();
+      const serializable = getSerializableQuestions(combined);
+      localStorage.setItem(storageKey, JSON.stringify(serializable));
+    } catch (e) {
+      console.error("Error caching questions to localStorage:", e);
+    }
+
+    return combined;
   };
-  
+
   const [questions, setQuestions] = useState([defaultWelcomeQuestion]);
   const [selectedQuestion, setSelectedQuestion] = useState(questions[0] || defaultWelcomeQuestion);
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [activeTopTab, setActiveTopTab] = useState("Content");
-  
+
   // API Data States
   const [logicNodes, setLogicNodes] = useState([]);
   const [conditions, setConditions] = useState([]);
@@ -1832,7 +1884,7 @@ const FormBuilder = ({ formName = "My new form", projectId: propProjectId }) => 
   const [answers, setAnswers] = useState([]);
   const [questionTypes, setQuestionTypes] = useState(defaultQuestionComponents);
   const [loading, setLoading] = useState(false);
-  
+
   // Map backend question type codes to frontend types
   const backendCodeToFrontendType = {
     "RDO": "radio",
@@ -1858,7 +1910,7 @@ const FormBuilder = ({ formName = "My new form", projectId: propProjectId }) => 
     "ADR": "text",
     "CTI": "text",
   };
-  
+
   // Map frontend types to backend codes
   const frontendTypeToBackendCode = {
     "radio": "RDO",
@@ -1872,22 +1924,24 @@ const FormBuilder = ({ formName = "My new form", projectId: propProjectId }) => 
     "view": "VIEW",
   };
   
-  // Load question types from API
+  // Question types: load from backend question-types API, fallback to defaults
   useEffect(() => {
     const loadQuestionTypes = async () => {
       try {
         setLoading(true);
         const apiQuestionTypes = await GetQuestionTypes();
         if (Array.isArray(apiQuestionTypes) && apiQuestionTypes.length > 0) {
-          // Transform API response to match expected format
-          const transformed = apiQuestionTypes.map(qt => {
+          const transformed = apiQuestionTypes.map((qt) => {
             const code = qt.code || "";
             const name = qt.name || "";
-            const frontendType = backendCodeToFrontendType[code] || "text";
-            
-            // Get icon based on frontend type
+            const frontendType =
+              backendCodeToFrontendType[code] ||
+              qt.widget ||
+              "text";
+
+            // Pick icon based on frontend type
             let icon;
-            switch(frontendType) {
+            switch (frontendType) {
               case "radio":
                 icon = <RadioButtonChecked />;
                 break;
@@ -1909,40 +1963,37 @@ const FormBuilder = ({ formName = "My new form", projectId: propProjectId }) => 
               case "number":
                 icon = <Numbers />;
                 break;
-              case "text":
-                icon = <ShortText />;
-                break;
               case "list":
                 icon = <List />;
                 break;
+              case "text":
               default:
                 icon = <ShortText />;
             }
-            
+
             return {
               type: frontendType,
               label: name,
-              icon: icon,
-              backendCode: code, // Store backend code for API calls
+              icon,
+              backendCode: code,
             };
           });
+
           setQuestionTypes(transformed);
         } else {
-          // Keep default if API returns empty or invalid data
           setQuestionTypes(defaultQuestionComponents);
         }
       } catch (error) {
         console.error("Error loading question types from API:", error);
-        // Fallback to default on error
         setQuestionTypes(defaultQuestionComponents);
       } finally {
         setLoading(false);
       }
     };
-    
+
     loadQuestionTypes();
   }, []);
-  
+
   // Save questions to localStorage whenever they change (but not on initial load)
   const isInitialLoad = useRef(true);
   useEffect(() => {
@@ -1952,10 +2003,11 @@ const FormBuilder = ({ formName = "My new form", projectId: propProjectId }) => 
     }
     try {
       const storageKey = getStorageKey();
-      localStorage.setItem(storageKey, JSON.stringify(questions));
+      const serializable = getSerializableQuestions(questions);
+      localStorage.setItem(storageKey, JSON.stringify(serializable));
       // Dispatch custom event to notify PreviewCard
-      window.dispatchEvent(new CustomEvent('questionsUpdated', { 
-        detail: { projectId, questions } 
+      window.dispatchEvent(new CustomEvent('questionsUpdated', {
+        detail: { projectId, questions }
       }));
     } catch (error) {
       console.error("Error saving questions to storage:", error);
@@ -1966,12 +2018,14 @@ const FormBuilder = ({ formName = "My new form", projectId: propProjectId }) => 
     try {
       // Save to API if projectId exists
       if (projectId && newQuestion.type !== "welcome") {
-        // Get backend code for this question type
-        const backendCode = frontendTypeToBackendCode[newQuestion.type] || "TXT";
+        // Get backend code for this question type (prefer API-provided mapping)
+        const typeMeta = questionTypes.find((qt) => qt.type === newQuestion.type);
+        const backendCode =
+          typeMeta?.backendCode || frontendTypeToBackendCode[newQuestion.type] || "TXT";
         
         // Ensure title is not empty - use a default if needed
         const questionTitle = newQuestion.questionText || newQuestion.label || "Untitled Question";
-        
+
         const questionData = {
           project: parseInt(projectId),
           variable_name: newQuestion.variableName || `var_${Date.now()}`,
@@ -1979,11 +2033,10 @@ const FormBuilder = ({ formName = "My new form", projectId: propProjectId }) => 
           description: newQuestion.description || "",
           is_required: newQuestion.required || false,
           is_initial_question: newQuestion.isFirst || false,
-          display_index: questions.filter(q => q.type !== "welcome").length + 1,
           question_type: backendCode, // Use backend code
           widget: newQuestion.type === "rating" ? "star_rating" : (newQuestion.type || "text"),
         };
-        
+
         console.log("Creating question with data:", questionData);
         const created = await CreateQuestion(questionData);
         if (created && created.id) {
@@ -1992,13 +2045,14 @@ const FormBuilder = ({ formName = "My new form", projectId: propProjectId }) => 
         }
       }
       
-      const updatedQuestions = [...questions, newQuestion];
-      setQuestions(updatedQuestions);
-      setSelectedQuestion(newQuestion);
+    const updatedQuestions = [...questions, newQuestion];
+    setQuestions(updatedQuestions);
+    setSelectedQuestion(newQuestion);
       // Save to localStorage immediately
       try {
         const storageKey = getStorageKey();
-        localStorage.setItem(storageKey, JSON.stringify(updatedQuestions));
+        const serializable = getSerializableQuestions(updatedQuestions);
+        localStorage.setItem(storageKey, JSON.stringify(serializable));
         window.dispatchEvent(new CustomEvent('questionsUpdated', { 
           detail: { projectId, questions: updatedQuestions } 
         }));
@@ -2025,7 +2079,8 @@ const FormBuilder = ({ formName = "My new form", projectId: propProjectId }) => 
       // Save to localStorage even on error
       try {
         const storageKey = getStorageKey();
-        localStorage.setItem(storageKey, JSON.stringify(updatedQuestions));
+        const serializable = getSerializableQuestions(updatedQuestions);
+        localStorage.setItem(storageKey, JSON.stringify(serializable));
         window.dispatchEvent(new CustomEvent('questionsUpdated', { 
           detail: { projectId, questions: updatedQuestions } 
         }));
@@ -2037,35 +2092,67 @@ const FormBuilder = ({ formName = "My new form", projectId: propProjectId }) => 
 
   const handleUpdateQuestion = async (updatedQuestion) => {
     try {
-      // Update in API if backendId exists
+      // Persist welcome question edits only to localStorage (no backend support)
+      if (updatedQuestion.type === "welcome") {
+        try {
+          const welcomeKey = getWelcomeKey();
+          const {
+            questionText,
+            description,
+            buttonText,
+            timeToComplete,
+            numberOfSubmissions,
+          } = updatedQuestion;
+          localStorage.setItem(
+            welcomeKey,
+            JSON.stringify({
+              questionText,
+              description,
+              buttonText,
+              timeToComplete,
+              numberOfSubmissions,
+            })
+          );
+        } catch (e) {
+          console.error("Error saving welcome question to localStorage:", e);
+        }
+      }
+
+      // Update in API if backendId exists (non-welcome questions)
       if (updatedQuestion.backendId && updatedQuestion.type !== "welcome") {
-        // Get backend code for this question type
-        const backendCode = frontendTypeToBackendCode[updatedQuestion.type] || "TXT";
+        // Get backend code for this question type (prefer API-provided mapping)
+        const typeMeta = questionTypes.find((qt) => qt.type === updatedQuestion.type);
+        const backendCode =
+          typeMeta?.backendCode || frontendTypeToBackendCode[updatedQuestion.type] || "TXT";
         
         const questionData = {
           project: parseInt(projectId),
-          variable_name: updatedQuestion.variableName || "",
+          // Ensure variable_name is never blank to satisfy backend validation
+          variable_name:
+            updatedQuestion.variableName ||
+            updatedQuestion.variable_name ||
+            (typeof updatedQuestion.id !== "undefined" ? `var_${updatedQuestion.id}` : `var_${Date.now()}`),
           title: updatedQuestion.questionText || updatedQuestion.label || "",
           description: updatedQuestion.description || "",
           is_required: updatedQuestion.required || false,
           is_initial_question: updatedQuestion.isFirst || false,
-          display_index: updatedQuestion.displayIndex || 0,
           question_type: backendCode, // Use backend code
           widget: updatedQuestion.type === "rating" ? "star_rating" : (updatedQuestion.type || "text"),
         };
-        
+
         await UpdateQuestion(updatedQuestion.backendId, questionData);
       }
       
-      const updatedQuestions = questions.map((q) =>
-        q.id === updatedQuestion.id ? updatedQuestion : q
-      );
-      setQuestions(updatedQuestions);
-      setSelectedQuestion(updatedQuestion);
+    const updatedQuestions = questions.map((q) =>
+      q.id === updatedQuestion.id ? updatedQuestion : q
+    );
+    setQuestions(updatedQuestions);
+    setSelectedQuestion(updatedQuestion);
       // Save to localStorage immediately
       try {
         const storageKey = getStorageKey();
-        localStorage.setItem(storageKey, JSON.stringify(updatedQuestions));
+        const serializable = getSerializableQuestions(updatedQuestions);
+        localStorage.setItem(storageKey, JSON.stringify(serializable));
         window.dispatchEvent(new CustomEvent('questionsUpdated', { 
           detail: { projectId, questions: updatedQuestions } 
         }));
@@ -2075,15 +2162,29 @@ const FormBuilder = ({ formName = "My new form", projectId: propProjectId }) => 
     } catch (error) {
       console.error("Error updating question:", error);
       // Still update locally even if API fails
-      const updatedQuestions = questions.map((q) =>
-        q.id === updatedQuestion.id ? updatedQuestion : q
-      );
+      let updatedQuestions;
+      if (updatedQuestion.type === "welcome") {
+        const otherQuestions = questions.filter(q => q.type !== "welcome");
+        updatedQuestions = [updatedQuestion, ...otherQuestions];
+      } else {
+        updatedQuestions = questions.map((q) =>
+          q.id === updatedQuestion.id ? updatedQuestion : q
+        );
+        const welcomeQ = updatedQuestions.find(q => q.type === "welcome");
+        const nonWelcome = updatedQuestions.filter(q => q.type !== "welcome");
+        if (welcomeQ) {
+          updatedQuestions = [welcomeQ, ...nonWelcome];
+        }
+      }
+
       setQuestions(updatedQuestions);
       setSelectedQuestion(updatedQuestion);
+
       // Save to localStorage even on error
       try {
         const storageKey = getStorageKey();
-        localStorage.setItem(storageKey, JSON.stringify(updatedQuestions));
+        const serializable = getSerializableQuestions(updatedQuestions);
+        localStorage.setItem(storageKey, JSON.stringify(serializable));
         window.dispatchEvent(new CustomEvent('questionsUpdated', { 
           detail: { projectId, questions: updatedQuestions } 
         }));
@@ -2130,7 +2231,7 @@ const FormBuilder = ({ formName = "My new form", projectId: propProjectId }) => 
 
     try {
       setLoading(true);
-      
+
       // Get question ID (assuming questions have backend IDs or we need to create them)
       const questionId = selectedQuestion.backendId || selectedQuestion.id;
       const projectIdNum = projectId ? parseInt(projectId) : 1;
@@ -2182,7 +2283,7 @@ const FormBuilder = ({ formName = "My new form", projectId: propProjectId }) => 
       // Update local state
       handleUpdateQuestion(selectedQuestion);
       console.log("Question saved:", selectedQuestion);
-      
+
       // Reload API data
       const [logicNodesData, conditionsData, variablesData] = await Promise.all([
         GetLogicNodes(),
@@ -2192,7 +2293,7 @@ const FormBuilder = ({ formName = "My new form", projectId: propProjectId }) => 
       setLogicNodes(logicNodesData || []);
       setConditions(conditionsData || []);
       setVariables(variablesData || []);
-      
+
       // Find welcome question and select it
       const welcomeQuestion = questions.find(q => q.type === "welcome");
       if (welcomeQuestion) {
@@ -2218,11 +2319,11 @@ const FormBuilder = ({ formName = "My new form", projectId: propProjectId }) => 
 
       const submittedAnswer = await SubmitAnswer(answerData);
       console.log("Answer submitted:", submittedAnswer);
-      
+
       // Reload answers
       const answersData = await GetAnswers();
       setAnswers(answersData || []);
-      
+
       return submittedAnswer;
     } catch (error) {
       console.error("Error submitting answer:", error);
@@ -2252,21 +2353,22 @@ const FormBuilder = ({ formName = "My new form", projectId: propProjectId }) => 
   const handleDeleteQuestion = async (questionId) => {
     try {
       const questionToDelete = questions.find(q => q.id === questionId);
-      
+
       // Delete from API if backendId exists
       if (questionToDelete?.backendId) {
         await DeleteQuestion(questionToDelete.backendId);
       }
       
-      const updatedQuestions = questions.filter((q) => q.id !== questionId);
-      setQuestions(updatedQuestions);
-      if (selectedQuestion?.id === questionId) {
-        setSelectedQuestion(updatedQuestions[0] || defaultWelcomeQuestion);
-      }
+    const updatedQuestions = questions.filter((q) => q.id !== questionId);
+    setQuestions(updatedQuestions);
+    if (selectedQuestion?.id === questionId) {
+      setSelectedQuestion(updatedQuestions[0] || defaultWelcomeQuestion);
+    }
       // Save to localStorage immediately
       try {
         const storageKey = getStorageKey();
-        localStorage.setItem(storageKey, JSON.stringify(updatedQuestions));
+        const serializable = getSerializableQuestions(updatedQuestions);
+        localStorage.setItem(storageKey, JSON.stringify(serializable));
         window.dispatchEvent(new CustomEvent('questionsUpdated', { 
           detail: { projectId, questions: updatedQuestions } 
         }));
@@ -2284,7 +2386,8 @@ const FormBuilder = ({ formName = "My new form", projectId: propProjectId }) => 
       // Save to localStorage even on error
       try {
         const storageKey = getStorageKey();
-        localStorage.setItem(storageKey, JSON.stringify(updatedQuestions));
+        const serializable = getSerializableQuestions(updatedQuestions);
+        localStorage.setItem(storageKey, JSON.stringify(serializable));
         window.dispatchEvent(new CustomEvent('questionsUpdated', { 
           detail: { projectId, questions: updatedQuestions } 
         }));
@@ -2341,7 +2444,7 @@ const FormBuilder = ({ formName = "My new form", projectId: propProjectId }) => 
     if (question.type === "rating") {
       const ratingCount = question.ratingCount || 3;
       const ratingShape = question.ratingShape || "star";
-      
+
       return (
         <Box
           sx={{
@@ -2361,7 +2464,7 @@ const FormBuilder = ({ formName = "My new form", projectId: propProjectId }) => 
           <Box sx={{ mb: 1, width: "100%", maxWidth: "100%", boxSizing: "border-box", overflow: "hidden" }}>
             {questionNumber} →{" "}
             <InlineEditable
-              value={question.questionText}
+              value={question.questionText || question.label || ""}
               onChange={handleQuestionTextChange}
               placeholder="Your question here. Recall information with @"
               questionNumber={questionNumber}
@@ -2445,7 +2548,7 @@ const FormBuilder = ({ formName = "My new form", projectId: propProjectId }) => 
           <Box sx={{ mb: 1, width: "100%", maxWidth: "100%", boxSizing: "border-box", overflow: "hidden" }}>
             {questionNumber} →{" "}
             <InlineEditable
-              value={question.questionText}
+              value={question.questionText || question.label || ""}
               onChange={handleQuestionTextChange}
               placeholder="Your question here. Recall information with @"
               questionNumber={questionNumber}
@@ -2559,7 +2662,7 @@ const FormBuilder = ({ formName = "My new form", projectId: propProjectId }) => 
           <Box sx={{ mb: 1, width: "100%", maxWidth: "100%", boxSizing: "border-box", overflow: "hidden" }}>
             {questionNumber} →{" "}
             <InlineEditable
-              value={question.questionText}
+              value={question.questionText || question.label || ""}
               onChange={handleQuestionTextChange}
               placeholder="Your question here. Recall information with @"
               questionNumber={questionNumber}
@@ -2844,12 +2947,12 @@ const FormBuilder = ({ formName = "My new form", projectId: propProjectId }) => 
       {/* Main Content Area */}
       {activeTopTab === "Workflow" ? (
         <Box sx={{ display: "flex", flex: 1, flexDirection: "column", overflow: "hidden" }}>
-          <WorkflowView 
-            questions={questions} 
-            logicNodes={logicNodes}
-            conditions={conditions}
-            variables={variables}
-            answers={answers}
+        <WorkflowView 
+          questions={questions} 
+          logicNodes={logicNodes}
+          conditions={conditions}
+          variables={variables}
+          answers={answers}
             onQuestionsUpdate={setQuestions}
           />
           <Box
@@ -2891,32 +2994,32 @@ const FormBuilder = ({ formName = "My new form", projectId: propProjectId }) => 
         </Box>
       ) : activeTopTab === "Content" ? (
         <Box
-        sx={{
-          display: "flex",
-          flex: 1,
-          overflowX: "auto",
-          overflowY: "hidden",
-          minWidth: 0,
-          minHeight: 0,
-          height: "100%",
-          width: "100%",
-          position: "relative",
-          "&::-webkit-scrollbar": {
-            height: "8px",
-          },
-          "&::-webkit-scrollbar-track": {
-            background: "transparent",
-          },
-          "&::-webkit-scrollbar-thumb": {
-            backgroundColor: "#c1c1c1",
-            borderRadius: "4px",
-          },
-          "&::-webkit-scrollbar-thumb:hover": {
-            backgroundColor: "#a8a8a8",
-          },
-        }}
-      >
-      
+          sx={{
+            display: "flex",
+            flex: 1,
+            overflowX: "auto",
+            overflowY: "hidden",
+            minWidth: 0,
+            minHeight: 0,
+            height: "100%",
+            width: "100%",
+            position: "relative",
+            "&::-webkit-scrollbar": {
+              height: "8px",
+            },
+            "&::-webkit-scrollbar-track": {
+              background: "transparent",
+            },
+            "&::-webkit-scrollbar-thumb": {
+              backgroundColor: "#c1c1c1",
+              borderRadius: "4px",
+            },
+            "&::-webkit-scrollbar-thumb:hover": {
+              backgroundColor: "#a8a8a8",
+            },
+          }}
+        >
+
           {/* Left Sidebar */}
           <Box
             sx={{
@@ -2953,8 +3056,8 @@ const FormBuilder = ({ formName = "My new form", projectId: propProjectId }) => 
             </Box>
 
             {/* Questions List - Scrollable Area */}
-            <Box 
-              sx={{ 
+            <Box
+              sx={{
                 flex: 1,
                 overflowY: "auto",
                 overflowX: "hidden",
@@ -2987,7 +3090,7 @@ const FormBuilder = ({ formName = "My new form", projectId: propProjectId }) => 
                   const isWelcome = question.type === "welcome";
                   // Question number: exclude welcome screen from numbering
                   const questionNumber = isWelcome ? null : questions.slice(0, index).filter(q => q.type !== "welcome").length;
-                  
+
                   return (
                     <Paper
                       key={question.id}
@@ -3044,13 +3147,13 @@ const FormBuilder = ({ formName = "My new form", projectId: propProjectId }) => 
                           {isWelcome
                             ? question.questionText || "Hello, Thanks for joining QuantAi...."
                             : (() => {
-                                const text = question.questionText || question.label || "";
-                                const cleanText = text.replace(/<[^>]*>/g, "").trim();
-                                if (cleanText) {
-                                  return cleanText.length > 40 ? cleanText.substring(0, 40) + "..." : cleanText;
-                                }
-                                return `Question ${questionNumber !== null ? questionNumber + 1 : ""}`;
-                              })()}
+                              const text = question.questionText || question.label || "";
+                              const cleanText = text.replace(/<[^>]*>/g, "").trim();
+                              if (cleanText) {
+                                return cleanText.length > 40 ? cleanText.substring(0, 40) + "..." : cleanText;
+                              }
+                              return `Question ${questionNumber !== null ? questionNumber + 1 : ""}`;
+                            })()}
                         </Typography>
                       </Box>
                       {!isWelcome && (
@@ -3072,19 +3175,19 @@ const FormBuilder = ({ formName = "My new form", projectId: propProjectId }) => 
             </Box>
 
             {/* Endings Section */}
-           
+
           </Box>
 
           {/* Main Content Area */}
           <Box sx={{ flex: "1 1 auto", display: "flex", flexDirection: "column", overflow: "hidden", backgroundColor: "#fafbff", minWidth: { xs: 300, sm: 400, md: "auto" }, maxWidth: "100%", minHeight: 0 }}>
-            <Box 
-              sx={{ 
-                flex: 1, 
-                overflowY: "auto", 
+            <Box
+              sx={{
+                flex: 1,
+                overflowY: "auto",
                 overflowX: "hidden",
                 px: 2,
-                py: 4, 
-                display: "flex", 
+                py: 4,
+                display: "flex",
                 flexDirection: "column",
                 justifyContent: "flex-start",
                 alignItems: "center",
@@ -3146,36 +3249,36 @@ const FormBuilder = ({ formName = "My new form", projectId: propProjectId }) => 
               )}
             </Box>
             <Box
-  sx={{
-    p: 2,
-    backgroundColor: "#fff",
-    flexShrink: 0,
-    borderTop: "1px solid #e5e7eb",
-    boxShadow: "0 -2px 8px rgba(0,0,0,0.06)",
-    zIndex: 5,
-  }}
->
+              sx={{
+                p: 2,
+                backgroundColor: "#fff",
+                flexShrink: 0,
+                borderTop: "1px solid #e5e7eb",
+                boxShadow: "0 -2px 8px rgba(0,0,0,0.06)",
+                zIndex: 5,
+              }}
+            >
 
             </Box>
           </Box>
 
           {/* Right Sidebar - Settings Panel */}
           <Box
-  sx={{
-    width: { xs: 280, sm: 300, md: 320 },
-    minWidth: { xs: 280, sm: 300, md: 320 },
-    maxWidth: { xs: 280, sm: 300, md: 320 },
-    flexShrink: 0,
-    borderLeft: "1px solid #e5e7eb",
-    backgroundColor: "#fff",
-    display: "flex",
-    flexDirection: "column",
-    overflow: "hidden",
-    height: "100%",
-    boxSizing: "border-box",
-    position: "relative",
-  }}
->
+            sx={{
+              width: { xs: 280, sm: 300, md: 320 },
+              minWidth: { xs: 280, sm: 300, md: 320 },
+              maxWidth: { xs: 280, sm: 300, md: 320 },
+              flexShrink: 0,
+              borderLeft: "1px solid #e5e7eb",
+              backgroundColor: "#fff",
+              display: "flex",
+              flexDirection: "column",
+              overflow: "hidden",
+              height: "100%",
+              boxSizing: "border-box",
+              position: "relative",
+            }}
+          >
 
             <Box
               sx={{
