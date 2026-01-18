@@ -1,11 +1,20 @@
 import React from 'react';
-import { Box, Typography, Avatar, Breadcrumbs } from '@mui/material';
-import { Home as HomeIcon } from '@mui/icons-material';
+import {
+  Box,
+  Typography,
+  Avatar,
+  Breadcrumbs,
+  IconButton
+} from '@mui/material';
+import {
+  Home as HomeIcon,
+  Menu as MenuIcon
+} from '@mui/icons-material';
 import { Link } from 'react-router-dom';
 import { useAuth } from "../contexts/AuthContext";
 
-const Header = ({ isSidebarCollapsed }) => {
-  const { user } = useAuth(); // Get user from AuthContext
+const Header = ({ isSidebarCollapsed, setIsSidebarCollapsed }) => {
+  const { user } = useAuth();
 
   return (
     <Box
@@ -15,17 +24,26 @@ const Header = ({ isSidebarCollapsed }) => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        px: 3,
+        px: 2,
         backgroundColor: '#faf8f8',
         position: 'sticky',
         top: 0,
         zIndex: 1000,
       }}
     >
-      {/* Breadcrumbs */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+      {/* LEFT: Collapse Icon + Breadcrumbs */}
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+        {/* Sidebar Toggle Button */}
+        <IconButton
+          onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+          size="small"
+        >
+          <MenuIcon />
+        </IconButton>
+
+        {/* Breadcrumbs */}
         {!isSidebarCollapsed && (
-          <Breadcrumbs aria-label="breadcrumb" sx={{ ml: 3 }}>
+          <Breadcrumbs aria-label="breadcrumb" sx={{ ml: 1 }}>
             <Link
               to="/dashboard"
               style={{
@@ -34,7 +52,7 @@ const Header = ({ isSidebarCollapsed }) => {
                 gap: 4,
                 cursor: 'pointer',
                 textDecoration: 'none',
-                color: 'black'
+                color: 'black',
               }}
             >
               <HomeIcon fontSize="small" />
@@ -43,12 +61,16 @@ const Header = ({ isSidebarCollapsed }) => {
         )}
       </Box>
 
-      {/* Profile Section */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, marginRight: '80px' }}>
-        <Link
-          to="/profile"
-          style={{ cursor: 'pointer', textDecoration: 'none' }}
-        >
+      {/* RIGHT: Profile Section */}
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1.5,
+          marginRight: '80px',
+        }}
+      >
+        <Link to="/profile" style={{ cursor: 'pointer', textDecoration: 'none' }}>
           <Avatar
             alt="Profile"
             src="/assets/profile.png"
@@ -62,10 +84,10 @@ const Header = ({ isSidebarCollapsed }) => {
             style={{ cursor: 'pointer', textDecoration: 'none' }}
           >
             <Typography variant="body1" color="text.secondary">
-              {user.first_name && user.last_name 
+              {user?.first_name && user?.last_name
                 ? `${user.first_name} ${user.last_name}`
-                : user.name || user.email || 'User'}
-            </Typography>
+                : user?.name || user?.email || 'User'}
+            </Typography> 
           </Link>
         )}
       </Box>

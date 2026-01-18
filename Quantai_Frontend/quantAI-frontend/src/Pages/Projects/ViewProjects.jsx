@@ -154,34 +154,46 @@ const ProjectListPage = () => {
     <>
       <Box sx={{ minHeight: "100vh" }}>
         {/* HEADER */}
-        <Box
-          sx={{
-            bgcolor: DARK_BLUE,
-            color: "white",
-            py: 3,
-            px: 3,
-          }}
-        >
-          <Typography variant="h4">
-            Projects
-          </Typography>
-          <Typography>Manage and track all your projects</Typography><br /><br />
-          <Link to="/projects/Add-Project">
-            <Button
-              sx={{
-                border: "1px solid #d2d0d0ff",
-                color: "#d2d0d0ff"
-              }}
-            >
-              + Add New Project
-            </Button>
-          </Link>
-        </Box>
-
-
-        {/* FILTERS */}
-        <Box sx={{ maxWidth: 1200, mx: "auto", mt: 4, p: 2 }}>
-          <Card sx={{ p: 3 }}>
+        <Box sx={{ maxWidth: "1200px", margin: "20px 2%" }}>
+          {/* HEADER SECTION */}
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              py: 3,
+              px: 3,
+              borderRadius: "10px",
+              height: "70px",
+              backgroundColor: "#222857",
+              mb: 3,
+            }}
+          >
+            <Box>
+              <Typography variant="h4" sx={{ color: "#fff" }}>
+                Projects
+              </Typography>
+              <Typography variant="body2" sx={{ color: "#fff" }}>
+                Manage and track all your projects
+              </Typography>
+            </Box>
+            <Link to="/projects/Add-Project" style={{ textDecoration: "none" }}>
+              <Button
+                sx={{
+                  border: "1px solid #fff",
+                  color: "#fff",
+                  textTransform: "none",
+                  fontSize: "14px",
+                  "&:hover": {
+                    backgroundColor: "rgba(255,255,255,0.1)",
+                  },
+                }}
+              >
+                + Add New Project
+              </Button>
+            </Link>
+          </Box>
+          <Card sx={{ p: 3,  borderRadius: "10px" }}>
             <Grid container spacing={2}>
               <Grid item xs={12} md={6} lg={8}>
                 <TextField
@@ -191,7 +203,6 @@ const ProjectListPage = () => {
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </Grid>
-
               <Grid item xs={12} md={3} lg={2}>
                 <FormControl fullWidth>
                   <Select
@@ -205,7 +216,6 @@ const ProjectListPage = () => {
                   </Select>
                 </FormControl>
               </Grid>
-
               <Grid item xs={12} md={3} lg={2}>
                 <FormControl fullWidth>
                   <Select
@@ -219,8 +229,7 @@ const ProjectListPage = () => {
                   </Select>
                 </FormControl>
               </Grid>
-
-              <Grid item xs={12} lg={3}>
+              <Grid item xs={12} md={3} lg={2}>
                 <FormControl fullWidth>
                   <Select
                     value={teamFilter}
@@ -236,7 +245,10 @@ const ProjectListPage = () => {
               </Grid>
             </Grid>
           </Card>
+        </Box>
 
+        {/* FILTERS */}
+        <Box sx={{ maxWidth: 1200, mx: "auto", p: 2 }}>
           {/* RESULTS */}
           <Typography sx={{ mt: 2 }} color="text.secondary">
             Showing <b>{filteredProjects.length}</b> of{" "}
@@ -262,7 +274,7 @@ const ProjectListPage = () => {
           {!loading && !error && (
             <Stack spacing={3} mt={3}>
               {filteredProjects.map((p) => (
-                <Card key={p.id}>
+                <Card key={p.id} sx={{ borderRadius: "10px",}}>
                   <CardContent>
                     <Stack spacing={2}>
                       {/* Top Content */}

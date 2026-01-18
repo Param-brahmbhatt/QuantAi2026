@@ -160,19 +160,15 @@ export default function LoginPage() {
                 email: formData.email,
                 code: otp,
                 purpose: "login",
-                client_id: "Rkzsy8StAaD4ChLpxJvYQozOawmMkzG8bRwhD7aU", // Internal OAuth2 client ID
+                client_id: "Rkzsy8StAaD4ChLpxJvYQozOawmMkzG8bRwhD7aU", 
             };
 
             const res = await LoginWithOTP(payload);
-
-            // Store token and update auth context
             if (res?.access_token) {
                 await login({ email: formData.email }, res.access_token);
             } else {
-                // If no token in response, still try to login (token might be in localStorage)
                 await login({ email: formData.email });
             }
-
             setSnackbar({
                 open: true,
                 message: res?.detail || "Logged in!",
@@ -184,7 +180,6 @@ export default function LoginPage() {
             setTimeout(() => {
                 navigate("/");
             }, 1500);
-
         } catch (err) {
             setSnackbar({
                 open: true,
@@ -501,8 +496,6 @@ export default function LoginPage() {
                 loading={otpLoading}
                 email={formData.email}
             />
-
-            {/* Snackbar for success/error messages */}
             <Snackbar
                 open={snackbar.open}
                 autoHideDuration={4000}
@@ -512,11 +505,25 @@ export default function LoginPage() {
                 <Alert
                     onClose={() => setSnackbar({ ...snackbar, open: false })}
                     severity={snackbar.severity}
-                    sx={{ width: "100%" }}
+                    sx={{
+                        width: "100%",
+                        color:
+                            snackbar.severity === "success"
+                                ? "#2e7d32" 
+                                : snackbar.severity === "error"
+                                    ? "#d32f2f"  
+                                    : "inherit",
+                        backgroundColor:
+                            snackbar.severity === "success"
+                                ? "#edf7ed"
+                                : snackbar.severity === "error"
+                                    ? "#fdecea"
+                                    : "inherit",
+                    }}
                 >
                     {snackbar.message}
                 </Alert>
             </Snackbar>
         </Box>
     );
-}
+}   

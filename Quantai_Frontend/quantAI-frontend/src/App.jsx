@@ -10,80 +10,58 @@ function Layout() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const location = useLocation();
 
-  // Routes where Sidebar and Header should be hidden
-  const hideLayout =
-    location.pathname === '/login' ||
-    location.pathname === '/register' ||
-    location.pathname === '/verify-email' ||
-    location.pathname === '/reset-password' ||
-    location.pathname === '/forgot-password' ||
-    location.pathname === '/welcome' ||
-    location.pathname === '/welcome-details'
+  const hideLayout = [
+    '/login',
+    '/register',
+    '/verify-email',
+    '/reset-password',
+    '/forgot-password',
+    '/welcome',
+    '/welcome-details',
+  ].includes(location.pathname);
 
   if (hideLayout) {
     return (
-      <Box
-        sx={{
-          height: '100vh',
-          overflow: 'auto',
-          backgroundColor: '#faf8f8',
-        }}
-      >
+      <Box sx={{ height: '100vh', backgroundColor: '#faf8f8' }}>
         <AppRoutes />
       </Box>
     );
   }
 
-  // For all other pages → normal layout
   return (
-    <Box sx={{ display: 'flex', height: '100vh' }}>
+    <Box sx={{ display: 'flex', height: '100vh', width: '100vw' }}>
       {/* Sidebar */}
       <Box
         sx={{
-          width: isSidebarCollapsed ? 80 : 240,
-          minWidth: isSidebarCollapsed ? 80 : 200,
-          maxWidth: isSidebarCollapsed ? 80 : 240,
-          backgroundColor: '#f5f5f5',
+          width: isSidebarCollapsed ? 120 : 240,
+          minWidth: isSidebarCollapsed ? 120 : 240,
           transition: 'width 0.3s ease',
+          overflow: 'hidden',
         }}
       >
-        <Sidebar
-          isCollapsed={isSidebarCollapsed}
-          setIsCollapsed={setIsSidebarCollapsed}
-        />
+        <Sidebar isCollapsed={isSidebarCollapsed} />
       </Box>
 
-      {/* Main Content Area */}
+      {/* Main Content */}
       <Box
         sx={{
           flexGrow: 1,
           display: 'flex',
           flexDirection: 'column',
-          width: isSidebarCollapsed ? '100%' : 'calc(100% - 240px)',
-          transition: 'width 0.3s ease',
           overflow: 'hidden',
           backgroundColor: '#faf8f8',
         }}
       >
-        {/* Header */}
-        <Header />
+        <Header
+          isSidebarCollapsed={isSidebarCollapsed}
+          setIsSidebarCollapsed={setIsSidebarCollapsed}
+        />
 
-        {/* Page Content */}
         <Box
           sx={{
-            height: 'calc(100vh - 64px)',
+            flexGrow: 1,
             overflow: 'auto',
             p: 2,
-            backgroundColor: '#faf8f8',
-            scrollbarWidth: 'thin',
-            '&::-webkit-scrollbar': { width: '6px', height: '6px' },
-            '&::-webkit-scrollbar-thumb': {
-              backgroundColor: '#c1c1c1',
-              borderRadius: '8px',
-            },
-            '&::-webkit-scrollbar-thumb:hover': {
-              backgroundColor: '#a8a8a8',
-            },
           }}
         >
           <AppRoutes />

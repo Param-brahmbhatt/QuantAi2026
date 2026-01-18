@@ -11,8 +11,12 @@ import {
   Stack,
   TextField,
   Typography,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
 } from "@mui/material";
 import { Upload } from "@mui/icons-material";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { CreateProject } from "../../API/Services/services";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
@@ -112,19 +116,17 @@ const CreateProjectPage = () => {
     }
   }, []);
 
-  /* ------------------ Submit (FormData) ------------------ */
+  /* ------------------ Submit ------------------ */
   const handleSubmit = async () => {
     try {
       const fd = new FormData();
 
-      // Basic
       fd.append("title", formData.title);
       fd.append("description", formData.description);
       fd.append("code", formData.code);
       fd.append("project_type", formData.project_type);
       fd.append("mode", formData.mode);
 
-      // Boolean
       fd.append("active", formData.active ? "1" : "0");
       fd.append("fit_logo", formData.fit_logo ? "1" : "0");
       fd.append(
@@ -138,35 +140,29 @@ const CreateProjectPage = () => {
       fd.append("show_progress_bar", formData.show_progress_bar ? "1" : "0");
       fd.append("answer_preview", formData.answer_preview ? "1" : "0");
 
-      // Numbers
       fd.append("reward_points", Number(formData.reward_points || 0));
       fd.append("participant_limit", Number(formData.participant_limit || 0));
 
-      // Dates
       if (formData.start_time)
         fd.append("start_time", new Date(formData.start_time).toISOString());
       if (formData.end_time)
         fd.append("end_time", new Date(formData.end_time).toISOString());
 
-      // Arrays
       formData.language_ids.forEach((id) =>
         fd.append("language_ids[]", id)
       );
 
-      // Logo
       fd.append("logo_width", formData.logo_width);
       fd.append("logo_height", formData.logo_height);
       fd.append("logo_location", formData.logo_location);
       if (formData.logo) fd.append("logo", formData.logo);
 
-      // Messages
       fd.append("welcome_message", formData.welcome_message);
       fd.append("thankyou_message", formData.thankyou_message);
       fd.append("quotefull_message", formData.quotefull_message);
       fd.append("terminate_message", formData.terminate_message);
       fd.append("navigation_message", formData.navigation_message);
 
-      // Buttons
       fd.append("start_btn_text", formData.start_btn_text);
       fd.append("complete_btn_text", formData.complete_btn_text);
       fd.append("previous_btn_text", formData.previous_btn_text);
@@ -186,17 +182,13 @@ const CreateProjectPage = () => {
   return (
     <Box sx={{ minHeight: "100vh", py: 4 }}>
       <Container maxWidth="lg">
-        {/* <Typography
-          variant="h4"
-          align="center"
-          sx={{ fontWeight: 600, mb: 5, color: "#0f1f41" }}
-        >
-
-        </Typography> */}
+        <Typography variant="h4" sx={{ fontWeight: 500, mb: 5 }}>
+          Add New Project
+        </Typography>
 
         <Stack spacing={4}>
           {/* PROJECT DETAILS */}
-          <SectionPaper>
+          <SectionPaper title="Project Details">
             <TextField
               label="Project Title"
               name="title"
@@ -261,7 +253,7 @@ const CreateProjectPage = () => {
 
               <Grid item xs={12} md={4}>
                 <TextField
-                  label="Reward Points"
+                  label="Points"
                   name="reward_points"
                   value={formData.reward_points}
                   onChange={handleChange}
@@ -352,245 +344,264 @@ const CreateProjectPage = () => {
           </SectionPaper>
 
           {/* LOGO SETTINGS */}
-          <SectionPaper title="Logo Settings">
-            <Stack direction="row" spacing={3} alignItems="center" sx={{ mb: 3 }}>
-              <Button
-                variant="contained"
-                component="label"
-                startIcon={<Upload />}
-                sx={{
-                  px: 4,
-                  py: 1.6,
-                  borderRadius: "10px",
-                  textTransform: "none",
-                  background: "linear-gradient(90deg, #125bfd, #23c0ff)",
-                }}
-              >
-                Upload Logo
-                <input hidden type="file" accept="image/*" onChange={handleLogoUpload} />
-              </Button>
-
-              {formData.logo && (
-                <Paper
-                  sx={{
-                    width: 120,
-                    height: 120,
-                    display: "flex",
-                    borderRadius: 3,
-                    alignItems: "center",
-                    justifyContent: "center",
-                    border: "1px solid #e3e7f2",
-                    background: "#f2f5ff",
-                    overflow: "hidden",
-                  }}
-                >
-                  <img
-                    src={URL.createObjectURL(formData.logo)}
-                    alt="Logo"
-                    style={{
-                      width: formData.logo_width || "100%",
-                      height: formData.logo_height || "100%",
-                      objectFit: formData.fit_logo ? "contain" : "none",
+          <Accordion defaultExpanded>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography variant="h6" fontWeight={600} sx={{ fontSize: "18px" }}>
+                Logo Settings
+              </Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <SectionPaper>
+                <Stack direction="row" spacing={3} alignItems="center" sx={{ mb: 3 }}>
+                  <Button
+                    variant="contained"
+                    component="label"
+                    startIcon={<Upload />}
+                    sx={{
+                      px: 4,
+                      py: 1.6,
+                      borderRadius: "10px",
+                      textTransform: "none",
+                      background: "linear-gradient(90deg, #125bfd, #23c0ff)",
                     }}
-                  />
-                </Paper>
-              )}
-            </Stack>
+                  >
+                    Upload Logo
+                    <input hidden type="file" accept="image/*" onChange={handleLogoUpload} />
+                  </Button>
 
-            <Grid container spacing={3}>
-              <Grid item xs={12} md={3}>
+                  {formData.logo && (
+                    <Paper
+                      sx={{
+                        width: 120,
+                        height: 120,
+                        display: "flex",
+                        borderRadius: 3,
+                        alignItems: "center",
+                        justifyContent: "center",
+                        border: "1px solid #e3e7f2",
+                        background: "#f2f5ff",
+                        overflow: "hidden",
+                      }}
+                    >
+                      <img
+                        src={URL.createObjectURL(formData.logo)}
+                        alt="Logo"
+                        style={{
+                          width: formData.logo_width || "100%",
+                          height: formData.logo_height || "100%",
+                          objectFit: formData.fit_logo ? "contain" : "none",
+                        }}
+                      />
+                    </Paper>
+                  )}
+                </Stack>
+
+                <Grid container spacing={3}>
+                  <Grid item xs={12} md={3}>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={formData.fit_logo}
+                          name="fit_logo"
+                          onChange={handleCheckbox}
+                        />
+                      }
+                      label="Fit Logo"
+                    />
+                  </Grid>
+
+                  <Grid item xs={12} md={3}>
+                    <TextField
+                      label="Logo Width (px)"
+                      name="logo_width"
+                      value={formData.logo_width}
+                      onChange={handleChange}
+                      fullWidth
+                      sx={inputStyles}
+                    />
+                  </Grid>
+
+                  <Grid item xs={12} md={3}>
+                    <TextField
+                      label="Logo Height (px)"
+                      name="logo_height"
+                      value={formData.logo_height}
+                      onChange={handleChange}
+                      fullWidth
+                      sx={inputStyles}
+                    />
+                  </Grid>
+
+                  <Grid item xs={12} md={3}>
+                    <TextField
+                      select
+                      label="Logo Location"
+                      name="logo_location"
+                      value={formData.logo_location}
+                      onChange={handleChange}
+                      fullWidth
+                      sx={inputStyles}
+                    >
+                      {["center", "left", "right"].map((opt) => (
+                        <MenuItem key={opt} value={opt}>
+                          {opt.charAt(0).toUpperCase() + opt.slice(1)}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  </Grid>
+                </Grid>
+              </SectionPaper>
+            </AccordionDetails>
+          </Accordion>
+
+          {/* MESSAGES */}
+          <Accordion>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography variant="h6" fontWeight={600} sx={{ fontSize: "18px" }}>
+                Messages & UI Text
+              </Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              {/* MESSAGES */}
+              <SectionPaper title="Messages & UI Text">
                 <FormControlLabel
                   control={
                     <Checkbox
-                      checked={formData.fit_logo}
-                      name="fit_logo"
+                      name="display_welcome_message"
+                      checked={formData.display_welcome_message}
                       onChange={handleCheckbox}
                     />
                   }
-                  label="Fit Logo"
+                  label="Display Welcome Message"
                 />
-              </Grid>
 
-              <Grid item xs={12} md={3}>
-                <TextField
-                  label="Logo Width (px)"
-                  name="logo_width"
-                  value={formData.logo_width}
-                  onChange={handleChange}
-                  fullWidth
-                  sx={inputStyles}
-                />
-              </Grid>
-
-              <Grid item xs={12} md={3}>
-                <TextField
-                  label="Logo Height (px)"
-                  name="logo_height"
-                  value={formData.logo_height}
-                  onChange={handleChange}
-                  fullWidth
-                  sx={inputStyles}
-                />
-              </Grid>
-
-              <Grid item xs={12} md={3}>
-                <TextField
-                  select
-                  label="Logo Location"
-                  name="logo_location"
-                  value={formData.logo_location}
-                  onChange={handleChange}
-                  fullWidth
-                  sx={inputStyles}
-                >
-                  {["center", "left", "right"].map((opt) => (
-                    <MenuItem key={opt} value={opt}>
-                      {opt.charAt(0).toUpperCase() + opt.slice(1)}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </Grid>
-            </Grid>
-          </SectionPaper>
-
-          {/* MESSAGES */}
-          <SectionPaper title="Messages & UI Text">
-            <FormControlLabel
-              control={
-                <Checkbox
-                  name="display_welcome_message"
-                  checked={formData.display_welcome_message}
-                  onChange={handleCheckbox}
-                />
-              }
-              label="Display Welcome Message"
-            />
-
-            {formData.display_welcome_message && (
-              <TextField
-                fullWidth
-                label="Welcome Message"
-                name="welcome_message"
-                multiline
-                minRows={4}
-                value={formData.welcome_message}
-                onChange={handleChange}
-                sx={inputStyles}
-              />
-            )}
-
-            <FormControlLabel
-              control={
-                <Checkbox
-                  name="display_thankyou_message"
-                  checked={formData.display_thankyou_message}
-                  onChange={handleCheckbox}
-                />
-              }
-              label="Display Thank You Message"
-            />
-
-            {formData.display_thankyou_message && (
-              <TextField
-                fullWidth
-                label="Thank You Message"
-                name="thankyou_message"
-                multiline
-                minRows={4}
-                value={formData.thankyou_message}
-                onChange={handleChange}
-                sx={inputStyles}
-              />
-            )}
-
-            <Grid container spacing={3}>
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="Quota Full Message"
-                  name="quotefull_message"
-                  multiline
-                  minRows={4}
-                  value={formData.quotefull_message}
-                  onChange={handleChange}
-                  sx={inputStyles}
-                />
-              </Grid>
-
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="Terminate Message"
-                  name="terminate_message"
-                  multiline
-                  minRows={4}
-                  value={formData.terminate_message}
-                  onChange={handleChange}
-                  sx={inputStyles}
-                />
-              </Grid>
-            </Grid>
-
-            <TextField
-              fullWidth
-              label="Navigation Message"
-              name="navigation_message"
-              multiline
-              minRows={4}
-              value={formData.navigation_message}
-              onChange={handleChange}
-              sx={{ ...inputStyles, mt: 3 }}
-            />
-
-            <Grid container spacing={3} sx={{ mt: 2 }}>
-              {[
-                "start_btn_text",
-                "complete_btn_text",
-                "previous_btn_text",
-                "next_btn_text",
-              ].map((field, index) => (
-                <Grid item xs={12} md={3} key={index}>
+                {formData.display_welcome_message && (
                   <TextField
                     fullWidth
-                    label={field.replace(/_/g, " ")}
-                    name={field}
-                    value={formData[field]}
+                    label="Welcome Message"
+                    name="welcome_message"
+                    multiline
+                    minRows={4}
+                    value={formData.welcome_message}
                     onChange={handleChange}
                     sx={inputStyles}
                   />
+                )}
+
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      name="display_thankyou_message"
+                      checked={formData.display_thankyou_message}
+                      onChange={handleCheckbox}
+                    />
+                  }
+                  label="Display Thank You Message"
+                />
+
+                {formData.display_thankyou_message && (
+                  <TextField
+                    fullWidth
+                    label="Thank You Message"
+                    name="thankyou_message"
+                    multiline
+                    minRows={4}
+                    value={formData.thankyou_message}
+                    onChange={handleChange}
+                    sx={inputStyles}
+                  />
+                )}
+
+                <Grid container spacing={3}>
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      fullWidth
+                      label="Quota Full Message"
+                      name="quotefull_message"
+                      multiline
+                      minRows={4}
+                      value={formData.quotefull_message}
+                      onChange={handleChange}
+                      sx={inputStyles}
+                    />
+                  </Grid>
+
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      fullWidth
+                      label="Terminate Message"
+                      name="terminate_message"
+                      multiline
+                      minRows={4}
+                      value={formData.terminate_message}
+                      onChange={handleChange}
+                      sx={inputStyles}
+                    />
+                  </Grid>
                 </Grid>
-              ))}
-            </Grid>
 
-            <Stack direction="row" spacing={2} sx={{ mt: 3 }}>
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    name="show_progress_bar"
-                    checked={formData.show_progress_bar}
-                    onChange={handleCheckbox}
-                  />
-                }
-                label="Show Progress Bar"
-              />
+                <TextField
+                  fullWidth
+                  label="Navigation Message"
+                  name="navigation_message"
+                  multiline
+                  minRows={4}
+                  value={formData.navigation_message}
+                  onChange={handleChange}
+                  sx={{ ...inputStyles, mt: 3 }}
+                />
 
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    name="answer_preview"
-                    checked={formData.answer_preview}
-                    onChange={handleCheckbox}
+                <Grid container spacing={3} sx={{ mt: 2 }}>
+                  {[
+                    "start_btn_text",
+                    "complete_btn_text",
+                    "previous_btn_text",
+                    "next_btn_text",
+                  ].map((field, index) => (
+                    <Grid item xs={12} md={3} key={index}>
+                      <TextField
+                        fullWidth
+                        label={field.replace(/_/g, " ")}
+                        name={field}
+                        value={formData[field]}
+                        onChange={handleChange}
+                        sx={inputStyles}
+                      />
+                    </Grid>
+                  ))}
+                </Grid>
+
+                <Stack direction="row" spacing={2} sx={{ mt: 3 }}>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        name="show_progress_bar"
+                        checked={formData.show_progress_bar}
+                        onChange={handleCheckbox}
+                      />
+                    }
+                    label="Show Progress Bar"
                   />
-                }
-                label="Enable Answer Preview"
-              />
-            </Stack>
-          </SectionPaper>
+
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        name="answer_preview"
+                        checked={formData.answer_preview}
+                        onChange={handleCheckbox}
+                      />
+                    }
+                    label="Enable Answer Preview"
+                  />
+                </Stack>
+              </SectionPaper>
+            </AccordionDetails>
+          </Accordion>
         </Stack>
 
         {/* ACTION BUTTONS */}
         <Stack direction="row" justifyContent="flex-end" spacing={2} sx={{ mt: 4 }}>
-          <Button variant="outlined" sx={{ px: 4, py: 1.5, borderRadius: "12px" }}>
+          <Button variant="outlined" sx={{ px: 4, py: 1.5 }}>
             Cancel
           </Button>
 
@@ -600,9 +611,6 @@ const CreateProjectPage = () => {
             sx={{
               px: 4,
               py: 1.5,
-              borderRadius: "12px",
-              textTransform: "none",
-              fontWeight: 600,
               background: "linear-gradient(90deg, #125bfd, #23c0ff)",
             }}
           >

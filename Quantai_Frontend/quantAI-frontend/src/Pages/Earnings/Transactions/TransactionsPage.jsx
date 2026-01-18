@@ -97,12 +97,12 @@ const Transactions = () => {
         sx={{
           mb: 4,
           p: 4,
-          borderRadius: 4,
+          borderRadius: "10px",
           background: "linear-gradient(135deg, #1a237e 0%, #0d1540 100%)",
           color: "#fff",
         }}
       >
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2, flexWrap: "wrap" }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 2, flexWrap: "wrap", }}>
           <ReceiptLong sx={{ fontSize: 42 }} />
           <Box>
             <Typography variant="h4" sx={{ fontWeight: 800, letterSpacing: 0.5 }}>
@@ -126,12 +126,13 @@ const Transactions = () => {
               elevation={3}
               sx={{
                 p: 3,
-                borderRadius: 3,
+                borderRadius: 1,
                 bgcolor: "white",
                 textAlign: "center",
                 minHeight: 80,
                 width: 180,
                 flexDirection: "column",
+                borderRadius: "10px",
                 justifyContent: "center",
                 "&:hover": { boxShadow: 6, transform: "translateY(-2px)", transition: "0.2s" },
               }}
@@ -148,7 +149,7 @@ const Transactions = () => {
       </Grid>
 
       {/* Toolbar */}
-      <Paper elevation={2} sx={{ borderRadius: 3, mb: 3, p: 2.5, bgcolor: "white" }}>
+      <Paper elevation={2} sx={{ borderRadius: "10px", mb: 3, p: 2.5, bgcolor: "white" }}>
         <Grid container spacing={2} alignItems="center">
           <Grid item xs={12} md={4}>
             <TextField
@@ -223,7 +224,7 @@ const Transactions = () => {
 
 
       {/* Transactions Table */}
-      <Paper elevation={2} sx={{ borderRadius: 3, overflow: "hidden" }}>
+      <Paper elevation={2} sx={{ borderRadius: "10px", overflow: "hidden" }}>
         <TableContainer>
           <Table size="small" stickyHeader>
             <TableHead>

@@ -36,7 +36,7 @@ export default function ProfilePage() {
             response?.last_name ||
             response?.name?.split(" ").slice(1).join(" ") ||
             "",
-          email: response?.email || "",
+          email: response?.email || "", 
           phone: response?.phone || "",
           country: "India",
         });

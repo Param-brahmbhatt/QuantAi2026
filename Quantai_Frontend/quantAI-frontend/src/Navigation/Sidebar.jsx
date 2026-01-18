@@ -24,7 +24,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import Logo from "/assets/QuantAI.png";
 
-const Sidebar = () => {
+const Sidebar = ({ isCollapsed }) => {
   const [openMenus, setOpenMenus] = useState({});
   const navigate = useNavigate();
 
@@ -46,16 +46,15 @@ const Sidebar = () => {
   ];
 
   const toggleMenu = (text) => {
-    setOpenMenus((prev) => ({ [text]: !prev[text] }));
+    setOpenMenus(prev => ({ ...prev, [text]: !prev[text] }));
   };
 
   const handleNavigation = (path, hasChildren) => {
     if (hasChildren) return;
 
-    // 🔥 LOGOUT FUNCTIONALITY
     if (path === '/logout') {
-      localStorage.removeItem('access_token'); 
-      navigate('/login'); 
+      localStorage.removeItem('access_token');
+      navigate('/login');
       return;
     }
 
@@ -66,36 +65,42 @@ const Sidebar = () => {
     <Paper
       elevation={0}
       sx={{
-        width: 240,
-        height: '100vh',
+        width: isCollapsed ? '120px' : '240px',
+        height: '100%',
         overflow: 'hidden',
         backgroundColor: '#faf8f8',
         display: 'flex',
         flexDirection: 'column',
       }}
     >
-      {/* Logo Section */}
+      {/* Logo */}
       <Box
         sx={{
-          p: 3,
-          pb: 2,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center"
+          p: 2,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: isCollapsed ? 'center' : 'flex-start',
+          transition: 'all 0.4s ease'
         }}
       >
         <img
           src={Logo}
           alt="QuantAI Logo"
-          style={{ width: "200px", height: "auto", objectFit: "contain" }}
+          style={{
+            width: isCollapsed ? "40px" : "180px",
+            height: "auto",
+            objectFit: "contain",
+            transition: 'width 0.4s ease'
+          }}
         />
       </Box>
 
-      <Divider sx={{ border: '1px solid #ddd', width: '180px', margin: '0 auto 8px' }} />
-      {/* Navigation */}
-      <Box sx={{ flex: 1, px: 2, py: 2, overflowY: 'auto' }}>
+      <Divider sx={{ border: '1px solid #ddd', width: isCollapsed ? '60%' : '80%', margin: '0 auto 8px' }} />
+
+      {/* Menu */}
+      <Box sx={{ flex: 1, px: 1, py: 1, overflowY: 'auto' }}>
         <List sx={{ padding: 0 }}>
-          {menuItems.map((item) => (
+          {menuItems.map(item => (
             <React.Fragment key={item.text}>
               <ListItem disablePadding sx={{ mb: 1 }}>
                 <ListItemButton
@@ -107,49 +112,70 @@ const Sidebar = () => {
                   sx={{
                     borderRadius: '12px',
                     py: 1.2,
-                    px: 2,
+                    px: isCollapsed ? 0 : 2,
+                    justifyContent: isCollapsed ? 'center' : 'flex-start',
+                    width: '100%',
+                    overflow: 'hidden',
+                    transition: 'all 0.3s ease',
                     '&:hover': { backgroundColor: 'transparent' },
                   }}
                 >
                   <Box
                     sx={{
-                      width: 36,
-                      height: 36,
-                      borderRadius: '10px',
+                      width: 40,
+                      height: 40,
+                      borderRadius: '12px',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      boxShadow: '0px 2px 6px rgba(0,0,0,0.15)',
+                      boxShadow: '0px 2px 6px rgba(0,0,0,0.12)',
                       backgroundColor: '#fff',
                       color: 'rgb(103, 116, 142)',
-                      mr: 2,
+                      mr: isCollapsed ? 0 : 2,
+                      fontSize: 20,
+                      transition: 'margin 0.3s ease',
                     }}
                   >
                     {item.icon}
                   </Box>
-                  <ListItemText
-                    primary={item.text}
-                    primaryTypographyProps={{
-                      fontSize: '14px',
-                      fontWeight: 500,
-                      color: 'rgb(103, 116, 142)'
+
+                  <Box
+                    sx={{
+                      display: isCollapsed ? 'none' : 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      width: '100%',
+                      transition: 'opacity 0.3s ease',
+                      opacity: isCollapsed ? 0 : 1
                     }}
-                  />
-                  {item.children.length > 0 &&
-                    (openMenus[item.text] ? <ExpandLess /> : <ExpandMore />)}
+                  >
+                    <ListItemText
+                      primary={item.text}
+                      primaryTypographyProps={{
+                        fontSize: '14px',
+                        fontWeight: 500,
+                        color: 'rgb(103, 116, 142)',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                      }}
+                    />
+                    {item.children.length > 0 &&
+                      (openMenus[item.text] ? <ExpandLess /> : <ExpandMore />)}
+                  </Box>
                 </ListItemButton>
               </ListItem>
 
+              {/* Submenu */}
               {item.children.length > 0 && (
-                <Collapse in={openMenus[item.text]} timeout={1000} unmountOnExit>
+                <Collapse in={openMenus[item.text] && !isCollapsed} timeout={300} unmountOnExit>
                   <List component="div" disablePadding>
-                    {item.children.map((child) => (
+                    {item.children.map(child => (
                       <ListItemButton
                         key={child.text}
                         sx={{
                           pl: 8,
                           py: 1,
-                          transition: 'all 0.3s ease',
                           '&:hover': { backgroundColor: '#f0f0f0' },
                         }}
                         onClick={() => handleNavigation(child.path, false)}
