@@ -13,25 +13,20 @@ import {
   Avatar,
   FormControl,
   Stack,
-} from "@mui/material";
-import {
-  Star,
-  TrendingUp,
-  Person,
-  EmojiEvents,
-  FilterList,
-} from "@mui/icons-material";
-import { Link } from "react-router-dom";
-import { GetProjectList } from "../../API/Services/services";
-import {
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
 } from "@mui/material";
+import {
+  Star,
+  EmojiEvents,
+  FilterList,
+} from "@mui/icons-material";
+import { Link } from "react-router-dom";
+import { GetProjectList } from "../../API/Services/services";
 
-const DARK_BLUE = "#14243cff";
-
+const DARK_BLUE = "#14243c";
 
 const ProjectListPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -48,32 +43,15 @@ const ProjectListPage = () => {
     const getProject = async () => {
       try {
         setLoading(true);
-        setError(null);
         const response = await GetProjectList();
-        let projectList = [];
-        if (Array.isArray(response)) {
-          projectList = response;
-        } else if (response && typeof response === 'object') {
-          if (response.results && Array.isArray(response.results)) {
-            projectList = response.results;
-          } else if (response.data && Array.isArray(response.data)) {
-            projectList = response.data;
-          } else if (response.projects && Array.isArray(response.projects)) {
-            projectList = response.projects;
-          } else {
-            projectList = Object.values(response).filter(item => Array.isArray(item))[0] || [];
-          }
-        }
-        if (!Array.isArray(projectList)) {
-          console.warn("Project list is not an array, converting...", projectList);
-          projectList = [];
-        }
-        setProjects(projectList);
-      } catch (error) {
-        console.error("Error fetching projects:", error);
-        console.error("Error details:", error?.response?.data || error);
-        setError(error?.response?.data?.detail || error?.response?.data?.message || error?.message || "Failed to fetch projects");
-        setProjects([]);
+        const data =
+          response?.results ||
+          response?.data ||
+          response?.projects ||
+          (Array.isArray(response) ? response : []);
+        setProjects(Array.isArray(data) ? data : []);
+      } catch (err) {
+        setError(err?.message || "Failed to fetch projects");
       } finally {
         setLoading(false);
       }
@@ -82,48 +60,21 @@ const ProjectListPage = () => {
   }, []);
 
   const getStatusColor = (status) => {
-    switch (status) {
-      case "Completed":
-        return "success";
-      case "In Progress":
-        return "default";
-      case "Planning":
-        return "warning";
-      default:
-        return "default";
-    }
-  };
-
-  const renderStars = (rating) => {
-    const stars = [];
-    const full = Math.floor(rating);
-    const half = rating % 1 !== 0;
-
-    for (let i = 0; i < 5; i++) {
-      if (i < full) stars.push(<Star key={i} color="warning" />);
-      else if (i === full && half)
-        stars.push(<Star key={i} color="warning" sx={{ opacity: 0.5 }} />);
-      else stars.push(<Star key={i} sx={{ color: "#ddd" }} />);
-    }
-    return stars;
+    if (status === "Completed") return "success";
+    if (status === "Planning") return "warning";
+    return "default";
   };
 
   const filteredProjects = projects.filter((p) => {
-    if (!p || typeof p !== 'object') return false;
-
     const s = searchTerm.toLowerCase();
-    const projectName = (p.name || p.title || p.project_name || "").toString().toLowerCase();
-    const projectCategory = (p.category || p.type || "").toString().toLowerCase();
-    const projectStatus = (p.status || p.project_status || "").toString();
-    const projectPriority = (p.priority || "").toString();
-    const projectTeam = (p.team || p.team_name || "").toString();
-
-    const matchesSearch = !s || projectName.includes(s) || projectCategory.includes(s);
-    const matchesStatus = statusFilter === "all" || projectStatus === statusFilter;
-    const matchesPriority = priorityFilter === "all" || projectPriority === priorityFilter;
-    const matchesTeam = teamFilter === "all" || projectTeam === teamFilter;
-
-    return matchesSearch && matchesStatus && matchesPriority && matchesTeam;
+    return (
+      (!s ||
+        (p.name || "").toLowerCase().includes(s) ||
+        (p.project_category || "").toLowerCase().includes(s)) &&
+      (statusFilter === "all" || p.status === statusFilter) &&
+      (priorityFilter === "all" || p.priority === priorityFilter) &&
+      (teamFilter === "all" || p.team === teamFilter)
+    );
   });
 
   const handleOpen = (project) => {
@@ -136,321 +87,236 @@ const ProjectListPage = () => {
     setSelectedProject(null);
   };
 
-  const handleDeactivate = async () => {
-    try {
-      console.log("Deactivating project:", selectedProject?.id);
-      setProjects((prev) =>
-        prev.filter((p) => p.id !== selectedProject.id)
-      );
-
-      handleClose();
-    } catch (err) {
-      console.error("Deactivate failed", err);
-    }
+  const handleDeactivate = () => {
+    setProjects((prev) => prev.filter((p) => p.id !== selectedProject?.id));
+    handleClose();
   };
 
-
   return (
-    <>
-      <Box sx={{ minHeight: "100vh" }}>
-        {/* HEADER */}
-        <Box sx={{ maxWidth: "1200px", margin: "20px 2%" }}>
-          {/* HEADER SECTION */}
-          <Box
+    <Box
+      sx={{
+        minHeight: "100vh",
+        px: { xs: 1.5, sm: 3, md: 4, lg: 6 },
+        py: 2,
+        maxWidth: "1600px",
+        mx: "auto",
+      }}
+    >
+      {/* HEADER */}
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: { xs: "column", sm: "row" },
+          justifyContent: "space-between",
+          alignItems: { xs: "flex-start", sm: "center" },
+          gap: 2,
+          p: 3,
+          borderRadius: "14px",
+          backgroundColor: "#222857",
+          mb: 3,
+        }}
+      >
+        <Box>
+          <Typography
             sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              py: 3,
-              px: 3,
-              borderRadius: "10px",
-              height: "70px",
-              backgroundColor: "#222857",
-              mb: 3,
+              color: "#fff",
+              fontSize: { xs: "20px", sm: "24px", lg: "28px" },
+              fontWeight: 600,
             }}
           >
-            <Box>
-              <Typography variant="h4" sx={{ color: "#fff" }}>
-                Projects
-              </Typography>
-              <Typography variant="body2" sx={{ color: "#fff" }}>
-                Manage and track all your projects
-              </Typography>
-            </Box>
-            <Link to="/projects/Add-Project" style={{ textDecoration: "none" }}>
-              <Button
-                sx={{
-                  border: "1px solid #fff",
-                  color: "#fff",
-                  textTransform: "none",
-                  fontSize: "14px",
-                  "&:hover": {
-                    backgroundColor: "rgba(255,255,255,0.1)",
-                  },
-                }}
-              >
-                + Add New Project
-              </Button>
-            </Link>
-          </Box>
-          <Card sx={{ p: 3,  borderRadius: "10px" }}>
-            <Grid container spacing={2}>
-              <Grid item xs={12} md={6} lg={8}>
-                <TextField
-                  fullWidth
-                  placeholder="Search projects..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </Grid>
-              <Grid item xs={12} md={3} lg={2}>
-                <FormControl fullWidth>
-                  <Select
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
-                  >
-                    <MenuItem value="all">All Status</MenuItem>
-                    <MenuItem value="Planning">Planning</MenuItem>
-                    <MenuItem value="In Progress">In Progress</MenuItem>
-                    <MenuItem value="Completed">Completed</MenuItem>
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item xs={12} md={3} lg={2}>
-                <FormControl fullWidth>
-                  <Select
-                    value={priorityFilter}
-                    onChange={(e) => setPriorityFilter(e.target.value)}
-                  >
-                    <MenuItem value="all">All Priority</MenuItem>
-                    <MenuItem value="High">High</MenuItem>
-                    <MenuItem value="Medium">Medium</MenuItem>
-                    <MenuItem value="Low">Low</MenuItem>
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item xs={12} md={3} lg={2}>
-                <FormControl fullWidth>
-                  <Select
-                    value={teamFilter}
-                    onChange={(e) => setTeamFilter(e.target.value)}
-                  >
-                    <MenuItem value="all">All Teams</MenuItem>
-                    <MenuItem value="Design">Design</MenuItem>
-                    <MenuItem value="Development">Development</MenuItem>
-                    <MenuItem value="Analytics">Analytics</MenuItem>
-                    <MenuItem value="Security">Security</MenuItem>
-                  </Select>
-                </FormControl>
-              </Grid>
-            </Grid>
-          </Card>
-        </Box>
-
-        {/* FILTERS */}
-        <Box sx={{ maxWidth: 1200, mx: "auto", p: 2 }}>
-          {/* RESULTS */}
-          <Typography sx={{ mt: 2 }} color="text.secondary">
-            Showing <b>{filteredProjects.length}</b> of{" "}
-            <b>{projects.length}</b> projects
+            Projects
           </Typography>
-
-          {/* LOADING STATE */}
-          {loading && (
-            <Card sx={{ p: 6, textAlign: "center", mt: 3 }}>
-              <Typography variant="h6">Loading projects...</Typography>
-            </Card>
-          )}
-
-          {/* ERROR STATE */}
-          {error && !loading && (
-            <Card sx={{ p: 6, textAlign: "center", mt: 3 }}>
-              <Typography variant="h6" color="error">Error loading projects</Typography>
-              <Typography color="text.secondary">{error}</Typography>
-            </Card>
-          )}
-
-          {/* PROJECT CARDS */}
-          {!loading && !error && (
-            <Stack spacing={3} mt={3}>
-              {filteredProjects.map((p) => (
-                <Card key={p.id} sx={{ borderRadius: "10px",}}>
-                  <CardContent>
-                    <Stack spacing={2}>
-                      {/* Top Content */}
-                      <Stack direction="row" spacing={3}>
-                        <Avatar
-                          sx={{
-                            width: 44,
-                            height: 44,
-                            bgcolor: "#e8f0ff",
-                            fontSize: 15,
-                            color: "#000",
-                          }}
-                        >
-                          {p.id}
-                        </Avatar>
-
-                        <Box flex={1}>
-                          <Typography variant="h6" fontWeight="bold" sx={{ fontSize: "16px" }}>
-                            {p.name || p.title || p.project_name || "Unnamed Project"}
-                          </Typography>
-                          <Typography color="text.secondary" sx={{ fontSize: "10px" }}>
-                            {p.code || p.type || p.project_category || "No Category"}
-                          </Typography>
-
-                          {(p.project_type) && (
-                            <Stack direction="row" spacing={1} mt={1}>
-                              {p.project_type && (
-                                <Chip
-                                  label={p.project_type}
-                                  size="small"
-                                  color="success"
-                                  icon={<EmojiEvents />}
-                                  sx={{ fontSize: "10px" }}
-                                />
-                              )}
-                            </Stack>
-                          )}
-
-                          {(p.start_time !== undefined || p.end_time !== undefined) && (
-                            <Stack direction="row" spacing={4} mt={2}>
-                              {p.start_time !== undefined && (
-                                <Typography sx={{ fontSize: "12px" }}>
-                                  Start Time: {p.start_time}
-                                </Typography>
-                              )}
-                              {p.end_time !== undefined && (
-                                <Typography sx={{ fontSize: "12px" }}>
-                                  End Time: {p.end_time}
-                                </Typography>
-                              )}
-                            </Stack>
-                          )}
-
-                          {(p.reward_points || p.totalreward_points) && (
-                            <Typography mt={2} sx={{ fontSize: "12px" }}>
-                              reward_points: {p.reward_points || "N/A"}
-                            </Typography>
-                          )}
-
-                          {(p.status || p.project_status) && (
-                            <Chip
-                              label={p.status || p.project_status}
-                              color={getStatusColor(p.status || p.project_status)}
-                              sx={{
-                                mt: 1,
-                                bgcolor: (p.status || p.project_status) === "In Progress" ? DARK_BLUE : undefined,
-                                color: (p.status || p.project_status) === "In Progress" ? "white" : undefined,
-                              }}
-                            />
-                          )}
-                        </Box>
-                      </Stack>
-
-                      <Box
-                        sx={{
-                          display: "flex",
-                          justifyContent: "flex-end", // RIGHT
-                          alignItems: "flex-start",   // TOP
-                        }}
-                      >
-                        <Stack direction="column" spacing={2}>
-                          <Link
-                            to={`/projects/${p.id}/edit`}
-                            style={{ textDecoration: "none", width: "150px" }}
-                          >
-                            <Button
-                              fullWidth
-                              variant="contained"
-                              sx={{
-                                bgcolor: DARK_BLUE,
-                                "&:hover": { bgcolor: "#08306A" },
-                                fontSize: "11px",
-                              }}
-                            >
-                              View Details
-                            </Button>
-                          </Link>
-
-                          <Button
-                            fullWidth
-                            onClick={() => handleOpen(p)}
-                            sx={{
-                              border: "1px solid #f71313ff",
-                              fontSize: "11px",
-                              color: "#f71313ff",
-                              "&:hover": {
-                                backgroundColor: "#f7131314",
-                              },
-                            }}
-                          >
-                            Delete Project
-                          </Button>
-                        </Stack>
-                      </Box>
-
-                    </Stack>
-                  </CardContent>
-                </Card>
-
-              ))}
-
-              {/* NO DATA */}
-              {filteredProjects.length === 0 && !loading && !error && (
-                <Card sx={{ p: 6, textAlign: "center" }}>
-                  <FilterList sx={{ fontSize: 50, color: "#ccc", mb: 2 }} />
-                  <Typography variant="h6">No projects found</Typography>
-                  <Typography color="text.secondary">
-                    {projects.length === 0
-                      ? "No projects available. Create your first project!"
-                      : "Try adjusting your filters"}
-                  </Typography>
-                </Card>
-              )}
-            </Stack>
-          )}
+          <Typography sx={{ color: "#ddd", fontSize: "13px" }}>
+            Manage and track all your projects
+          </Typography>
         </Box>
+
+        <Link to="/projects/Add-Project" style={{ textDecoration: "none" }}>
+          <Button
+            sx={{
+              border: "1px solid #fff",
+              color: "#fff",
+              textTransform: "none",
+              fontSize: "14px",
+              px: 3,
+              "&:hover": { backgroundColor: "rgba(255,255,255,0.15)" },
+            }}
+          >
+            + Add New Project
+          </Button>
+        </Link>
       </Box>
 
-      <Dialog open={open} onClose={handleClose} maxWidth="xs" fullWidth>
-        <DialogTitle sx={{ fontWeight: "bold" }}>
-          Deactivate Project
-        </DialogTitle>
+      {/* FILTERS */}
+      <Card sx={{ p: 3, borderRadius: "14px" }}>
+        <Grid container spacing={2}>
+          <Grid item xs={12} md={6}>
+            <TextField
+              fullWidth
+              size="small"
+              placeholder="Search projects..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </Grid>
 
+          {[{
+            value: statusFilter,
+            set: setStatusFilter,
+            label: "All Status",
+            options: ["Planning", "In Progress", "Completed"]
+          },{
+            value: priorityFilter,
+            set: setPriorityFilter,
+            label: "All Priority",
+            options: ["High", "Medium", "Low"]
+          },{
+            value: teamFilter,
+            set: setTeamFilter,
+            label: "All Teams",
+            options: ["Design", "Development", "Analytics", "Security"]
+          }].map((f, i) => (
+            <Grid key={i} item xs={12} sm={4} md={2}>
+              <FormControl fullWidth>
+                <Select
+                  size="small"
+                  value={f.value}
+                  onChange={(e) => f.set(e.target.value)}
+                >
+                  <MenuItem value="all">{f.label}</MenuItem>
+                  {f.options.map((o) => (
+                    <MenuItem key={o} value={o}>{o}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+          ))}
+        </Grid>
+      </Card>
+
+      {/* RESULTS */}
+      <Typography sx={{ mt: 2 }} color="text.secondary">
+        Showing <b>{filteredProjects.length}</b> of{" "}
+        <b>{projects.length}</b> projects
+      </Typography>
+
+      {/* STATES */}
+      {loading && (
+        <Card sx={{ p: 6, mt: 3, textAlign: "center" }}>
+          <Typography>Loading projects...</Typography>
+        </Card>
+      )}
+
+      {error && !loading && (
+        <Card sx={{ p: 6, mt: 3, textAlign: "center" }}>
+          <Typography color="error">{error}</Typography>
+        </Card>
+      )}
+
+      {/* PROJECT LIST */}
+      {!loading && !error && (
+        <Stack spacing={3} mt={3}>
+          {filteredProjects.map((p) => (
+            <Card key={p.id} sx={{ borderRadius: "14px" }}>
+              <CardContent>
+                <Stack spacing={2}>
+                  <Stack
+                    direction={{ xs: "column", sm: "row" }}
+                    spacing={2}
+                  >
+                    <Avatar
+                      sx={{
+                        width: { xs: 36, sm: 44 },
+                        height: { xs: 36, sm: 44 },
+                        bgcolor: "#e8f0ff",
+                        color: "#000",
+                      }}
+                    >
+                      {p.id}
+                    </Avatar>
+
+                    <Box flex={1}>
+                      <Typography fontWeight={500} sx={{fontSize: "18px"}}>
+                        {p.title || "Unnamed Project"}
+                      </Typography>
+
+                      <Typography fontSize="12px" color="text.secondary">
+                        {p.code || "No Category"}
+                      </Typography>
+
+                      {p.mode && (
+                        <Chip
+                          size="small"
+                          label={p.mode}
+                          // icon={<EmojiEvents />}
+                          sx={{ mt: 1, fontSize: "10px" }}
+                        />
+                      )}
+                    </Box>
+
+                    <Stack
+                      direction={{ xs: "row", sm: "column" }}
+                      spacing={1.5}
+                      width={{ xs: "100%", sm: "160px" }}
+                    >
+                      <Link to={`/projects/${p.id}/edit`} style={{ textDecoration: "none" }}>
+                        <Button
+                          fullWidth
+                          variant="contained"
+                          sx={{ bgcolor: DARK_BLUE, fontSize: "11px" }}
+                        >
+                          View Details
+                        </Button>
+                      </Link>
+
+                      <Button
+                        fullWidth
+                        onClick={() => handleOpen(p)}
+                        sx={{
+                          border: "1px solid #f71313",
+                          color: "#f71313",
+                          fontSize: "11px",
+                        }}
+                      >
+                        Delete Project
+                      </Button>
+                    </Stack>
+                  </Stack>
+                </Stack>
+              </CardContent>
+            </Card>
+          ))}
+
+          {filteredProjects.length === 0 && (
+            <Card sx={{ p: 6, textAlign: "center" }}>
+              <FilterList sx={{ fontSize: 50, color: "#ccc" }} />
+              <Typography>No projects found</Typography>
+            </Card>
+          )}
+        </Stack>
+      )}
+
+      {/* DIALOG */}
+      <Dialog open={open} onClose={handleClose} fullWidth maxWidth="xs">
+        <DialogTitle>Deactivate Project</DialogTitle>
         <DialogContent>
           <Typography>
-            Are you sure you want to deactivate the project{" "}
-            <b>{selectedProject?.name || selectedProject?.project_name}</b>?
-          </Typography>
-
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            sx={{ mt: 1 }}
-          >
-            This action can be reverted later.
+            Are you sure you want to deactivate{" "}
+            <b>{selectedProject?.name}</b>?
           </Typography>
         </DialogContent>
-
-        <DialogActions sx={{ p: 2 }}>
-          <Button onClick={handleClose}>
-            Cancel
-          </Button>
-
+        <DialogActions>
+          <Button onClick={handleClose}>Cancel</Button>
           <Button
             variant="contained"
+            sx={{ bgcolor: "#f71313" }}
             onClick={handleDeactivate}
-            sx={{
-              bgcolor: "#f71313ff",
-              "&:hover": { bgcolor: "#c20f0fff" },
-            }}
           >
-            Deactivate Project
+            Deactivate
           </Button>
         </DialogActions>
       </Dialog>
-    </>
+    </Box>
   );
 };
 

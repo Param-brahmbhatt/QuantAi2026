@@ -8,10 +8,13 @@ from .countries import list_countries
 class UserSerializer(serializers.ModelSerializer):
     """
     Enhanced User serializer with comprehensive user information.
-    Returns all basic Django user parameters plus role and verification status.
+    Returns all basic Django user parameters plus role, verification status, country, and state.
     """
     role = serializers.CharField(source='profile_type', read_only=True)
     role_display = serializers.CharField(source='get_profile_type_display', read_only=True)
+    country = serializers.SerializerMethodField()
+    country_code = serializers.SerializerMethodField()
+    state = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -29,6 +32,9 @@ class UserSerializer(serializers.ModelSerializer):
             "is_superuser",
             "signup_type",
             "provider",
+            "country",
+            "country_code",
+            "state",
             "date_joined",
             "last_login",
         )
@@ -39,53 +45,132 @@ class UserSerializer(serializers.ModelSerializer):
             "last_login",
             "role",
             "role_display",
+            "country",
+            "country_code",
+            "state",
         )
+
+    def get_country(self, obj):
+        """Get country name from profile."""
+        if hasattr(obj, 'profile') and obj.profile.citizen:
+            return obj.profile.citizen.name
+        return None
+
+    def get_country_code(self, obj):
+        """Get country code from profile."""
+        if hasattr(obj, 'profile') and obj.profile.citizen:
+            return obj.profile.citizen.code
+        return None
+
+    def get_state(self, obj):
+        """Get state from profile."""
+        if hasattr(obj, 'profile') and obj.profile.state:
+            return obj.profile.state
+        return None
 
 
 
 class SignupSerializer(serializers.Serializer):
+    """
+    Serializer for user signup with country and state support.
+    
+    Fields:
+        email: User email address
+        password: User password (min 8 characters)
+        confirm_password: Password confirmation
+        first_name: User's first name (optional)
+        last_name: User's last name (optional)
+        country: Country code (e.g., "IN", "US") or country name (optional)
+        state: State code or state name (optional, requires country)
+    """
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True, min_length=8)
     confirm_password = serializers.CharField(write_only=True, min_length=8)
     first_name = serializers.CharField(required=False, allow_blank=True)
     last_name = serializers.CharField(required=False, allow_blank=True)
     country = serializers.CharField(required=False, allow_blank=True)
+    state = serializers.CharField(required=False, allow_blank=True)
 
     def validate_email(self, value):
+        """Validate that email is unique."""
         if User.objects.filter(email__iexact=value).exists():
             raise serializers.ValidationError("A user with this email already exists")
         return value
 
     def validate(self, data):
+        """Validate password match and country/state combination."""
+        # Validate passwords match
         if data.get("password") != data.get("confirm_password"):
-            raise serializers.ValidationError({"confirm_password": "Passwords do not match."})
+            raise serializers.ValidationError({
+                "confirm_password": "Passwords do not match."
+            })
+        
+        # Validate state requires country
+        if data.get("state") and not data.get("country"):
+            raise serializers.ValidationError({
+                "state": "State cannot be specified without a country."
+            })
+        
         return data
 
     def validate_country(self, value):
+        """Validate and normalize country input."""
         if not value:
             return value
-        countries = list_countries()
-        names = [c["name"] for c in countries]
-        codes = [c["code"] for c in countries]
-        if value in names:
-            return value
-        if value.upper() in codes:
-            # normalize to country name
-            idx = codes.index(value.upper())
-            return countries[idx]["name"]
-        raise serializers.ValidationError("Invalid country")
+        
+        from .countries import validate_country
+        
+        country_data = validate_country(value)
+        if not country_data:
+            raise serializers.ValidationError("Invalid country code or name")
+        
+        # Return the country name for storage
+        return country_data["name"]
+
+    def validate_state(self, value):
+        """
+        Validate state input.
+        Note: Full validation happens in validate() method after country is validated.
+        """
+        return value
 
     def create(self, validated_data):
+        """Create user with country and state information."""
         password = validated_data.pop("password")
         validated_data.pop("confirm_password", None)
         country = validated_data.pop("country", None)
+        state = validated_data.pop("state", None)
+        
+        # Create user
         user = User.objects.create_user(password=password, **validated_data)
         user.is_active = True
         user.save()
-        # Set country in profile if provided
-        if country and hasattr(user, "profile"):
-            user.profile.citizen = country
-            user.profile.save()
+        
+        # Set country and state in profile if provided
+        if hasattr(user, "profile"):
+            profile_updated = False
+            
+            if country:
+                from .countries import validate_country
+                country_data = validate_country(country)
+                if country_data:
+                    user.profile.citizen = country_data["code"]
+                    profile_updated = True
+                    
+                    # Set state if provided along with country
+                    if state:
+                        from .countries import validate_state
+                        state_data = validate_state(state, country_data["code"])
+                        if state_data:
+                            user.profile.state = state_data["name"]
+                        else:
+                            # State validation failed, but we'll still save the country
+                            pass
+            
+            # Save profile if any changes were made
+            if profile_updated:
+                user.profile.save()
+        
         return user
 
 
@@ -260,11 +345,14 @@ class AdminUserUpdateSerializer(serializers.ModelSerializer):
 
 class AdminUserListSerializer(serializers.ModelSerializer):
     """
-    Admin serializer for listing users with comprehensive information including groups and permissions.
+    Admin serializer for listing users with comprehensive information including groups, permissions, country, and state.
     """
     role_display = serializers.CharField(source='get_profile_type_display', read_only=True)
     groups = serializers.StringRelatedField(many=True, read_only=True)
     user_permissions_count = serializers.SerializerMethodField()
+    country = serializers.SerializerMethodField()
+    country_code = serializers.SerializerMethodField()
+    state = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -281,6 +369,9 @@ class AdminUserListSerializer(serializers.ModelSerializer):
             "is_superuser",
             "signup_type",
             "provider",
+            "country",
+            "country_code",
+            "state",
             "date_joined",
             "last_login",
             "groups",
@@ -289,3 +380,21 @@ class AdminUserListSerializer(serializers.ModelSerializer):
 
     def get_user_permissions_count(self, obj):
         return obj.user_permissions.count()
+
+    def get_country(self, obj):
+        """Get country name from profile."""
+        if hasattr(obj, 'profile') and obj.profile.citizen:
+            return obj.profile.citizen.name
+        return None
+
+    def get_country_code(self, obj):
+        """Get country code from profile."""
+        if hasattr(obj, 'profile') and obj.profile.citizen:
+            return obj.profile.citizen.code
+        return None
+
+    def get_state(self, obj):
+        """Get state from profile."""
+        if hasattr(obj, 'profile') and obj.profile.state:
+            return obj.profile.state
+        return None

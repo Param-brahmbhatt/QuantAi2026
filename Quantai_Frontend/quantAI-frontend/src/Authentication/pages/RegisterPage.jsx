@@ -12,6 +12,8 @@ import {
     Paper,
     Snackbar,
     Alert,
+    useMediaQuery,
+    useTheme,
 } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
 import { useFormik } from "formik";
@@ -52,6 +54,11 @@ const validationSchema = Yup.object({
 
 export default function SignupUI() {
     const navigate = useNavigate();
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+    const isTablet = useMediaQuery(theme.breakpoints.down('md'));
+    const isSmallMobile = useMediaQuery('(max-width:375px)');
+    
     const [activeStep, setActiveStep] = useState(0);
     const [otpOpen, setOtpOpen] = useState(false);
     const [otpValues, setOtpValues] = useState(["", "", "", "", "", ""]);
@@ -157,7 +164,6 @@ export default function SignupUI() {
 
             const res = await VerifyOTP(payload);
 
-            // Store token if received; normalize to plain access token string
             if (res?.token || res?.access_token) {
                 const tokenObj = typeof res?.token === "object" ? res?.token : null;
                 const tokenValue =
@@ -176,14 +182,12 @@ export default function SignupUI() {
                 severity: "success",
             });
 
-            // Force showing welcome page after signup
             localStorage.removeItem("hasSeenWelcomePage");
 
             setOtpOpen(false);
             setActiveStep(0);
             formik.resetForm();
             
-            // Redirect to welcome page after successful OTP verification
             setTimeout(() => {
                 navigate("/welcome");
             }, 500);
@@ -206,7 +210,7 @@ export default function SignupUI() {
         switch (step) {
             case 0:
                 return (
-                    <Box display="flex" flexDirection="column" gap={2}>
+                    <Box display="flex" flexDirection="column" gap={{ xs: 1.5, sm: 2 }}>
                         {["first_name", "last_name", "email", "password", "re_password"].map(
                             (field) => (
                                 <TextField
@@ -234,13 +238,17 @@ export default function SignupUI() {
                                     fullWidth
                                     error={formik.touched[field] && Boolean(formik.errors[field])}
                                     helperText={formik.touched[field] && formik.errors[field]}
+                                    size={isMobile ? "small" : "medium"}
                                     sx={{
                                         "& .MuiOutlinedInput-root": {
-                                            "& fieldset": { borderColor: "#F5F2F2" },
+                                            "& fieldset": { borderColor: "#dadada" },
                                             "&:hover fieldset": { borderColor: "#F5F2F2" },
                                             "&.Mui-focused fieldset": { borderColor: "#EDEDED" },
                                         },
                                         "& .MuiInputLabel-root.Mui-focused": { color: "black" },
+                                        "& .MuiInputLabel-root": {
+                                            fontSize: { xs: '0.9rem', sm: '1rem' }
+                                        },
                                     }}
                                 />
                             )
@@ -250,19 +258,33 @@ export default function SignupUI() {
             case 1:
                 return (
                     <Box display="flex" flexDirection="column" gap={2}>
-                        <Typography>Terms & Conditions text here.</Typography>
+                        <Typography 
+                            variant={isMobile ? "body2" : "body1"}
+                            sx={{ 
+                                maxHeight: { xs: '200px', sm: '300px' },
+                                overflowY: 'auto',
+                                pr: 1
+                            }}
+                        >
+                            Terms & Conditions text here.
+                        </Typography>
                         <FormControlLabel
                             control={
                                 <Checkbox
                                     name="is_terms_accepted"
                                     checked={formik.values.is_terms_accepted}
                                     onChange={formik.handleChange}
+                                    size={isMobile ? "small" : "medium"}
                                 />
                             }
-                            label="I agree to the Terms & Conditions"
+                            label={
+                                <Typography variant={isMobile ? "body2" : "body1"}>
+                                    I agree to the Terms & Conditions
+                                </Typography>
+                            }
                         />
                         {formik.errors.is_terms_accepted && (
-                            <Typography color="error" variant="body2">
+                            <Typography color="error" variant="body2" fontSize={isSmallMobile ? '0.7rem' : '0.875rem'}>
                                 {formik.errors.is_terms_accepted}
                             </Typography>
                         )}
@@ -271,19 +293,33 @@ export default function SignupUI() {
             case 2:
                 return (
                     <Box display="flex" flexDirection="column" gap={2}>
-                        <Typography>Privacy Policy content goes here.</Typography>
+                        <Typography 
+                            variant={isMobile ? "body2" : "body1"}
+                            sx={{ 
+                                maxHeight: { xs: '200px', sm: '300px' },
+                                overflowY: 'auto',
+                                pr: 1
+                            }}
+                        >
+                            Privacy Policy content goes here.
+                        </Typography>
                         <FormControlLabel
                             control={
                                 <Checkbox
                                     name="is_pp_accepted"
                                     checked={formik.values.is_pp_accepted}
                                     onChange={formik.handleChange}
+                                    size={isMobile ? "small" : "medium"}
                                 />
                             }
-                            label="I agree to the Privacy Policy"
+                            label={
+                                <Typography variant={isMobile ? "body2" : "body1"}>
+                                    I agree to the Privacy Policy
+                                </Typography>
+                            }
                         />
                         {formik.errors.is_pp_accepted && (
-                            <Typography color="error" variant="body2">
+                            <Typography color="error" variant="body2" fontSize={isSmallMobile ? '0.7rem' : '0.875rem'}>
                                 {formik.errors.is_pp_accepted}
                             </Typography>
                         )}
@@ -303,55 +339,92 @@ export default function SignupUI() {
                     justifyContent: "center",
                     alignItems: "center",
                     bgcolor: "#f5f7fa",
-                    p: 2,
+                    p: { xs: 1, sm: 2, md: 3 },
                 }}
             >
-                <Paper
+                <Box
                     elevation={4}
                     sx={{
-                        p: 6,
-                        maxWidth: 900,
+                        p: { xs: 2, sm: 4, md: 4, lg: 5 },
+                        maxWidth: { xs: '100%', sm: 500, md: 550, lg: 800 },
                         width: "100%",
-                        bgcolor: "white",
-                        borderRadius: 3,
+                        // bgcolor: "white",
+                        borderRadius: { xs: 2, sm: 3 },
+                        height: '90vh',
+                        overflowY: 'auto',
+                        '&::-webkit-scrollbar': {
+                            width: '8px',
+                        },
+                        '&::-webkit-scrollbar-track': {
+                            background: '#f1f1f1',
+                            borderRadius: '10px',
+                        },
+                        '&::-webkit-scrollbar-thumb': {
+                            background: '#888',
+                            borderRadius: '10px',
+                        },
+                        '&::-webkit-scrollbar-thumb:hover': {
+                            background: '#555',
+                        },
                     }}
                 >
-                    <Box display="flex" justifyContent="center" mb={4}>
-                        <img src={Logo} alt="Logo" style={{ height: 100, marginRight: 30 }} />
+                    <Box display="flex" justifyContent="center" mb={{ xs: 2, sm: 2.5, md: 3 }}>
+                        <img 
+                            src={Logo} 
+                            alt="Logo" 
+                            style={{ 
+                                height: isSmallMobile ? 60 : isMobile ? 70 : 80,
+                                marginRight: isMobile ? 15 : 20,
+                                maxWidth: '100%',
+                                objectFit: 'contain'
+                            }} 
+                        />
                     </Box>
 
-                    <Typography variant="h4" fontWeight="bold" mb={1} color="#344767">
+                    <Typography 
+                        variant={isSmallMobile ? "h6" : isMobile ? "h5" : "h5"} 
+                        fontWeight="bold" 
+                        mb={1} 
+                        color="#344767"
+                        textAlign={{ xs: 'center', sm: 'left' }}
+                    >
                         Join Us Today
                     </Typography>
-                    <Typography variant="body1" mb={3} color="#344767">
+                    <Typography 
+                        variant="body2"
+                        mb={{ xs: 2, sm: 2.5 }} 
+                        color="#344767"
+                        textAlign={{ xs: 'center', sm: 'left' }}
+                    >
                         Create your account to get started
                     </Typography>
 
-                    <Stepper activeStep={activeStep} alternativeLabel sx={{ mb: 4 }}>
-                        {steps.map((label) => (
-                            <Step key={label}>
-                                <StepLabel
-                                    sx={{ "& .MuiStepLabel-label": { color: "#344767 !important" } }}
-                                >
-                                    {label}
-                                </StepLabel>
-                            </Step>
-                        ))}
-                    </Stepper>
+                    <Box>
+                        {renderStepContent(activeStep)}
+                    </Box>
 
-                    {renderStepContent(activeStep)}
-
-                    <Box display="flex" justifyContent="space-between" mt={4}>
+                    <Box 
+                        display="flex" 
+                        flexDirection={{ xs: 'column', sm: 'row' }}
+                        justifyContent="space-between" 
+                        gap={{ xs: 2, sm: 0 }}
+                        mt={{ xs: 3, sm: 3 }}
+                    >
                         <Button
                             disabled={activeStep === 0}
                             onClick={handleBack}
                             variant="outlined"
+                            fullWidth={isMobile}
+                            size={isMobile ? "medium" : "large"}
                             sx={{
-                                py: 1,
+                                py: { xs: 0.75, sm: 1 },
+                                px: { xs: 2, sm: 3 },
                                 background: "white",
                                 boxShadow: "0 4px 10px rgba(33, 150, 243, 0.4)",
                                 borderRadius: "5px",
                                 color: "#000",
+                                fontSize: { xs: '0.875rem', sm: '1rem' },
+                                order: { xs: 2, sm: 1 }
                             }}
                         >
                             Back
@@ -361,12 +434,16 @@ export default function SignupUI() {
                             onClick={handleNext}
                             variant="contained"
                             disabled={loading}
+                            fullWidth={isMobile}
+                            size={isMobile ? "medium" : "large"}
                             sx={{
-                                py: 1,
-                                px: 4,
+                                py: { xs: 0.75, sm: 1 },
+                                px: { xs: 2, sm: 4 },
                                 background: "linear-gradient(to right, #2196f3, #21cbf3)",
                                 boxShadow: "0 4px 10px rgba(33, 150, 243, 0.4)",
                                 borderRadius: "5px",
+                                fontSize: { xs: '0.875rem', sm: '1rem' },
+                                order: { xs: 1, sm: 2 }
                             }}
                         >
                             {loading
@@ -377,7 +454,13 @@ export default function SignupUI() {
                         </Button>
                     </Box>
 
-                    <Typography mt={4} textAlign="center" variant="body2" color="#344767">
+                    <Typography 
+                        mt={{ xs: 3, sm: 4 }} 
+                        textAlign="center" 
+                        variant="body2" 
+                        color="#344767"
+                        fontSize={{ xs: '0.8rem', sm: '0.875rem' }}
+                    >
                         Already have an account?{" "}
                         <Link
                             to="/login"
@@ -386,10 +469,9 @@ export default function SignupUI() {
                             Sign in
                         </Link>
                     </Typography>
-                </Paper>
+                </Box>
             </Box>
 
-            {/* ✅ OTP Box */}
             <OtpBox
                 open={otpOpen}
                 otpValues={otpValues}
@@ -400,7 +482,6 @@ export default function SignupUI() {
                 email={userEmail}
             />
 
-            {/* ✅ Snackbar for success/error messages */}
             <Snackbar
                 open={snackbar.open}
                 autoHideDuration={4000}

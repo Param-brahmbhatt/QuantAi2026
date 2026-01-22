@@ -161,10 +161,44 @@ class PasswordResetConfirmView(APIView):
 
 
 class CountriesView(APIView):
+    """
+    API endpoint to retrieve list of all countries.
+    
+    Returns:
+        list: List of all countries with code and name
+        Example: [{"code": "IN", "name": "India"}, ...]
+    """
     permission_classes = [permissions.AllowAny]
 
     def get(self, request):
         return Response(list_countries())
+
+
+class StatesView(APIView):
+    """
+    API endpoint to retrieve states/subdivisions for a specific country.
+    
+    Query Parameters:
+        country: Two-letter ISO country code (e.g., "IN", "US")
+    
+    Returns:
+        list: List of states for the specified country
+        Example: [{"code": "IN-MH", "name": "Maharashtra"}, ...]
+    """
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request):
+        from .countries import list_states
+        
+        country_code = request.query_params.get("country")
+        if not country_code:
+            return Response(
+                {"detail": "Country code is required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        states = list_states(country_code.upper())
+        return Response(states)
 
 
 # Social auth placeholders (in production use proper OAuth flows / libraries)

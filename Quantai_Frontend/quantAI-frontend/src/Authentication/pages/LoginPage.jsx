@@ -73,11 +73,11 @@ export default function LoginPage() {
             } else {
                 await login({ email: formData.email });
             }
-            setSnackbar({
-                open: true,
-                message: res?.detail || "Login successful!",
-                severity: "success",
-            });
+            // setSnackbar({
+            //     open: true,
+            //     message: res?.detail || "Login successful!",
+            //     severity: "success",
+            // });
 
             setTimeout(() => {
                 navigate("/dashboard");
@@ -88,7 +88,6 @@ export default function LoginPage() {
                 err?.response?.data?.detail ||
                 err?.response?.data?.message ||
                 "Invalid credentials.";
-
             setSnackbar({
                 open: true,
                 message: errorMsg,
@@ -108,19 +107,15 @@ export default function LoginPage() {
                 severity: "error",
             });
         }
-
         try {
             setLoading(true);
             const res = await RequestOTPLogin({ email: formData.email });
-
             setSnackbar({
                 open: true,
                 message: res?.detail || "OTP sent",
                 severity: "success",
             });
-
             setOtpOpen(true);
-
         } catch (err) {
             setSnackbar({
                 open: true,
@@ -144,7 +139,6 @@ export default function LoginPage() {
     // --- OTP Submit ---
     const handleOtpSubmit = async () => {
         const otp = otpValues.join("");
-
         if (otp.length !== 6) {
             return setSnackbar({
                 open: true,
@@ -152,7 +146,6 @@ export default function LoginPage() {
                 severity: "error",
             });
         }
-
         try {
             setOtpLoading(true);
 
@@ -174,11 +167,9 @@ export default function LoginPage() {
                 message: res?.detail || "Logged in!",
                 severity: "success",
             });
-
             setOtpOpen(false);
-
             setTimeout(() => {
-                navigate("/");
+                navigate("/dashboard");
             }, 1500);
         } catch (err) {
             setSnackbar({

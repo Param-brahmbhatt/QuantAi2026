@@ -18,6 +18,7 @@ function Layout() {
     '/forgot-password',
     '/welcome',
     '/welcome-details',
+    '/coming-soon'
   ].includes(location.pathname);
 
   if (hideLayout) {

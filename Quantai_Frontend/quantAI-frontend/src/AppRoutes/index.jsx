@@ -20,12 +20,14 @@ import AddProjectForm from "../Pages/Projects/AddProject";
 import ProjectDetail from "../Pages/Projects/ProjectDetail";
 import MasterDataPage from "../Pages/MasterData/MasterDataPage";
 import RedemptionSettings from "../Pages/Settings/Redemption";
+import ComingSoon from "../Pages/comingsoon/ComingSoon";
 
 export const AppRoutes = () => {
   return (
     <Routes>
       {/* 🔹 Default redirect */}
-      <Route path="/" element={<Navigate to="/login" replace />} />
+      <Route path="/" element={<Navigate to="/coming-soon" replace />} />
+      <Route path="/coming-soon" element={<ComingSoon/>} />
 
       {/* 🔹 Auth Routes */}
       <Route path="/login" element={<LoginPage />} />

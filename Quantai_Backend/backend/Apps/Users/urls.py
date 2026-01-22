@@ -25,6 +25,7 @@ urlpatterns = [
 
     # Utility endpoints
     path("countries/", views.CountriesView.as_view(), name="countries"),
+    path("states/", views.StatesView.as_view(), name="states"),
 
     # Admin-only user management endpoints
     path("admin/", include(admin_router.urls)),

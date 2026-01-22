@@ -85,6 +85,7 @@ class Profile(models.Model):
     last_name = models.CharField(max_length=120, blank=True)
     phone = models.CharField(max_length=25, blank=True)
     citizen = CountryField(blank=True, null=True)
+    state = models.CharField(max_length=255, blank=True, null=True)
     social_id = models.CharField(max_length=255, blank=True)
     mobile_notification_id = models.CharField(max_length=255, blank=True)
     web_notification_id = models.CharField(max_length=255, blank=True)
