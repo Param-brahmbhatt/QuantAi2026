@@ -5,7 +5,7 @@ import {
 } from "@mui/material";
 import { Twitter, Instagram, Apple } from "@mui/icons-material";
 import OtpBox from "./OTPDailogue";
-import { UserLogin, RequestOTPLogin, LoginWithOTP } from "../../API/Services/services";
+import { UserLogin, RequestOTPLogin, LoginWithOTP, GetUserDetails } from "../../API/Services/services";
 import { useAuth } from "../../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 
@@ -38,6 +38,18 @@ export default function LoginPage() {
         setFormData({ ...formData, [name]: type === "checkbox" ? checked : value });
     };
 
+    const fetchAndSaveUserRole = async () => {
+        const profile = await GetUserDetails();
+
+        if (profile?.role) {
+            localStorage.setItem("role", profile.role);
+            localStorage.setItem(
+                "role_display",
+                profile.role_display || profile.role
+            );
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -53,9 +65,7 @@ export default function LoginPage() {
                 email: formData.email,
                 password: formData.password,
             };
-
             const res = await UserLogin(payload);
-
             // Check if verification is required
             if (res?.requires_verification) {
                 setSnackbar({
@@ -66,19 +76,13 @@ export default function LoginPage() {
                 setOtpOpen(true);
                 return;
             }
-
             // Store token and update auth context
             if (res?.access_token) {
                 await login({ email: formData.email }, res.access_token);
+                await fetchAndSaveUserRole();
             } else {
                 await login({ email: formData.email });
             }
-            // setSnackbar({
-            //     open: true,
-            //     message: res?.detail || "Login successful!",
-            //     severity: "success",
-            // });
-
             setTimeout(() => {
                 navigate("/dashboard");
             }, 1500);
@@ -153,20 +157,16 @@ export default function LoginPage() {
                 email: formData.email,
                 code: otp,
                 purpose: "login",
-                client_id: "Rkzsy8StAaD4ChLpxJvYQozOawmMkzG8bRwhD7aU", 
+                client_id: "Rkzsy8StAaD4ChLpxJvYQozOawmMkzG8bRwhD7aU",
             };
 
             const res = await LoginWithOTP(payload);
             if (res?.access_token) {
                 await login({ email: formData.email }, res.access_token);
+                await fetchAndSaveUserRole();
             } else {
                 await login({ email: formData.email });
             }
-            setSnackbar({
-                open: true,
-                message: res?.detail || "Logged in!",
-                severity: "success",
-            });
             setOtpOpen(false);
             setTimeout(() => {
                 navigate("/dashboard");
@@ -500,9 +500,9 @@ export default function LoginPage() {
                         width: "100%",
                         color:
                             snackbar.severity === "success"
-                                ? "#2e7d32" 
+                                ? "#2e7d32"
                                 : snackbar.severity === "error"
-                                    ? "#d32f2f"  
+                                    ? "#d32f2f"
                                     : "inherit",
                         backgroundColor:
                             snackbar.severity === "success"

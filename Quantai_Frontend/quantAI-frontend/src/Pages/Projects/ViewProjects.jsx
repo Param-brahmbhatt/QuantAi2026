@@ -165,12 +165,12 @@ const ProjectListPage = () => {
             set: setStatusFilter,
             label: "All Status",
             options: ["Planning", "In Progress", "Completed"]
-          },{
+          }, {
             value: priorityFilter,
             set: setPriorityFilter,
             label: "All Priority",
             options: ["High", "Medium", "Low"]
-          },{
+          }, {
             value: teamFilter,
             set: setTeamFilter,
             label: "All Teams",
@@ -236,7 +236,7 @@ const ProjectListPage = () => {
                     </Avatar>
 
                     <Box flex={1}>
-                      <Typography fontWeight={500} sx={{fontSize: "18px"}}>
+                      <Typography fontWeight={500} sx={{ fontSize: "18px" }}>
                         {p.title || "Unnamed Project"}
                       </Typography>
 
@@ -252,6 +252,14 @@ const ProjectListPage = () => {
                           sx={{ mt: 1, fontSize: "10px" }}
                         />
                       )}
+                      <Box mt={3}>
+                        <Typography fontSize="12px" color="text.secondary">
+                          Project Start TIme: {p.start_time || "No Category"}
+                        </Typography>
+                        <Typography fontSize="12px" color="text.secondary">
+                          Project End TIme:  {p.end_time || "No Category"}
+                        </Typography>
+                      </Box>
                     </Box>
 
                     <Stack

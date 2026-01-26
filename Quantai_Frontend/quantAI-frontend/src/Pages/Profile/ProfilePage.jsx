@@ -8,6 +8,7 @@ import {
   MenuItem,
   Paper,
   Stack,
+  Chip,
 } from "@mui/material";
 import RocketLaunchIcon from "@mui/icons-material/RocketLaunch";
 import ContactsIcon from "@mui/icons-material/Contacts";
@@ -23,10 +24,28 @@ export default function ProfilePage() {
     country: "India",
   });
 
+  const [roleInfo, setRoleInfo] = useState({
+    role: "",
+    role_display: "",
+  });
+
   useEffect(() => {
     const getUser = async () => {
       try {
         const response = await GetUserDetails();
+
+        /* ================= SAVE ROLE (FIX) ================= */
+        if (response?.role) {
+          localStorage.setItem("role", response.role);
+          localStorage.setItem("role_display", response.role_display || response.role);
+
+          setRoleInfo({
+            role: response.role,
+            role_display: response.role_display || response.role,
+          });
+        }
+
+        /* ================= SET USER DATA ================= */
         setUser({
           first_name:
             response?.first_name ||
@@ -36,14 +55,16 @@ export default function ProfilePage() {
             response?.last_name ||
             response?.name?.split(" ").slice(1).join(" ") ||
             "",
-          email: response?.email || "", 
+          email: response?.email || "",
           phone: response?.phone || "",
           country: "India",
         });
+
       } catch (error) {
-        console.log(error);
+        console.error("Profile fetch failed:", error);
       }
     };
+
     getUser();
   }, []);
 
@@ -53,7 +74,7 @@ export default function ProfilePage() {
 
   return (
     <Box sx={{ display: "flex", minHeight: "100vh", p: 4 }}>
-      {/* Sidebar */}
+      {/* ================= SIDEBAR ================= */}
       <Paper
         elevation={0}
         sx={{
@@ -88,9 +109,9 @@ export default function ProfilePage() {
         </Stack>
       </Paper>
 
-      {/* Main Content */}
+      {/* ================= MAIN ================= */}
       <Box sx={{ flex: 1, ml: 4 }}>
-        {/* Header */}
+        {/* ===== HEADER ===== */}
         <Paper
           elevation={0}
           sx={{
@@ -106,15 +127,29 @@ export default function ProfilePage() {
           <Avatar sx={{ width: 60, height: 60 }} />
           <Box>
             <Typography sx={{ fontWeight: 700, color: "#344767" }}>
-              {user.first_name || "User"}
+              {user.first_name || "User"} {user.last_name}
             </Typography>
+
             <Typography sx={{ color: "#67748e", fontSize: 14 }}>
               {user.email}
             </Typography>
+
+            {roleInfo.role_display && (
+              <Chip
+                label={roleInfo.role_display}
+                size="small"
+                sx={{
+                  mt: 0.5,
+                  backgroundColor: "#e3f2fd",
+                  color: "#1e88e5",
+                  fontWeight: 600,
+                }}
+              />
+            )}
           </Box>
         </Paper>
 
-        {/* Basic Info */}
+        {/* ===== BASIC INFO ===== */}
         <Paper elevation={0} sx={{ p: 4, borderRadius: 4, maxWidth: 700 }}>
           <Typography sx={{ color: "#67748e", fontWeight: 600 }}>
             Basic Info
@@ -146,10 +181,9 @@ export default function ProfilePage() {
 
             <TextField
               label="Email"
-              name="email"
               value={user.email}
-              onChange={handleChange}
               fullWidth
+              disabled
             />
 
             <TextField
@@ -172,6 +206,14 @@ export default function ProfilePage() {
               <MenuItem value="USA">USA</MenuItem>
               <MenuItem value="UK">UK</MenuItem>
             </TextField>
+
+            {/* ✅ ROLE FIELD */}
+            <TextField
+              label="Role"
+              value={roleInfo.role_display || "—"}
+              fullWidth
+              disabled
+            />
           </Box>
 
           <Box sx={{ mt: 4, textAlign: "right" }}>
@@ -190,24 +232,15 @@ export default function ProfilePage() {
 
         <br />
 
-        {/* Change Password */}
+        {/* ===== CHANGE PASSWORD ===== */}
         <Paper elevation={0} sx={{ p: 4, maxWidth: 700 }}>
           <Typography sx={{ color: "#67748e", fontWeight: 600 }}>
             Change Password
           </Typography>
 
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}>
-            <TextField
-              label="New Password"
-              type="password"
-              fullWidth
-            />
-
-            <TextField
-              label="Confirm Password"
-              type="password"
-              fullWidth
-            />
+            <TextField label="New Password" type="password" fullWidth />
+            <TextField label="Confirm Password" type="password" fullWidth />
           </Box>
 
           <Box mt={4} textAlign="right">
