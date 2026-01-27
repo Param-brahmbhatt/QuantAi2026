@@ -33,22 +33,22 @@ const Sidebar = ({ isCollapsed }) => {
   const roleDisplay = localStorage.getItem("role_display");
 
   const isUser =
-    role?.toLowerCase() === "Audience" ||
+    role?.toLowerCase() === "AU" ||
     roleDisplay?.toLowerCase() === "Audience";
   /* ============================================================= */
 
   const menuItems = [
     { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard', children: [] },
 
-    /* ❌ HIDE FOR USER */
+    /* ❌ HIDE FOR Audience */
     { text: 'Projects', icon: <BarChartIcon />, path: '/projects', children: [] },
 
     { text: 'Transactions', icon: <AttachMoneyIcon />, path: '/settings/transactions', children: [] },
 
-    /* ❌ HIDE FOR USER */
+    /* ❌ HIDE FOR Audience */
     { text: 'Master Data', icon: <StorageIcon />, path: '/master-data', children: [] },
 
-    /* ❌ HIDE FOR USER */
+    /* ❌ HIDE FOR Audience */
     { text: 'Users', icon: <GroupIcon />, path: '/users', children: [] },
 
     { text: 'Profile', icon: <PersonIcon />, path: '/profile', children: [] },
