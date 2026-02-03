@@ -35,6 +35,15 @@ import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import FormBuilder from "./FormBuilder";
 import EditProjectPage from "./EditProject";
 
+// Utility function to strip HTML tags from text
+const stripHtmlTags = (html) => {
+  if (!html || typeof html !== 'string') return html || '';
+  // Create a temporary DOM element to extract text content
+  const tmp = document.createElement('div');
+  tmp.innerHTML = html;
+  return tmp.textContent || tmp.innerText || '';
+};
+
 const topTabs = [
   "Statistics",
   "Basic",
@@ -926,7 +935,7 @@ const PreviewCard = ({ projectId }) => {
         let apiQuestions = [];
         try {
           if (projectId) {
-            const { GetQuestions } = await import("../../API/Services/services");
+            const { GetQuestions, GetQuestionChoices } = await import("../../API/Services/services");
             const loaded = await GetQuestions(projectId);
             const backendCodeToFrontendType = {
               RDO: "radio",
@@ -954,22 +963,85 @@ const PreviewCard = ({ projectId }) => {
             };
 
             if (Array.isArray(loaded) && loaded.length > 0) {
-              apiQuestions = loaded.map((q) => ({
-                id: q.id?.toString() || Date.now().toString(),
-                backendId: q.id,
-                type:
-                  (q.question_type && backendCodeToFrontendType[q.question_type]) ||
-                  q.widget ||
-                  "text",
-                label: q.title || "",
-                questionText: q.title || "",
-                description: q.description || "",
-                variableName: q.variable_name || "",
-                required: q.is_required || false,
-                isFirst: q.is_initial_question || false,
-                displayIndex: q.display_index || 0,
-                responses: [], // TODO: map options when backend provides them
-              }));
+              apiQuestions = await Promise.all(
+                loaded.map(async (q) => {
+                  const frontendType =
+                    (q.question_type && backendCodeToFrontendType[q.question_type]) ||
+                    q.widget ||
+                    "text";
+
+                  // Load choices for this question for preview
+                  let choices = [];
+                  try {
+                    const questionChoices = await GetQuestionChoices(q.id);
+                    if (Array.isArray(questionChoices) && questionChoices.length > 0) {
+                      choices = questionChoices.map((choice) => ({
+                        option: stripHtmlTags(choice.text || choice.option || ""),
+                        value: stripHtmlTags(choice.value || choice.text || choice.option || ""),
+                        anchor: choice.anchor || false,
+                        id: choice.id,
+                      }));
+                      // Sort by display_order if available
+                      choices.sort((a, b) => {
+                        const orderA = questionChoices.find(c => c.id === a.id)?.display_order || 0;
+                        const orderB = questionChoices.find(c => c.id === b.id)?.display_order || 0;
+                        return orderA - orderB;
+                      });
+                    } else {
+                      // If API returns no choices, try localStorage fallback (builder stores there)
+                      try {
+                        const storageKey = `question_${q.id}_choices`;
+                        const storedChoices = localStorage.getItem(storageKey);
+                        if (storedChoices) {
+                          const parsed = JSON.parse(storedChoices);
+                          // Strip HTML tags from stored choices
+                          choices = parsed.map((choice) => ({
+                            ...choice,
+                            option: stripHtmlTags(choice.option || choice.text || ""),
+                            value: stripHtmlTags(choice.value || choice.option || choice.text || ""),
+                          }));
+                          console.log(`Preview: loaded ${choices.length} choices from localStorage for question ${q.id}`);
+                        }
+                      } catch (storageError) {
+                        // Ignore localStorage errors in preview
+                      }
+                    }
+                  } catch (choiceError) {
+                    console.error(`Preview: error loading choices for question ${q.id}:`, choiceError);
+                    // Try localStorage as fallback
+                    try {
+                      const storageKey = `question_${q.id}_choices`;
+                      const storedChoices = localStorage.getItem(storageKey);
+                      if (storedChoices) {
+                        const parsed = JSON.parse(storedChoices);
+                        // Strip HTML tags from stored choices
+                        choices = parsed.map((choice) => ({
+                          ...choice,
+                          option: stripHtmlTags(choice.option || choice.text || ""),
+                          value: stripHtmlTags(choice.value || choice.option || choice.text || ""),
+                        }));
+                        console.log(`Preview: loaded ${choices.length} choices from localStorage fallback for question ${q.id}`);
+                      }
+                    } catch (storageError) {
+                      // Ignore localStorage errors in preview
+                    }
+                  }
+
+                  return {
+                    id: q.id?.toString() || Date.now().toString(),
+                    backendId: q.id,
+                    type: frontendType,
+                    label: q.title || "",
+                    questionText: q.title || "",
+                    description: q.description || "",
+                    variableName: q.variable_name || "",
+                    required: q.is_required || false,
+                    isFirst: q.is_initial_question || false,
+                    displayIndex: q.display_index || 0,
+                    responses: choices, // Use loaded choices/options for preview
+                  };
+                })
+              );
             }
           }
         } catch (apiError) {
@@ -1068,7 +1140,7 @@ const PreviewCard = ({ projectId }) => {
                 }}
               >
                 <Box sx={{ width: 20, height: 20, borderRadius: "50%", border: "2px solid #d1d5db", flexShrink: 0 }} />
-                <Typography variant="body1" sx={{ color: "#374151" }}>{response.option || `Option ${idx + 1}`}</Typography>
+                <Typography variant="body1" sx={{ color: "#374151" }}>{stripHtmlTags(response.option || `Option ${idx + 1}`)}</Typography>
               </Box>
             ))}
             {(!question.responses || question.responses.length === 0) && (
@@ -1137,7 +1209,7 @@ const PreviewCard = ({ projectId }) => {
                         minWidth: 120,
                       }}
                     >
-                      {response.option || `Option ${idx + 1}`}
+                      {stripHtmlTags(response.option || `Option ${idx + 1}`)}
                     </Box>
                   ))}
                 </Box>
@@ -1212,7 +1284,7 @@ const PreviewCard = ({ projectId }) => {
                 }}
               >
                 <Box sx={{ width: 20, height: 20, border: "2px solid #d1d5db", borderRadius: "4px", flexShrink: 0 }} />
-                <Typography variant="body1" sx={{ color: "#374151" }}>{response.option || `Option ${idx + 1}`}</Typography>
+                <Typography variant="body1" sx={{ color: "#374151" }}>{stripHtmlTags(response.option || `Option ${idx + 1}`)}</Typography>
               </Box>
             ))}
             {(!question.responses || question.responses.length === 0) && (
@@ -1221,6 +1293,40 @@ const PreviewCard = ({ projectId }) => {
               </Typography>
             )}
           </Stack>
+        </Box>
+      );
+    }
+
+    if (question.type === "list") {
+      return (
+        <Box key={question.id} sx={{ mb: 4, width: "100%", p: 4, border: "1px solid #e5e7eb", borderRadius: 3, backgroundColor: "#fff" }}>
+          <Typography variant="h6" sx={{ mb: 1, color: "#1f2937", fontWeight: 600 }}>
+            {questionNumber}. {question.questionText || "Question"}
+          </Typography>
+          {question.description && (
+            <Typography variant="body2" sx={{ mb: 3, color: "#6b7280" }}>
+              {question.description}
+            </Typography>
+          )}
+          <TextField
+            select
+            fullWidth
+            placeholder="Select an option..."
+            sx={{ mt: 2 }}
+            variant="outlined"
+            defaultValue=""
+          >
+            {question.responses?.map((response, idx) => (
+              <MenuItem key={idx} value={response.value || response.option || `option_${idx}`}>
+                {stripHtmlTags(response.option || `Option ${idx + 1}`)}
+              </MenuItem>
+            ))}
+            {(!question.responses || question.responses.length === 0) && (
+              <MenuItem value="" disabled>
+                No options added yet
+              </MenuItem>
+            )}
+          </TextField>
         </Box>
       );
     }

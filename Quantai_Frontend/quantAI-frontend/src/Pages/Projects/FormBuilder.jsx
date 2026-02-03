@@ -46,6 +46,16 @@ import {
 } from "@mui/icons-material";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
+
+// Utility function to strip HTML tags from text
+const stripHtmlTags = (html) => {
+  if (!html || typeof html !== 'string') return html || '';
+  // Create a temporary DOM element to extract text content
+  const tmp = document.createElement('div');
+  tmp.innerHTML = html;
+  return tmp.textContent || tmp.innerText || '';
+};
+
 import {
   GetLogicNodes,
   CreateLogicNode,
@@ -60,6 +70,10 @@ import {
   UpdateQuestion,
   DeleteQuestion,
   GetQuestionTypes,
+  CreateQuestionChoice,
+  GetQuestionChoices,
+  UpdateQuestionChoice,
+  DeleteQuestionChoice,
 } from "../../API/Services/services";
 import { useParams } from "react-router-dom";
 
@@ -142,7 +156,8 @@ const questionConfigs = {
     fields: [
       { type: "text", name: "variableName", label: "Variable Name" },
       { type: "toggle", name: "required", label: "Required" },
-      { type: "responses", name: "responses" },
+      { type: "gridRows", name: "gridRows", label: "Rows" },
+      { type: "responses", name: "responses", label: "Columns" },
     ],
     actions: true,
   },
@@ -194,7 +209,8 @@ const InlineEditable = ({ value, onChange, placeholder, questionNumber, isDescri
   useEffect(() => {
     if (editableRef.current) {
       const currentText = editableRef.current.textContent || "";
-      const newValue = value || "";
+      // Strip HTML tags from incoming value
+      const newValue = stripHtmlTags(value || "");
 
       // On initial mount, always set the value if it exists
       if (!isInitializedRef.current) {
@@ -231,7 +247,8 @@ const InlineEditable = ({ value, onChange, placeholder, questionNumber, isDescri
     if (isEditing && editableRef.current) {
       // When editing starts, ensure content is set
       const currentText = editableRef.current.textContent || "";
-      const valueText = value || "";
+      // Strip HTML tags from value
+      const valueText = stripHtmlTags(value || "");
       // If content is empty but we have a value, set it
       if (!currentText && valueText) {
         editableRef.current.textContent = valueText;
@@ -305,7 +322,7 @@ const InlineEditable = ({ value, onChange, placeholder, questionNumber, isDescri
       editableRef.current?.blur();
     } else if (e.key === "Escape") {
       if (editableRef.current) {
-        editableRef.current.textContent = value || "";
+        editableRef.current.textContent = stripHtmlTags(value || "");
       }
       editableRef.current?.blur();
     }
@@ -604,14 +621,37 @@ const WelcomeScreen = ({ question, onUpdate }) => {
 const QuestionSettingsPanel = ({ question, config, onUpdate }) => {
   if (!config || !question) return null;
 
+  // Use local state for text inputs to prevent lag
+  const [localTextValues, setLocalTextValues] = React.useState({});
+  const debounceTimers = React.useRef({});
+  
+  // Initialize local state when question changes
+  React.useEffect(() => {
+    const textFields = config.fields.filter(f => f.type === "text");
+    const initialValues = {};
+    textFields.forEach(field => {
+      initialValues[field.name] = question[field.name] || "";
+    });
+    setLocalTextValues(initialValues);
+  }, [question.id, config.fields]);
+
+  // Cleanup timers on unmount
+  React.useEffect(() => {
+    return () => {
+      Object.values(debounceTimers.current).forEach(timer => clearTimeout(timer));
+    };
+  }, []);
+
   const handleFieldChange = (name, value) => {
     onUpdate({ ...question, [name]: value });
   };
 
   const handleResponseChange = (index, key, value) => {
     const responses = question.responses || [];
+    // Strip HTML tags from option and value fields
+    const cleanedValue = (key === "option" || key === "value") ? stripHtmlTags(value) : value;
     const updated = responses.map((response, idx) =>
-      idx === index ? { ...response, [key]: value } : response
+      idx === index ? { ...response, [key]: cleanedValue } : response
     );
     onUpdate({ ...question, responses: updated });
   };
@@ -631,6 +671,32 @@ const QuestionSettingsPanel = ({ question, config, onUpdate }) => {
     const responses = question.responses || [];
     const updated = responses.filter((_, idx) => idx !== index);
     onUpdate({ ...question, responses: updated });
+  };
+
+  // Grid rows management (for grid/metrics question type)
+  const addGridRow = () => {
+    const gridRows = question.gridRows || [];
+    onUpdate({
+      ...question,
+      gridRows: [
+        ...gridRows,
+        { label: `Row ${gridRows.length + 1}`, value: `row_${gridRows.length + 1}` },
+      ],
+    });
+  };
+
+  const deleteGridRow = (index) => {
+    const gridRows = question.gridRows || [];
+    const updated = gridRows.filter((_, idx) => idx !== index);
+    onUpdate({ ...question, gridRows: updated });
+  };
+
+  const handleGridRowChange = (index, key, value) => {
+    const gridRows = question.gridRows || [];
+    const updated = gridRows.map((row, idx) =>
+      idx === index ? { ...row, [key]: value } : row
+    );
+    onUpdate({ ...question, gridRows: updated });
   };
 
   const getQuestionIcon = () => {
@@ -704,7 +770,11 @@ const QuestionSettingsPanel = ({ question, config, onUpdate }) => {
         <Stack spacing={2.5} sx={{ width: "100%", boxSizing: "border-box" }}>
           {config.fields.map((field) => {
             if (field.type === "text") {
-              const value = question[field.name] || "";
+              // Use local state value for immediate UI update, fallback to question value
+              const localValue = localTextValues[field.name] !== undefined 
+                ? localTextValues[field.name] 
+                : (question[field.name] || "");
+              const value = localValue;
               const maxLength = field.name === "buttonText" ? 24 : undefined;
               return (
                 <Box key={field.name} sx={{ width: "100%", boxSizing: "border-box" }}>
@@ -713,7 +783,36 @@ const QuestionSettingsPanel = ({ question, config, onUpdate }) => {
                     value={value}
                     onChange={(e) => {
                       const newValue = maxLength ? e.target.value.slice(0, maxLength) : e.target.value;
-                      handleFieldChange(field.name, newValue);
+                      // Update local state immediately for responsive UI
+                      setLocalTextValues(prev => ({ ...prev, [field.name]: newValue }));
+                      
+                      // Clear existing timer for this field
+                      if (debounceTimers.current[field.name]) {
+                        clearTimeout(debounceTimers.current[field.name]);
+                      }
+                      
+                      // Set new debounced timer
+                      debounceTimers.current[field.name] = setTimeout(() => {
+                        handleFieldChange(field.name, newValue);
+                        delete debounceTimers.current[field.name];
+                      }, 200);
+                    }}
+                    onBlur={() => {
+                      // Ensure final value is saved on blur (immediate, no debounce)
+                      const finalValue = localTextValues[field.name] !== undefined 
+                        ? localTextValues[field.name] 
+                        : (question[field.name] || "");
+                      
+                      // Clear any pending timer
+                      if (debounceTimers.current[field.name]) {
+                        clearTimeout(debounceTimers.current[field.name]);
+                        delete debounceTimers.current[field.name];
+                      }
+                      
+                      // Save immediately
+                      if (finalValue !== (question[field.name] || "")) {
+                        handleFieldChange(field.name, finalValue);
+                      }
                     }}
                     fullWidth
                     size="small"
@@ -833,8 +932,8 @@ const QuestionSettingsPanel = ({ question, config, onUpdate }) => {
               );
             }
 
-            if (field.type === "responses") {
-              const responses = question.responses || [];
+            if (field.type === "gridRows") {
+              const gridRows = question.gridRows || [];
               return (
                 <Box key={field.name} sx={{ width: "100%", boxSizing: "border-box" }}>
                   <Stack
@@ -844,7 +943,80 @@ const QuestionSettingsPanel = ({ question, config, onUpdate }) => {
                     sx={{ mb: 1.5, width: "100%" }}
                   >
                     <Typography variant="subtitle2" fontWeight={600} sx={{ fontSize: 14, color: "#374151" }}>
-                      Responses
+                      Rows
+                    </Typography>
+                    <Button
+                      size="small"
+                      onClick={addGridRow}
+                      sx={{
+                        textTransform: "none",
+                        color: "#3b82f6",
+                        minWidth: "auto",
+                        px: 1.5,
+                      }}
+                    >
+                      + Add Row
+                    </Button>
+                  </Stack>
+                  <Stack spacing={1.5} sx={{ width: "100%" }}>
+                    {gridRows.map((row, index) => (
+                      <Stack
+                        direction="row"
+                        spacing={1}
+                        key={index}
+                        alignItems="center"
+                        sx={{ width: "100%", minWidth: 0 }}
+                      >
+                        <TextField
+                          label="Row Label"
+                          value={row.label || row.option || ""}
+                          onChange={(e) => handleGridRowChange(index, "label", e.target.value)}
+                          size="small"
+                          sx={{ flex: 1, minWidth: 0 }}
+                        />
+                        <TextField
+                          label="Value"
+                          value={row.value || ""}
+                          onChange={(e) => handleGridRowChange(index, "value", e.target.value)}
+                          size="small"
+                          sx={{ flex: 1, minWidth: 0 }}
+                        />
+                        <IconButton
+                          size="small"
+                          onClick={() => deleteGridRow(index)}
+                          sx={{
+                            color: "#ef4444",
+                            flexShrink: 0,
+                            "&:hover": { backgroundColor: "#fee2e2" },
+                          }}
+                        >
+                          <Delete fontSize="small" />
+                        </IconButton>
+                      </Stack>
+                    ))}
+                    {gridRows.length === 0 && (
+                      <Typography variant="body2" sx={{ color: "#9ca3af", textAlign: "center", py: 2 }}>
+                        No rows added yet. Click "+ Add Row" to add rows.
+                      </Typography>
+                    )}
+                  </Stack>
+                </Box>
+              );
+            }
+
+            if (field.type === "responses") {
+              const responses = question.responses || [];
+              const labelText = question.type === "grid" ? "Columns" : "Responses";
+              return (
+                <Box key={field.name} sx={{ width: "100%", boxSizing: "border-box" }}>
+                  <Stack
+                    direction="row"
+                    alignItems="center"
+                    justifyContent="space-between"
+                    sx={{ mb: 1.5, width: "100%" }}
+                  >
+                    <Typography variant="subtitle2" fontWeight={600} sx={{ fontSize: 14, color: "#374151" }}>
+                      {labelText}
                     </Typography>
                     <Button
                       size="small"
@@ -870,14 +1042,14 @@ const QuestionSettingsPanel = ({ question, config, onUpdate }) => {
                       >
                         <TextField
                           label="Option"
-                          value={response.option}
+                          value={stripHtmlTags(response.option || "")}
                           onChange={(e) => handleResponseChange(index, "option", e.target.value)}
                           size="small"
                           sx={{ flex: 1, minWidth: 0 }}
                         />
                         <TextField
                           label="Value"
-                          value={response.value}
+                          value={stripHtmlTags(response.value || "")}
                           onChange={(e) => handleResponseChange(index, "value", e.target.value)}
                           size="small"
                           sx={{ flex: 1, minWidth: 0 }}
@@ -1135,6 +1307,7 @@ const AddContentModal = ({ open, onClose, onAddQuestion, questionTypes = default
       description: "",
       variableName: "",
       responses: [],
+      gridRows: type === "grid" ? [] : undefined, // Initialize gridRows for grid questions
     };
 
     // Add type-specific defaults
@@ -1812,6 +1985,149 @@ const FormBuilder = ({ formName = "My new form", projectId: propProjectId }) => 
   const getSerializableQuestions = (list) =>
     (list || []).map(({ icon, ...rest }) => rest);
   
+  // Note: Backend doesn't support separate choice endpoints (404/405 errors)
+  // Choices must be included in question create/update payload
+  // This function is kept but won't actually save choices separately
+  const saveQuestionChoicesAfterQuestionSave = async (questionId, responses) => {
+    // Backend doesn't support separate choice creation endpoints
+    // Choices should be included in question payload instead
+    console.log("Note: Choices should be included in question payload. Separate endpoint not available.");
+  };
+
+  // Note: Backend doesn't support separate choice endpoints (404/405 errors)
+  // Choices must be included in question create/update payload
+  // This function is kept for potential future use but won't be called
+  const createChoiceWithRetry = async (questionId, choiceData) => {
+    console.warn("createChoiceWithRetry called but backend doesn't support separate choice endpoints");
+    return null;
+  };
+
+  // Legacy function kept for compatibility
+  const saveQuestionChoices = async (questionId, responses) => {
+    if (!questionId) {
+      return;
+    }
+    
+    // Ensure questionId is a number (backend expects integer)
+    const questionIdNum = typeof questionId === 'string' ? parseInt(questionId, 10) : questionId;
+    if (isNaN(questionIdNum)) {
+      console.error(`Invalid questionId: ${questionId}`);
+      return;
+    }
+
+    // If no responses, delete all existing choices
+    if (!responses || !Array.isArray(responses) || responses.length === 0) {
+      try {
+        const existingChoices = await GetQuestionChoices(questionIdNum);
+        if (Array.isArray(existingChoices)) {
+          for (const choice of existingChoices) {
+            if (choice.id) {
+              try {
+                await DeleteQuestionChoice(questionIdNum, choice.id);
+              } catch (error) {
+                console.error(`Error deleting choice ${choice.id}:`, error);
+              }
+            }
+          }
+        }
+      } catch (error) {
+        console.error(`Error deleting choices for question ${questionIdNum}:`, error);
+      }
+      return;
+    }
+
+    try {
+      // Get existing choices
+      const existingChoices = await GetQuestionChoices(questionIdNum);
+      const existingChoicesMap = new Map();
+      const existingChoicesByText = new Map();
+      
+      if (Array.isArray(existingChoices)) {
+        existingChoices.forEach((choice) => {
+          if (choice.id) {
+            existingChoicesMap.set(choice.id, choice);
+            const text = choice.text || choice.option || "";
+            if (text) {
+              existingChoicesByText.set(text.toLowerCase().trim(), choice);
+            }
+          }
+        });
+      }
+
+      // Track which existing choices we've updated
+      const updatedChoiceIds = new Set();
+
+      // Save each response as a choice
+      for (let idx = 0; idx < responses.length; idx++) {
+        const response = responses[idx];
+        const choiceText = response.option || response.text || "";
+        
+        if (!choiceText.trim()) {
+          continue; // Skip empty choices
+        }
+
+        const choiceData = {
+          question: questionIdNum,
+          text: choiceText,
+          value: response.value || choiceText,
+          display_order: idx + 1,
+        };
+
+        // First, try to match by ID if the response has a stored choice ID
+        let existingChoice = null;
+        if (response.id && existingChoicesMap.has(response.id)) {
+          existingChoice = existingChoicesMap.get(response.id);
+        } else {
+          // Fall back to matching by text
+          const normalizedText = choiceText.toLowerCase().trim();
+          existingChoice = existingChoicesByText.get(normalizedText);
+        }
+
+        if (existingChoice && existingChoice.id) {
+          // Update existing choice
+          try {
+            await UpdateQuestionChoice(questionIdNum, existingChoice.id, choiceData);
+            updatedChoiceIds.add(existingChoice.id);
+          } catch (error) {
+            console.error(`Error updating choice ${existingChoice.id} for question ${questionIdNum}:`, error);
+            // If update fails, try creating a new one
+            try {
+              const created = await CreateQuestionChoice(questionIdNum, choiceData);
+              if (created && created.id) {
+                updatedChoiceIds.add(created.id);
+              }
+            } catch (createError) {
+              console.error(`Error creating choice after update failed:`, createError);
+            }
+          }
+        } else {
+          // Create new choice
+          try {
+            const created = await CreateQuestionChoice(questionIdNum, choiceData);
+            if (created && created.id) {
+              updatedChoiceIds.add(created.id);
+            }
+          } catch (error) {
+            console.error(`Error saving choice ${idx + 1} for question ${questionIdNum}:`, error);
+          }
+        }
+      }
+
+      // Delete choices that are no longer in the responses
+      for (const [choiceId, choice] of existingChoicesMap) {
+        if (!updatedChoiceIds.has(choiceId)) {
+          try {
+            await DeleteQuestionChoice(questionIdNum, choiceId);
+          } catch (error) {
+            console.error(`Error deleting choice ${choiceId}:`, error);
+          }
+        }
+      }
+    } catch (error) {
+      console.error(`Error saving choices for question ${questionIdNum}:`, error);
+    }
+  };
+  
   // Load questions: API is source of truth for questions, localStorage only for welcome overrides / caching
   const loadQuestions = async () => {
     // 1) Build welcome question, overriding from localStorage if present
@@ -1832,26 +2148,86 @@ const FormBuilder = ({ formName = "My new form", projectId: propProjectId }) => 
       if (projectId) {
         const loaded = await GetQuestions(projectId);
         if (Array.isArray(loaded) && loaded.length > 0) {
-          apiQuestions = loaded.map((q) => {
-            const frontendType =
-              (q.question_type && backendCodeToFrontendType[q.question_type]) ||
-              q.widget ||
-              "text";
+          // Load choices for each question
+          apiQuestions = await Promise.all(
+            loaded.map(async (q) => {
+              const frontendType =
+                (q.question_type && backendCodeToFrontendType[q.question_type]) ||
+                q.widget ||
+                "text";
 
-            return {
-              id: q.id?.toString() || Date.now().toString(),
-              backendId: q.id,
-              type: frontendType,
-              label: q.title || "",
-              questionText: q.title || "",
-              description: q.description || "",
-              variableName: q.variable_name || "",
-              required: q.is_required || false,
-              isFirst: q.is_initial_question || false,
-              displayIndex: q.display_index || 0,
-              responses: [], // TODO: map choices when API provides them
-            };
-          });
+              // Load choices for this question
+              let choices = [];
+              try {
+                const questionChoices = await GetQuestionChoices(q.id);
+                if (Array.isArray(questionChoices) && questionChoices.length > 0) {
+                  choices = questionChoices.map((choice) => ({
+                    option: stripHtmlTags(choice.text || choice.option || ""),
+                    value: stripHtmlTags(choice.value || choice.text || choice.option || ""),
+                    anchor: choice.anchor || false,
+                    id: choice.id,
+                  }));
+                  // Sort by display_order if available
+                  choices.sort((a, b) => {
+                    const orderA = questionChoices.find(c => c.id === a.id)?.display_order || 0;
+                    const orderB = questionChoices.find(c => c.id === b.id)?.display_order || 0;
+                    return orderA - orderB;
+                  });
+                } else {
+                  // If no choices from API, check localStorage as fallback
+                  try {
+                    const storageKey = `question_${q.id}_choices`;
+                    const storedChoices = localStorage.getItem(storageKey);
+                    if (storedChoices) {
+                      const parsed = JSON.parse(storedChoices);
+                      // Strip HTML tags from stored choices
+                      choices = parsed.map((choice) => ({
+                        ...choice,
+                        option: stripHtmlTags(choice.option || choice.text || ""),
+                        value: stripHtmlTags(choice.value || choice.option || choice.text || ""),
+                      }));
+                      console.log(`Loaded ${choices.length} choices from localStorage for question ${q.id} (backend doesn't support choices yet)`);
+                    }
+                  } catch (storageError) {
+                    // Ignore localStorage errors
+                  }
+                }
+              } catch (choiceError) {
+                console.error(`Error loading choices for question ${q.id}:`, choiceError);
+                // Try localStorage as fallback
+                try {
+                  const storageKey = `question_${q.id}_choices`;
+                  const storedChoices = localStorage.getItem(storageKey);
+                  if (storedChoices) {
+                    const parsed = JSON.parse(storedChoices);
+                    // Strip HTML tags from stored choices
+                    choices = parsed.map((choice) => ({
+                      ...choice,
+                      option: stripHtmlTags(choice.option || choice.text || ""),
+                      value: stripHtmlTags(choice.value || choice.option || choice.text || ""),
+                    }));
+                    console.log(`Loaded ${choices.length} choices from localStorage fallback for question ${q.id}`);
+                  }
+                } catch (storageError) {
+                  // Ignore localStorage errors
+                }
+              }
+
+              return {
+                id: q.id?.toString() || Date.now().toString(),
+                backendId: q.id,
+                type: frontendType,
+                label: q.title || "",
+                questionText: q.title || "",
+                description: q.description || "",
+                variableName: q.variable_name || "",
+                required: q.is_required || false,
+                isFirst: q.is_initial_question || false,
+                displayIndex: q.display_index || 0,
+                responses: choices,
+              };
+            })
+          );
         }
       }
     } catch (error) {
@@ -2037,8 +2413,32 @@ const FormBuilder = ({ formName = "My new form", projectId: propProjectId }) => 
           widget: newQuestion.type === "rating" ? "star_rating" : (newQuestion.type || "text"),
         };
 
-        console.log("Creating question with data:", questionData);
+        // Include choices in question creation payload
+        // Backend doesn't support separate choice endpoints, so choices must be in question payload
+        if (newQuestion.responses && Array.isArray(newQuestion.responses) && newQuestion.responses.length > 0) {
+          const choicesArray = newQuestion.responses
+            .map((response, idx) => ({
+              text: stripHtmlTags(response.option || response.text || ""),
+              value: stripHtmlTags(response.value || response.option || response.text || ""),
+              display_order: idx + 1,
+            }))
+            .filter(choice => choice.text && choice.text.trim()); // Filter out empty choices
+          
+          // Try the most common Django REST Framework nested serializer field names
+          questionData.choices = choicesArray;
+          questionData.question_choices = choicesArray;
+          questionData.options = choicesArray;
+          questionData.responses = choicesArray; // Some backends use 'responses'
+        }
+
+        console.log("Creating question with choices included in payload:", {
+          choicesCount: newQuestion.responses?.length || 0,
+          payload: questionData
+        });
+        
         const created = await CreateQuestion(questionData);
+        console.log("Question creation response:", created);
+        
         if (created && created.id) {
           newQuestion.backendId = created.id;
           newQuestion.id = created.id?.toString() || newQuestion.id;
@@ -2140,7 +2540,45 @@ const FormBuilder = ({ formName = "My new form", projectId: propProjectId }) => 
           widget: updatedQuestion.type === "rating" ? "star_rating" : (updatedQuestion.type || "text"),
         };
 
-        await UpdateQuestion(updatedQuestion.backendId, questionData);
+        // Include choices in question update payload
+        // Backend doesn't support separate choice endpoints, so choices must be in question payload
+        if (updatedQuestion.responses && Array.isArray(updatedQuestion.responses)) {
+          const choicesArray = updatedQuestion.responses
+            .map((response, idx) => ({
+              text: stripHtmlTags(response.option || response.text || ""),
+              value: stripHtmlTags(response.value || response.option || response.text || ""),
+              display_order: idx + 1,
+              id: response.id, // Include ID if it exists (for updates)
+            }))
+            .filter(choice => choice.text && choice.text.trim()); // Filter out empty choices
+          
+          // Try the most common Django REST Framework nested serializer field names
+          // The backend should accept one of these
+          questionData.choices = choicesArray;
+          questionData.question_choices = choicesArray;
+          questionData.options = choicesArray;
+          questionData.responses = choicesArray; // Some backends use 'responses'
+        } else {
+          // Send empty array to clear choices
+          questionData.choices = [];
+          questionData.question_choices = [];
+          questionData.options = [];
+          questionData.responses = [];
+        }
+        
+        console.log("Updating question with choices included in payload:", {
+          questionId: updatedQuestion.backendId,
+          choicesCount: updatedQuestion.responses?.length || 0,
+          payload: questionData
+        });
+        
+        const updateResponse = await UpdateQuestion(updatedQuestion.backendId, questionData);
+        console.log("Question update response:", updateResponse);
+        
+        // Check if response includes choices (some backends return them)
+        if (updateResponse && (updateResponse.choices || updateResponse.question_choices || updateResponse.options)) {
+          console.log("✅ Backend returned choices in response:", updateResponse.choices || updateResponse.question_choices || updateResponse.options);
+        }
       }
       
     const updatedQuestions = questions.map((q) =>
@@ -2280,10 +2718,67 @@ const FormBuilder = ({ formName = "My new form", projectId: propProjectId }) => 
         }
       }
 
-      // Update local state
+      // Update local state (choices will be saved as part of handleUpdateQuestion)
       handleUpdateQuestion(selectedQuestion);
       console.log("Question saved:", selectedQuestion);
 
+      // Reload questions to get updated data from API
+      const reloadedQuestions = await loadQuestions();
+      setQuestions(reloadedQuestions);
+      
+      // Jump back to welcome page after saving
+      const welcomeQuestion = reloadedQuestions.find(q => q.type === "welcome") || defaultWelcomeQuestion;
+      setSelectedQuestion(welcomeQuestion);
+      
+      // Verify choices were saved by checking the API response
+      if (questionId) {
+        try {
+          // Wait a bit for backend to process
+          await new Promise(resolve => setTimeout(resolve, 500));
+          
+          const savedChoices = await GetQuestionChoices(questionId);
+          console.log("Choices after save (from API):", savedChoices);
+          
+          if (selectedQuestion.responses && selectedQuestion.responses.length > 0) {
+            if (!savedChoices || savedChoices.length === 0) {
+              console.error("❌ Choices were NOT saved to backend!");
+              console.error("This indicates the backend does not support nested choice creation.");
+              console.error("Expected choices:", selectedQuestion.responses);
+              console.error("Payload sent:", JSON.stringify({
+                choices: selectedQuestion.responses.map(r => ({
+                  text: r.option || r.text,
+                  value: r.value || r.option || r.text,
+                }))
+              }, null, 2));
+              console.error("\n🔧 SOLUTION REQUIRED:");
+              console.error("The backend needs to be updated to either:");
+              console.error("1. Accept nested choices in question payload (field: 'choices', 'question_choices', 'options', or 'responses')");
+              console.error("2. OR provide a working POST endpoint at /api/question-choices/");
+              console.error("3. OR provide a working POST endpoint at /api/questions/:id/choices/");
+              
+              // Store choices in localStorage as fallback until backend is fixed
+              // Strip HTML tags before saving
+              try {
+                const storageKey = `question_${questionId}_choices`;
+                const cleanedResponses = selectedQuestion.responses.map((r) => ({
+                  ...r,
+                  option: stripHtmlTags(r.option || r.text || ""),
+                  value: stripHtmlTags(r.value || r.option || r.text || ""),
+                }));
+                localStorage.setItem(storageKey, JSON.stringify(cleanedResponses));
+                console.warn("⚠️ Choices saved to localStorage as fallback. They will be lost on page refresh until backend is fixed.");
+              } catch (storageError) {
+                console.error("Could not save to localStorage:", storageError);
+              }
+            } else {
+              console.log("✅ Choices successfully saved to backend!");
+            }
+          }
+        } catch (error) {
+          console.error("Error verifying choices:", error);
+        }
+      }
+      
       // Reload API data
       const [logicNodesData, conditionsData, variablesData] = await Promise.all([
         GetLogicNodes(),
@@ -2293,12 +2788,6 @@ const FormBuilder = ({ formName = "My new form", projectId: propProjectId }) => 
       setLogicNodes(logicNodesData || []);
       setConditions(conditionsData || []);
       setVariables(variablesData || []);
-
-      // Find welcome question and select it
-      const welcomeQuestion = questions.find(q => q.type === "welcome");
-      if (welcomeQuestion) {
-        setSelectedQuestion(welcomeQuestion);
-      }
     } catch (error) {
       console.error("Error saving question:", error);
     } finally {
@@ -2434,8 +2923,10 @@ const FormBuilder = ({ formName = "My new form", projectId: propProjectId }) => 
     };
     const handleOptionChange = (index, newOptionText) => {
       const responses = question.responses || [];
+      // Strip HTML tags from option text
+      const cleanedText = stripHtmlTags(newOptionText);
       const updated = responses.map((response, idx) =>
-        idx === index ? { ...response, option: newOptionText } : response
+        idx === index ? { ...response, option: cleanedText } : response
       );
       handleUpdateQuestion({ ...question, responses: updated });
     };
@@ -2718,41 +3209,44 @@ const FormBuilder = ({ formName = "My new form", projectId: propProjectId }) => 
                       </Box>
                     ))}
                   </Box>
-                  {/* Data Rows - Example rows for grid form */}
-                  {[1, 2, 3].map((rowIdx) => (
-                    <Box key={rowIdx} sx={{ display: "table-row", "&:hover": { backgroundColor: "#fafbff" } }}>
-                      <Box sx={{ display: "table-cell", p: 2, borderBottom: "1px solid #e5e7eb", fontSize: 14, color: "#6b7280" }}>
-                        Row {rowIdx}
-                      </Box>
-                      {question.responses.map((_, colIdx) => (
-                        <Box
-                          key={colIdx}
-                          sx={{
-                            display: "table-cell",
-                            p: 2,
-                            borderBottom: "1px solid #e5e7eb",
-                            borderLeft: "1px solid #e5e7eb",
-                            textAlign: "center",
-                          }}
-                        >
-                          <Box
-                            sx={{
-                              width: 20,
-                              height: 20,
-                              border: "2px solid #d1d5db",
-                              borderRadius: "4px",
-                              mx: "auto",
-                              cursor: "pointer",
-                              "&:hover": {
-                                borderColor: "#4a5fd4",
-                                backgroundColor: "#f0f9ff",
-                              },
-                            }}
-                          />
+                  {/* Data Rows - Use actual gridRows if available, otherwise show example rows */}
+                  {(question.gridRows && question.gridRows.length > 0 ? question.gridRows : [1, 2, 3]).map((row, rowIdx) => {
+                    const rowLabel = typeof row === 'object' ? (row.label || row.option || `Row ${rowIdx + 1}`) : `Row ${row}`;
+                    return (
+                      <Box key={rowIdx} sx={{ display: "table-row", "&:hover": { backgroundColor: "#fafbff" } }}>
+                        <Box sx={{ display: "table-cell", p: 2, borderBottom: "1px solid #e5e7eb", fontSize: 14, color: "#6b7280" }}>
+                          {rowLabel}
                         </Box>
-                      ))}
-                    </Box>
-                  ))}
+                        {question.responses.map((_, colIdx) => (
+                          <Box
+                            key={colIdx}
+                            sx={{
+                              display: "table-cell",
+                              p: 2,
+                              borderBottom: "1px solid #e5e7eb",
+                              borderLeft: "1px solid #e5e7eb",
+                              textAlign: "center",
+                            }}
+                          >
+                            <Box
+                              sx={{
+                                width: 20,
+                                height: 20,
+                                border: "2px solid #d1d5db",
+                                borderRadius: "4px",
+                                mx: "auto",
+                                cursor: "pointer",
+                                "&:hover": {
+                                  borderColor: "#4a5fd4",
+                                  backgroundColor: "#f0f9ff",
+                                },
+                              }}
+                            />
+                          </Box>
+                        ))}
+                      </Box>
+                    );
+                  })}
                 </Box>
               </Paper>
             </Box>
@@ -2829,7 +3323,7 @@ const FormBuilder = ({ formName = "My new form", projectId: propProjectId }) => 
               >
                 <Box sx={{ width: "100%", maxWidth: "100%", boxSizing: "border-box", overflow: "hidden" }}>
                   <InlineEditable
-                    value={response.option}
+                    value={stripHtmlTags(response.option || "")}
                     onChange={(text) => handleOptionChange(idx, text)}
                     placeholder={`Option ${idx + 1}`}
                     questionNumber={null}

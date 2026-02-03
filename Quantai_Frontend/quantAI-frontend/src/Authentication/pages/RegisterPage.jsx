@@ -124,12 +124,33 @@ export default function SignupUI() {
                     !errors.re_password
                 ) {
                     setActiveStep((prev) => prev + 1);
+                } else {
+                    // Touch all fields to show validation errors
+                    formik.setTouched({
+                        first_name: true,
+                        last_name: true,
+                        email: true,
+                        password: true,
+                        re_password: true,
+                    });
                 }
             });
-        } else if (activeStep === 1 && formik.values.is_terms_accepted) {
-            setActiveStep((prev) => prev + 1);
-        } else if (activeStep === 2 && formik.values.is_pp_accepted) {
-            formik.handleSubmit();
+        } else if (activeStep === 1) {
+            if (formik.values.is_terms_accepted) {
+                setActiveStep((prev) => prev + 1);
+            } else {
+                // Show error by touching the field
+                formik.setFieldTouched('is_terms_accepted', true);
+                formik.setFieldError('is_terms_accepted', 'You must accept the Terms & Conditions');
+            }
+        } else if (activeStep === 2) {
+            if (formik.values.is_pp_accepted) {
+                formik.handleSubmit();
+            } else {
+                // Show error by touching the field
+                formik.setFieldTouched('is_pp_accepted', true);
+                formik.setFieldError('is_pp_accepted', 'You must accept the Privacy Policy');
+            }
         }
     };
 
@@ -258,16 +279,114 @@ export default function SignupUI() {
             case 1:
                 return (
                     <Box display="flex" flexDirection="column" gap={2}>
-                        <Typography 
-                            variant={isMobile ? "body2" : "body1"}
+                        <Box
                             sx={{ 
-                                maxHeight: { xs: '200px', sm: '300px' },
-                                overflowY: 'auto',
-                                pr: 1
+                                pr: 1,
+                                border: '1px solid #e0e0e0',
+                                borderRadius: '8px',
+                                p: { xs: 2, sm: 3 },
+                                bgcolor: '#fafafa',
                             }}
                         >
-                            Terms & Conditions text here.
-                        </Typography>
+                            <Typography variant="h6" fontWeight="bold" mb={2} color="#344767">
+                                TERMS OF SERVICE AGREEMENT
+                            </Typography>
+                            
+                            <Typography variant="body2" paragraph>
+                                <strong>LAST REVISION: JULY 2025</strong>
+                            </Typography>
+                            
+                            <Typography variant="body2" paragraph>
+                                PLEASE READ THIS TERMS OF SERVICE AGREEMENT CAREFULLY. BY USING THIS PLATFORM, YOU AGREE TO BE BOUND BY ALL OF THE TERMS AND CONDITIONS OF THIS AGREEMENT.
+                            </Typography>
+
+                            <Typography variant="body2" paragraph>
+                                This Terms of Service Agreement (the "Agreement") governs your use of this website, www.quantaigroup.com & www.portal.quantaigroup.com owned by QUANTAI DATA PRIVATE LIMITED Referred as QUANTAI in this Agreement.
+                            </Typography>
+
+                            <Typography variant="subtitle2" fontWeight="bold" mt={2} mb={1}>
+                                I. SERVICE AND FEATURE
+                            </Typography>
+                            
+                            <Typography variant="body2" paragraph>
+                                <strong>Terms of Use:</strong> This Website offers certain services or features (the "Services"). By taking Services through this Website, you agree to the Terms of Use set forth in this Agreement.
+                            </Typography>
+
+                            <Typography variant="body2" paragraph>
+                                <strong>Customer Solicitation:</strong> Unless you notify us or direct QUANTAI reps, while they are calling you, of your desire to opt out from further direct company communications and solicitations, you are agreeing to continue to receive further emails and call solicitations QUANTAI and its designated in house or third-party call team(s).
+                            </Typography>
+
+                            <Typography variant="body2" paragraph>
+                                <strong>Proprietary Rights:</strong> QUANTAI has proprietary rights and trade secrets in the Services. You may not copy, reproduce, resell or redistribute any Services offered by QUANTAI.
+                            </Typography>
+
+                            <Typography variant="subtitle2" fontWeight="bold" mt={2} mb={1}>
+                                II. WEBSITE
+                            </Typography>
+
+                            <Typography variant="body2" paragraph>
+                                <strong>Content and Intellectual Property:</strong> This Website offers information and marketing materials. QUANTAI does not always create the information offered on this Website; instead, the information is often gathered from other sources. To the extent that QUANTAI does create the content on this Website, such content is protected by intellectual property laws of India, foreign nations, and international bodies.
+                            </Typography>
+
+                            <Typography variant="body2" paragraph>
+                                <strong>License:</strong> By using this Website, you are granted a limited, non-exclusive, nontransferable right to use the content and materials on the Website in connection with your normal, noncommercial, use of the Website.
+                            </Typography>
+
+                            <Typography variant="subtitle2" fontWeight="bold" mt={2} mb={1}>
+                                III. DISCLAIMER OF WARRANTIES
+                            </Typography>
+
+                            <Typography variant="body2" paragraph>
+                                YOUR USE OF THIS WEBSITE AND/OR SERVICES ARE AT YOUR SOLE RISK. THE WEBSITE AND SERVICES ARE OFFERED ON AN "AS IS" AND "AS AVAILABLE" BASIS. QUANTAI EXPRESSLY DISCLAIMS ALL WARRANTIES OF ANY KIND, WHETHER EXPRESS OR IMPLIED.
+                            </Typography>
+
+                            <Typography variant="subtitle2" fontWeight="bold" mt={2} mb={1}>
+                                IV. LIMITATION OF LIABILITY
+                            </Typography>
+
+                            <Typography variant="body2" paragraph>
+                                QUANTAI ENTIRE LIABILITY, AND YOUR EXCLUSIVE REMEDY, IN LAW, IN EQUITY, OR OTHERWISE, WITH RESPECT TO THE WEBSITE CONTENT AND SERVICES AND/OR FOR ANY BREACH OF THIS AGREEMENT IS SOLELY LIMITED TO THE AMOUNT YOU PAID, FOR SERVICES USED VIA THE WEBSITE.
+                            </Typography>
+
+                            <Typography variant="subtitle2" fontWeight="bold" mt={2} mb={1}>
+                                V. COPYRIGHT INFRINGEMENT
+                            </Typography>
+
+                            <Typography variant="body2" paragraph>
+                                If you believe that your intellectual property is being used on the Website in a way that constitutes copyright infringement, please contact our Designated Agent at:
+                            </Typography>
+
+                            <Typography variant="body2" paragraph>
+                                QUANTAI DATA PRIVATE LIMITED<br />
+                                Attn: QUANTAI Legal<br />
+                                302. SHIVALIK SHILP 2, OPP ITC NARMADA HOTEL, KESHAVBAUG ROAD, AHMEDABAD, GUJARAT, INDIA 380015
+                            </Typography>
+
+                            <Typography variant="subtitle2" fontWeight="bold" mt={2} mb={1}>
+                                VI. INDEMNIFICATION
+                            </Typography>
+
+                            <Typography variant="body2" paragraph>
+                                You will release, indemnify, defend and hold harmless QUANTAI, and any of its contractors, agents, employees, officers, directors, shareholders, affiliates and assigns from all liabilities, claims, damages, costs and expenses relating to or arising out of this Agreement or your use of the Website.
+                            </Typography>
+
+                            <Typography variant="subtitle2" fontWeight="bold" mt={2} mb={1}>
+                                VII. GENERAL
+                            </Typography>
+
+                            <Typography variant="body2" paragraph>
+                                <strong>Governing Law:</strong> This Agreement will be governed by the laws of India. Neither you nor QUANTAI will commence or prosecute any suit, proceeding or claim to enforce the provisions of this Agreement, other than in courts located in the State of AHMEDABAD, GUJARAT, INDIA.
+                            </Typography>
+
+                            <Typography variant="body2" paragraph>
+                                <strong>Termination:</strong> QUANTAI reserves the right to terminate your access to the Website if it reasonably believes, in its sole discretion, that you have breached any of the terms and conditions of this Agreement.
+                            </Typography>
+
+                            <Typography variant="body2" paragraph fontWeight="bold" mt={2}>
+                                BY USING THIS WEBSITE OR USING SERVICES FROM THIS WEBSITE YOU AGREE TO BE BOUND BY ALL OF THE TERMS AND CONDITIONS OF THIS AGREEMENT.
+                            </Typography>
+                        </Box>
+                        
                         <FormControlLabel
                             control={
                                 <Checkbox
@@ -279,11 +398,11 @@ export default function SignupUI() {
                             }
                             label={
                                 <Typography variant={isMobile ? "body2" : "body1"}>
-                                    I agree to the Terms & Conditions
+                                    I have read and agree to the Terms & Conditions
                                 </Typography>
                             }
                         />
-                        {formik.errors.is_terms_accepted && (
+                        {formik.touched.is_terms_accepted && formik.errors.is_terms_accepted && (
                             <Typography color="error" variant="body2" fontSize={isSmallMobile ? '0.7rem' : '0.875rem'}>
                                 {formik.errors.is_terms_accepted}
                             </Typography>
@@ -318,7 +437,7 @@ export default function SignupUI() {
                                 </Typography>
                             }
                         />
-                        {formik.errors.is_pp_accepted && (
+                        {formik.touched.is_pp_accepted && formik.errors.is_pp_accepted && (
                             <Typography color="error" variant="body2" fontSize={isSmallMobile ? '0.7rem' : '0.875rem'}>
                                 {formik.errors.is_pp_accepted}
                             </Typography>
@@ -346,9 +465,8 @@ export default function SignupUI() {
                     elevation={4}
                     sx={{
                         p: { xs: 2, sm: 4, md: 4, lg: 5 },
-                        maxWidth: { xs: '100%', sm: 500, md: 550, lg: 800 },
+                        maxWidth: { xs: '100%', sm: 600, md: 700, lg: 1000 },
                         width: "100%",
-                        // bgcolor: "white",
                         borderRadius: { xs: 2, sm: 3 },
                         height: '90vh',
                         overflowY: 'auto',

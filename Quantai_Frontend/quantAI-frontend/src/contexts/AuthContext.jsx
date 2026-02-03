@@ -43,11 +43,20 @@ export const AuthProvider = ({ children }) => {
       if (token) {
         try {
           const userData = await GetUserDetails();
+          const userRole = userData?.role || userData?.user_type || 'User';
+          const roleDisplay = userData?.role_display || userRole;
+          
+          // Save role to localStorage for Sidebar component
+          if (userRole) {
+            localStorage.setItem("role", userRole);
+            localStorage.setItem("role_display", roleDisplay);
+          }
+          
           setUser({
             ...userData,
             id: userData?.id || null,
             email: userData?.email || '',
-            role: userData?.role || userData?.user_type || 'User',
+            role: userRole,
             isAuthenticated: true,
             first_name: userData?.first_name ?? '',
             last_name: userData?.last_name ?? '',
@@ -91,11 +100,20 @@ export const AuthProvider = ({ children }) => {
     
     try {
       const userDetails = await GetUserDetails();
+      const userRole = userDetails?.role || userDetails?.user_type || userData?.role || 'User';
+      const roleDisplay = userDetails?.role_display || userRole;
+      
+      // Save role to localStorage for Sidebar component
+      if (userRole) {
+        localStorage.setItem("role", userRole);
+        localStorage.setItem("role_display", roleDisplay);
+      }
+      
       setUser({
         ...userDetails,
         id: userDetails?.id || userData?.id || null,
         email: userDetails?.email || userData?.email || '',
-        role: userDetails?.role || userDetails?.user_type || userData?.role || 'User',
+        role: userRole,
         isAuthenticated: true,
         first_name: userDetails?.first_name ?? '',
         last_name: userDetails?.last_name ?? '',
@@ -120,6 +138,8 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     localStorage.removeItem("access_token");
+    localStorage.removeItem("role");
+    localStorage.removeItem("role_display");
     setUser({
       id: null,
       name: '',

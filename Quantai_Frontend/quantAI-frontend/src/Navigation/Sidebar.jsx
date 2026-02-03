@@ -22,19 +22,29 @@ import {
   ExpandMore
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import Logo from "/assets/QuantAI.png";
 
 const Sidebar = ({ isCollapsed }) => {
   const [openMenus, setOpenMenus] = useState({});
   const navigate = useNavigate();
+  const { user } = useAuth();
 
-  /* ================= NEW LOGIC (ONLY ADDITION) ================= */
-  const role = localStorage.getItem("role");
-  const roleDisplay = localStorage.getItem("role_display");
+  /* ================= ROLE-BASED MENU FILTERING ================= */
+  // Get role from AuthContext (preferred) or localStorage (fallback)
+  const role = user?.role || localStorage.getItem("role");
+  const roleDisplay = user?.role_display || localStorage.getItem("role_display");
 
-  const isUser =
-    role?.toLowerCase() === "AU" ||
-    roleDisplay?.toLowerCase() === "Audience";
+  // Normalize role name (display value has the friendly label we show in the table)
+  const normalizedRole = (roleDisplay || role || "").toLowerCase();
+
+  // Treat anything containing "audience" or empty/"-" as audience (limited access)
+  const isAudience =
+    normalizedRole.includes("audience") ||
+    normalizedRole === "" ||
+    normalizedRole === "-";
+
+  // In case you want to extend: const isAdminOrDev = normalizedRole.includes("admin") || normalizedRole.includes("superuser") || normalizedRole.includes("developer");
   /* ============================================================= */
 
   const menuItems = [
@@ -122,7 +132,7 @@ const Sidebar = ({ isCollapsed }) => {
 
             /* ================= NEW LOGIC (ONLY ADDITION) ================= */
             if (
-              isUser &&
+              isAudience &&
               (item.text === 'Projects' ||
                item.text === 'Master Data' ||
                item.text === 'Users')
