@@ -37,6 +37,9 @@ export const GetUserDetails = async () => {
     return response?.data || response
 }
 
+/////////// Social media authentication ///////////
+
+
 ///////// Project ////////////
 export const GetProjectList = async () => {
     const response = await axiosGet('/api/projects/surveys/')

@@ -203,7 +203,7 @@ const UserDetailsForm = () => {
 
             {/* Submit Button */}
             <Link 
-              to='/' 
+              to='/dashboard' 
               style={{ 
                 textDecoration: 'none',
                 width: isMobile ? '100%' : 'auto',

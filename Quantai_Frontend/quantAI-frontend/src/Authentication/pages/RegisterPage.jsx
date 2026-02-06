@@ -58,7 +58,7 @@ export default function SignupUI() {
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
     const isTablet = useMediaQuery(theme.breakpoints.down('md'));
     const isSmallMobile = useMediaQuery('(max-width:375px)');
-    
+
     const [activeStep, setActiveStep] = useState(0);
     const [otpOpen, setOtpOpen] = useState(false);
     const [otpValues, setOtpValues] = useState(["", "", "", "", "", ""]);
@@ -90,14 +90,12 @@ export default function SignupUI() {
                 };
 
                 const res = await SignUp(payload);
-
                 setUserEmail(values.email);
                 setSnackbar({
                     open: true,
                     message: "OTP sent to your email. Please verify to complete signup.",
                     severity: "info",
                 });
-
                 setOtpOpen(true);
             } catch (err) {
                 const errorMsg =
@@ -184,7 +182,6 @@ export default function SignupUI() {
             };
 
             const res = await VerifyOTP(payload);
-
             if (res?.token || res?.access_token) {
                 const tokenObj = typeof res?.token === "object" ? res?.token : null;
                 const tokenValue =
@@ -196,7 +193,6 @@ export default function SignupUI() {
                     localStorage.setItem("access_token", tokenValue);
                 }
             }
-
             setSnackbar({
                 open: true,
                 message: res?.detail || "OTP verified successfully!",
@@ -208,7 +204,6 @@ export default function SignupUI() {
             setOtpOpen(false);
             setActiveStep(0);
             formik.resetForm();
-            
             setTimeout(() => {
                 navigate("/welcome");
             }, 500);
@@ -280,7 +275,7 @@ export default function SignupUI() {
                 return (
                     <Box display="flex" flexDirection="column" gap={2}>
                         <Box
-                            sx={{ 
+                            sx={{
                                 pr: 1,
                                 border: '1px solid #e0e0e0',
                                 borderRadius: '8px',
@@ -291,11 +286,11 @@ export default function SignupUI() {
                             <Typography variant="h6" fontWeight="bold" mb={2} color="#344767">
                                 TERMS OF SERVICE AGREEMENT
                             </Typography>
-                            
+
                             <Typography variant="body2" paragraph>
                                 <strong>LAST REVISION: JULY 2025</strong>
                             </Typography>
-                            
+
                             <Typography variant="body2" paragraph>
                                 PLEASE READ THIS TERMS OF SERVICE AGREEMENT CAREFULLY. BY USING THIS PLATFORM, YOU AGREE TO BE BOUND BY ALL OF THE TERMS AND CONDITIONS OF THIS AGREEMENT.
                             </Typography>
@@ -307,7 +302,7 @@ export default function SignupUI() {
                             <Typography variant="subtitle2" fontWeight="bold" mt={2} mb={1}>
                                 I. SERVICE AND FEATURE
                             </Typography>
-                            
+
                             <Typography variant="body2" paragraph>
                                 <strong>Terms of Use:</strong> This Website offers certain services or features (the "Services"). By taking Services through this Website, you agree to the Terms of Use set forth in this Agreement.
                             </Typography>
@@ -386,7 +381,7 @@ export default function SignupUI() {
                                 BY USING THIS WEBSITE OR USING SERVICES FROM THIS WEBSITE YOU AGREE TO BE BOUND BY ALL OF THE TERMS AND CONDITIONS OF THIS AGREEMENT.
                             </Typography>
                         </Box>
-                        
+
                         <FormControlLabel
                             control={
                                 <Checkbox
@@ -412,16 +407,85 @@ export default function SignupUI() {
             case 2:
                 return (
                     <Box display="flex" flexDirection="column" gap={2}>
-                        <Typography 
+                        <Typography
                             variant={isMobile ? "body2" : "body1"}
-                            sx={{ 
+                            sx={{
                                 maxHeight: { xs: '200px', sm: '300px' },
                                 overflowY: 'auto',
-                                pr: 1
+                                pr: 1,
+                                fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' },
+                                '& h3': {
+                                    fontSize: { xs: '0.85rem', sm: '0.95rem', md: '1.1rem' },
+                                    fontWeight: 600,
+                                    mt: 2,
+                                    mb: 1
+                                },
+                                '& strong': {
+                                    fontWeight: 600
+                                }
                             }}
                         >
-                            Privacy Policy content goes here.
+                            <strong>QUANTAI DATA PRIVATE LIMITED - Privacy Policy</strong>
+                            <br /><br />
+                            <em>Effective: July 2025</em>
+                            <br /><br />
+
+                            <h3>Scope</h3>
+                            QUANTAI DATA PRIVATE LIMITED ("QUANTAI", "we" or "us") is a company constituted under the laws of India, with its principal office at 302, SHIVALIK SHILP 2, OPP. HOTEL ITC NARMADA, KESHAVBAUG ROAD, AHMEDABAD, GUJARAT INDIA 380015.
+                            <br /><br />
+
+                            QUANTAI acts as a "Data Controller" under the Information Technology Act, 2000. We are committed to protecting your privacy.
+                            <br /><br />
+
+                            <strong>Contact our Data Protection Officer:</strong><br />
+                            Email: hello@quantaigroup.com<br />
+                            Address: 302, SHIVALIK SHILP 2, OPP. HOTEL ITC NARMADA, KESHAVBAUG ROAD, AHMEDABAD, GUJARAT, INDIA 380015
+                            <br /><br />
+
+                            <h3>1. What Personal Data Do We Process?</h3>
+                            QUANTAI applies the minimization principle and only processes personal data required for our purposes. We provide sampling solutions and technology for survey research, serving businesses, universities, and governmental agencies.
+                            <br /><br />
+
+                            <h3>2. Types of Information We Collect</h3>
+                            <strong>(i) Personally Identifiable Information (PII):</strong> Name, email, telephone numbers, residential address.
+                            <br /><br />
+                            <strong>(ii) Business Contact Information:</strong> Company name, job title, department.
+                            <br /><br />
+                            <strong>(iii) Employer Information:</strong> Details about your company.
+                            <br /><br />
+                            <strong>(iv) Automated Information:</strong> IP address, browser type, operating system, website activity.
+                            <br /><br />
+
+                            <h3>3. How We Collect Information</h3>
+                            <strong>(i) Directly from you:</strong> Through our websites (www.quantaigroup.com, www.quantai.app), business meetings, events, calls, and emails.
+                            <br /><br />
+                            <strong>(ii) From third parties:</strong> Information service bureaus, social media, event organizers.
+                            <br /><br />
+                            <strong>(iii) Through automated means:</strong> Cookies (session and persistent), log files with browser data.
+                            <br /><br />
+
+                            <h3>4. How We Use Your Information</h3>
+                            We use your information to: provide products and services; maintain directories; prevent fraud; respond to inquiries; improve our business; conduct marketing and research; comply with laws; respond to legal requests; protect our rights; and evaluate employment opportunities.
+                            <br /><br />
+
+                            <h3>5. Your Rights</h3>
+                            <strong>(i)</strong> Request access, correction, or deletion of your personal data.
+                            <br />
+                            <strong>(ii)</strong> Withdraw consent or object to processing.
+                            <br />
+                            <strong>(iii)</strong> We implement security measures to protect your data.
+                            <br />
+                            <strong>(iv)</strong> Manage your account through our webstore or email hello@quantaigroup.com.
+                            <br />
+                            <strong>(v)</strong> Unsubscribe from newsletters using the footer link.
+                            <br />
+                            <strong>(vi-ix)</strong> We only collect consented information, use it for stated purposes, and allow you to refuse data collection by unsubscribing.
+                            <br /><br />
+
+                            <h3>International Data Processing</h3>
+                            Your data may be processed in: <strong>North America</strong> (US, Canada, Mexico, etc.), <strong>EMEA</strong> (UK, Germany, France, UAE, etc.), and <strong>APAC</strong> (India, Australia, Singapore, Japan, etc.).
                         </Typography>
+
                         <FormControlLabel
                             control={
                                 <Checkbox
@@ -437,6 +501,7 @@ export default function SignupUI() {
                                 </Typography>
                             }
                         />
+
                         {formik.touched.is_pp_accepted && formik.errors.is_pp_accepted && (
                             <Typography color="error" variant="body2" fontSize={isSmallMobile ? '0.7rem' : '0.875rem'}>
                                 {formik.errors.is_pp_accepted}
@@ -487,30 +552,30 @@ export default function SignupUI() {
                     }}
                 >
                     <Box display="flex" justifyContent="center" mb={{ xs: 2, sm: 2.5, md: 3 }}>
-                        <img 
-                            src={Logo} 
-                            alt="Logo" 
-                            style={{ 
+                        <img
+                            src={Logo}
+                            alt="Logo"
+                            style={{
                                 height: isSmallMobile ? 60 : isMobile ? 70 : 80,
                                 marginRight: isMobile ? 15 : 20,
                                 maxWidth: '100%',
                                 objectFit: 'contain'
-                            }} 
+                            }}
                         />
                     </Box>
 
-                    <Typography 
-                        variant={isSmallMobile ? "h6" : isMobile ? "h5" : "h5"} 
-                        fontWeight="bold" 
-                        mb={1} 
+                    <Typography
+                        variant={isSmallMobile ? "h6" : isMobile ? "h5" : "h5"}
+                        fontWeight="bold"
+                        mb={1}
                         color="#344767"
                         textAlign={{ xs: 'center', sm: 'left' }}
                     >
                         Join Us Today
                     </Typography>
-                    <Typography 
+                    <Typography
                         variant="body2"
-                        mb={{ xs: 2, sm: 2.5 }} 
+                        mb={{ xs: 2, sm: 2.5 }}
                         color="#344767"
                         textAlign={{ xs: 'center', sm: 'left' }}
                     >
@@ -521,10 +586,10 @@ export default function SignupUI() {
                         {renderStepContent(activeStep)}
                     </Box>
 
-                    <Box 
-                        display="flex" 
+                    <Box
+                        display="flex"
                         flexDirection={{ xs: 'column', sm: 'row' }}
-                        justifyContent="space-between" 
+                        justifyContent="space-between"
                         gap={{ xs: 2, sm: 0 }}
                         mt={{ xs: 3, sm: 3 }}
                     >
@@ -572,10 +637,10 @@ export default function SignupUI() {
                         </Button>
                     </Box>
 
-                    <Typography 
-                        mt={{ xs: 3, sm: 4 }} 
-                        textAlign="center" 
-                        variant="body2" 
+                    <Typography
+                        mt={{ xs: 3, sm: 4 }}
+                        textAlign="center"
+                        variant="body2"
                         color="#344767"
                         fontSize={{ xs: '0.8rem', sm: '0.875rem' }}
                     >

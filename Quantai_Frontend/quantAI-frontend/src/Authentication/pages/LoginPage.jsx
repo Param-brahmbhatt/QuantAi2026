@@ -8,6 +8,7 @@ import OtpBox from "./OTPDailogue";
 import { UserLogin, RequestOTPLogin, LoginWithOTP, GetUserDetails } from "../../API/Services/services";
 import { useAuth } from "../../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+import FacebookIcon from '@mui/icons-material/Facebook';
 
 export default function LoginPage() {
     const { login } = useAuth();
@@ -361,7 +362,7 @@ export default function LoginPage() {
                                     '&:hover': { backgroundColor: '#fce4ec' }
                                 }}
                             >
-                                <Instagram color="secondary" />
+                                <FacebookIcon color="secondary" />
                             </IconButton>
                             <IconButton
                                 sx={{
