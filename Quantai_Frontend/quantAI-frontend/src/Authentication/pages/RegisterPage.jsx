@@ -407,104 +407,159 @@ export default function SignupUI() {
             case 2:
                 return (
                     <Box display="flex" flexDirection="column" gap={2}>
-                        <Typography
-                            variant={isMobile ? "body2" : "body1"}
+                        <Box
                             sx={{
-                                maxHeight: { xs: '200px', sm: '300px' },
-                                overflowY: 'auto',
                                 pr: 1,
-                                fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' },
-                                '& h3': {
-                                    fontSize: { xs: '0.85rem', sm: '0.95rem', md: '1.1rem' },
-                                    fontWeight: 600,
-                                    mt: 2,
-                                    mb: 1
-                                },
-                                '& strong': {
-                                    fontWeight: 600
-                                }
+                                border: "1px solid #e0e0e0",
+                                borderRadius: "8px",
+                                p: { xs: 2, sm: 3 },
+                                bgcolor: "#fafafa",
                             }}
                         >
-                            <strong>QUANTAI DATA PRIVATE LIMITED - Privacy Policy</strong>
-                            <br /><br />
-                            <em>Effective: July 2025</em>
-                            <br /><br />
+                            <Typography variant="h6" fontWeight="bold" mb={2} color="#344767">
+                                PRIVACY POLICY
+                            </Typography>
 
-                            <h3>Scope</h3>
-                            QUANTAI DATA PRIVATE LIMITED ("QUANTAI", "we" or "us") is a company constituted under the laws of India, with its principal office at 302, SHIVALIK SHILP 2, OPP. HOTEL ITC NARMADA, KESHAVBAUG ROAD, AHMEDABAD, GUJARAT INDIA 380015.
-                            <br /><br />
+                            <Typography variant="body2" paragraph>
+                                <strong>EFFECTIVE DATE: JULY 2025</strong>
+                            </Typography>
 
-                            QUANTAI acts as a "Data Controller" under the Information Technology Act, 2000. We are committed to protecting your privacy.
-                            <br /><br />
+                            <Typography variant="body2" paragraph>
+                                This Privacy Policy is issued in accordance with the Information Technology
+                                (Reasonable Security Practices and Procedures and Sensitive Personal Data or
+                                Information) Rules, 2011 and replaces all previous versions.
+                            </Typography>
 
-                            <strong>Contact our Data Protection Officer:</strong><br />
-                            Email: hello@quantaigroup.com<br />
-                            Address: 302, SHIVALIK SHILP 2, OPP. HOTEL ITC NARMADA, KESHAVBAUG ROAD, AHMEDABAD, GUJARAT, INDIA 380015
-                            <br /><br />
+                            <Typography variant="subtitle2" fontWeight="bold" mt={2} mb={1}>
+                                Scope
+                            </Typography>
 
-                            <h3>1. What Personal Data Do We Process?</h3>
-                            QUANTAI applies the minimization principle and only processes personal data required for our purposes. We provide sampling solutions and technology for survey research, serving businesses, universities, and governmental agencies.
-                            <br /><br />
+                            <Typography variant="body2" paragraph>
+                                QUANTAI DATA PRIVATE LIMITED (“QUANTAI”, “we”, or “us”) is a company constituted
+                                under the laws of India, having its registered office at 302, Shivalik Shilp 2,
+                                Opp. Hotel ITC Narmada, Keshavbaug Road, Ahmedabad, Gujarat, India – 380015.
+                            </Typography>
 
-                            <h3>2. Types of Information We Collect</h3>
-                            <strong>(i) Personally Identifiable Information (PII):</strong> Name, email, telephone numbers, residential address.
-                            <br /><br />
-                            <strong>(ii) Business Contact Information:</strong> Company name, job title, department.
-                            <br /><br />
-                            <strong>(iii) Employer Information:</strong> Details about your company.
-                            <br /><br />
-                            <strong>(iv) Automated Information:</strong> IP address, browser type, operating system, website activity.
-                            <br /><br />
+                            <Typography variant="body2" paragraph>
+                                QUANTAI acts as a Data Controller under the Information Technology Act, 2000 and
+                                is committed to protecting your privacy when you interact with our websites,
+                                services, newsletters, events, and business activities.
+                            </Typography>
 
-                            <h3>3. How We Collect Information</h3>
-                            <strong>(i) Directly from you:</strong> Through our websites (www.quantaigroup.com, www.quantai.app), business meetings, events, calls, and emails.
-                            <br /><br />
-                            <strong>(ii) From third parties:</strong> Information service bureaus, social media, event organizers.
-                            <br /><br />
-                            <strong>(iii) Through automated means:</strong> Cookies (session and persistent), log files with browser data.
-                            <br /><br />
+                            <Typography variant="subtitle2" fontWeight="bold" mt={2} mb={1}>
+                                Contact Information
+                            </Typography>
 
-                            <h3>4. How We Use Your Information</h3>
-                            We use your information to: provide products and services; maintain directories; prevent fraud; respond to inquiries; improve our business; conduct marketing and research; comply with laws; respond to legal requests; protect our rights; and evaluate employment opportunities.
-                            <br /><br />
+                            <Typography variant="body2" paragraph>
+                                For any questions regarding this Privacy Policy, please contact:
+                                <br />
+                                <br />
+                                QUANTAI DATA PRIVATE LIMITED
+                                <br />
+                                302, Shivalik Shilp 2, Opp. Hotel ITC Narmada
+                                <br />
+                                Ahmedabad, Gujarat, India – 380015
+                                <br />
+                                Email: hello@quantaigroup.com
+                            </Typography>
 
-                            <h3>5. Your Rights</h3>
-                            <strong>(i)</strong> Request access, correction, or deletion of your personal data.
-                            <br />
-                            <strong>(ii)</strong> Withdraw consent or object to processing.
-                            <br />
-                            <strong>(iii)</strong> We implement security measures to protect your data.
-                            <br />
-                            <strong>(iv)</strong> Manage your account through our webstore or email hello@quantaigroup.com.
-                            <br />
-                            <strong>(v)</strong> Unsubscribe from newsletters using the footer link.
-                            <br />
-                            <strong>(vi-ix)</strong> We only collect consented information, use it for stated purposes, and allow you to refuse data collection by unsubscribing.
-                            <br /><br />
+                            <Typography variant="subtitle2" fontWeight="bold" mt={2} mb={1}>
+                                1. Personal Data We Process
+                            </Typography>
 
-                            <h3>International Data Processing</h3>
-                            Your data may be processed in: <strong>North America</strong> (US, Canada, Mexico, etc.), <strong>EMEA</strong> (UK, Germany, France, UAE, etc.), and <strong>APAC</strong> (India, Australia, Singapore, Japan, etc.).
-                        </Typography>
+                            <Typography variant="body2" paragraph>
+                                QUANTAI follows the data minimization principle and processes only such personal
+                                data as is necessary for legitimate business purposes. Data may be provided
+                                directly by you or collected through lawful third-party sources.
+                            </Typography>
+
+                            <Typography variant="subtitle2" fontWeight="bold" mt={2} mb={1}>
+                                2. Types of Information Collected
+                            </Typography>
+
+                            <Typography variant="body2" paragraph>
+                                (i) Personally Identifiable Information such as name, email address, phone
+                                number, and residential address.
+                                <br />
+                                (ii) Business contact details including company name, job title, and department.
+                                <br />
+                                (iii) Employer or organization-related information.
+                                <br />
+                                (iv) Technical and usage data such as IP address, browser type, operating system,
+                                access times, and referring URLs.
+                            </Typography>
+
+                            <Typography variant="subtitle2" fontWeight="bold" mt={2} mb={1}>
+                                3. How We Collect Information
+                            </Typography>
+
+                            <Typography variant="body2" paragraph>
+                                Information is collected through our websites, business communications,
+                                meetings, events, phone calls, emails, third-party sources, cookies, log files,
+                                and other automated technologies.
+                            </Typography>
+
+                            <Typography variant="subtitle2" fontWeight="bold" mt={2} mb={1}>
+                                4. Use of Information
+                            </Typography>
+
+                            <Typography variant="body2" paragraph>
+                                We use personal data to provide services, manage relationships, conduct business
+                                operations, send communications, perform marketing and research activities,
+                                comply with legal obligations, protect rights, and evaluate employment
+                                opportunities.
+                            </Typography>
+
+                            <Typography variant="body2" paragraph>
+                                Where required by law, personal data may be disclosed to regulatory or legal
+                                authorities in compliance with applicable rules.
+                            </Typography>
+
+                            <Typography variant="subtitle2" fontWeight="bold" mt={2} mb={1}>
+                                5. Your Rights
+                            </Typography>
+
+                            <Typography variant="body2" paragraph>
+                                You have the right to access, correct, update, delete, or withdraw consent for
+                                processing your personal data. You may also opt out of communications or close
+                                your account by contacting us.
+                            </Typography>
+
+                            <Typography variant="body2" paragraph>
+                                QUANTAI implements appropriate technical and organizational measures to safeguard
+                                your personal data and does not retain information longer than required by law or
+                                business necessity.
+                            </Typography>
+
+                            <Typography variant="body2" paragraph fontWeight="bold" mt={2}>
+                                BY USING THIS WEBSITE OR SERVICES, YOU ACKNOWLEDGE THAT YOU HAVE READ AND
+                                UNDERSTOOD THIS PRIVACY POLICY AND AGREE TO ITS TERMS.
+                            </Typography>
+                        </Box>
 
                         <FormControlLabel
                             control={
                                 <Checkbox
-                                    name="is_pp_accepted"
-                                    checked={formik.values.is_pp_accepted}
+                                    name="is_terms_accepted"
+                                    checked={formik.values.is_terms_accepted}
                                     onChange={formik.handleChange}
                                     size={isMobile ? "small" : "medium"}
                                 />
                             }
                             label={
                                 <Typography variant={isMobile ? "body2" : "body1"}>
-                                    I agree to the Privacy Policy
+                                    I have read and agree to the Privacy Policy
                                 </Typography>
                             }
                         />
 
-                        {formik.touched.is_pp_accepted && formik.errors.is_pp_accepted && (
-                            <Typography color="error" variant="body2" fontSize={isSmallMobile ? '0.7rem' : '0.875rem'}>
-                                {formik.errors.is_pp_accepted}
+                        {formik.touched.is_terms_accepted && formik.errors.is_terms_accepted && (
+                            <Typography
+                                color="error"
+                                variant="body2"
+                                fontSize={isSmallMobile ? "0.7rem" : "0.875rem"}
+                            >
+                                {formik.errors.is_terms_accepted}
                             </Typography>
                         )}
                     </Box>
