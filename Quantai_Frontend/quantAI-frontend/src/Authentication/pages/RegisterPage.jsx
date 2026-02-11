@@ -161,7 +161,6 @@ export default function SignupUI() {
             setOtpValues(newOtp);
         }
     };
-
     const handleOtpSubmit = async () => {
         const otp = otpValues.join("");
         if (otp.length !== 6) {
@@ -172,7 +171,6 @@ export default function SignupUI() {
             });
             return;
         }
-
         try {
             setOtpLoading(true);
             const payload = {
@@ -180,7 +178,6 @@ export default function SignupUI() {
                 code: otp,
                 purpose: "signup",
             };
-
             const res = await VerifyOTP(payload);
             if (res?.token || res?.access_token) {
                 const tokenObj = typeof res?.token === "object" ? res?.token : null;
@@ -435,7 +432,7 @@ export default function SignupUI() {
                             </Typography>
 
                             <Typography variant="body2" paragraph>
-                                QUANTAI DATA PRIVATE LIMITED (“QUANTAI”, “we”, or “us”) is a company constituted
+                                QUANTAI DATA PRIVATE LIMITED ("QUANTAI", "we", or "us") is a company constituted
                                 under the laws of India, having its registered office at 302, Shivalik Shilp 2,
                                 Opp. Hotel ITC Narmada, Keshavbaug Road, Ahmedabad, Gujarat, India – 380015.
                             </Typography>
@@ -540,8 +537,8 @@ export default function SignupUI() {
                         <FormControlLabel
                             control={
                                 <Checkbox
-                                    name="is_terms_accepted"
-                                    checked={formik.values.is_terms_accepted}
+                                    name="is_pp_accepted"
+                                    checked={formik.values.is_pp_accepted}
                                     onChange={formik.handleChange}
                                     size={isMobile ? "small" : "medium"}
                                 />
@@ -553,13 +550,13 @@ export default function SignupUI() {
                             }
                         />
 
-                        {formik.touched.is_terms_accepted && formik.errors.is_terms_accepted && (
+                        {formik.touched.is_pp_accepted && formik.errors.is_pp_accepted && (
                             <Typography
                                 color="error"
                                 variant="body2"
                                 fontSize={isSmallMobile ? "0.7rem" : "0.875rem"}
                             >
-                                {formik.errors.is_terms_accepted}
+                                {formik.errors.is_pp_accepted}
                             </Typography>
                         )}
                     </Box>
